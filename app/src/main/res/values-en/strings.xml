@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Slagalica</string>
+
+    <string name="email_hint">Email</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
+
+    <string name="passwords_do_not_match_error">The passwords do not match!</string>
+    <string name="all_fields_are_mandatory">All fields are mandatory!</string>
+
+    <string name="login_title">Welcome!</string>
+    <string name="login_username_email_hint">Email or username</string>
+    <string name="login_button">Sign In</string>
+    <string name="forgot_password_prompt">Want to change your password?</string>
+    <string name="no_account_prompt">Don\'t have an account? Sign up</string>
+
+    <string name="register_title">Create Account</string>
+    <string name="region_hint">Region</string>
+    <string name="repeat_password_hint">Repeat password</string>
+    <string name="register_button">Sign Up</string>
+    <string name="have_account_prompt">Already have an account? Sign in</string>
+    <string name="reset_password_title">Change password</string>
+
+    <string name="reset_username_email_hint">Email or username</string>
+    <string name="old_password_hint">Old password</string>
+    <string name="new_password_hint">New password</string>
+    <string name="repeat_new_password_hint">Repeat new password</string>
+    <string name="confirm_button">Confirm</string>
+</resources>

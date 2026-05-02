@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">Slagalica</string>
+
+    <string name="email_hint">Email</string>
+    <string name="username_hint">Korisničko ime</string>
+    <string name="password_hint">Lozinka</string>
+
+    <string name="passwords_do_not_match_error">Lozinke se ne poklapaju!</string>
+    <string name="all_fields_are_mandatory">Sva polja su obavezna!</string>
+
+    <string name="login_title">Dobrodošli!</string>
+    <string name="login_username_email_hint">Email ili korisničko ime</string>
+    <string name="login_button">Prijavi se</string>
+    <string name="forgot_password_prompt">Želite da promenite lozinku?</string>
+    <string name="no_account_prompt">Nemate nalog? Registrujte se</string>
+
+    <string name="register_title">Kreiraj nalog</string>
+    <string name="region_hint">Region</string>
+    <string name="repeat_password_hint">Ponovite lozinku</string>
+    <string name="register_button">Registruj se</string>
+    <string name="have_account_prompt">Već imaš nalog? Prijavi se</string>
+    <string name="reset_password_title">Promena lozinke</string>
+
+    <string name="reset_username_email_hint">Email ili korisničko ime</string>
+    <string name="old_password_hint">Stara lozinka</string>
+    <string name="new_password_hint">Nova lozinka</string>
+    <string name="repeat_new_password_hint">Ponovite novu lozinku</string>
+    <string name="confirm_button">Potvrdi</string>
+
+
+</resources>
