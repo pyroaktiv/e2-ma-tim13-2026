@@ -2,8 +2,8 @@ package rs.tim13.slagalica.auth.ui
 
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.Fragment
-import com.kviz.auth.ui.RegisterFragment
+import androidx.navigation.fragment.findNavController
+import rs.tim13.slagalica.R
 import rs.tim13.slagalica.core.ui.BaseFragment
 import rs.tim13.slagalica.databinding.FragmentAuthLoginBinding
 
@@ -14,11 +14,11 @@ class LoginFragment : BaseFragment<FragmentAuthLoginBinding>(FragmentAuthLoginBi
         binding.btnLogin.setOnClickListener { TODO() }
 
         binding.tvGoToRegister.setOnClickListener {
-            (requireActivity() as AuthActivity).replaceFragment(RegisterFragment())
+            findNavController().navigate(R.id.action_login_to_register)
         }
 
         binding.tvForgotPassword.setOnClickListener {
-            (requireActivity() as AuthActivity).replaceFragment(ResetPasswordFragment())
+            findNavController().navigate(R.id.action_login_to_resetPassword)
         }
     }
 }

@@ -1,10 +1,9 @@
-package com.kviz.auth.ui
+package rs.tim13.slagalica.auth.ui
 
 import android.os.Bundle
 import android.view.View
+import androidx.navigation.fragment.findNavController
 import rs.tim13.slagalica.R
-import rs.tim13.slagalica.auth.ui.AuthActivity
-import rs.tim13.slagalica.auth.ui.LoginFragment
 import rs.tim13.slagalica.core.ui.BaseFragment
 import rs.tim13.slagalica.databinding.FragmentAuthRegisterBinding
 
@@ -18,15 +17,14 @@ class RegisterFragment : BaseFragment<FragmentAuthRegisterBinding>(FragmentAuthR
             val repeatedPassword = binding.tilRepeatPassword.editText?.text.toString()
             if (password != repeatedPassword) {
                 showError(getString(R.string.passwords_do_not_match_error))
-            }
-            else {
+            } else {
                 TODO()
             }
         }
 
         binding.tvGoToLogin.setOnClickListener {
-            // requireActivity().supportFragmentManager.popBackStack()
-            (requireActivity() as AuthActivity).replaceFragment(LoginFragment(), addToBackStack = false)
+            // Umesto popBackStack(), možemo koristiti akciju koja čisti istoriju
+            findNavController().navigate(R.id.action_register_to_login)
         }
     }
 }

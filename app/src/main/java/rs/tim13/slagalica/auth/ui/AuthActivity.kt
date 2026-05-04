@@ -18,26 +18,11 @@ class AuthActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        if(savedInstanceState == null) {
-            replaceFragment(LoginFragment(), addToBackStack = false)
-        }
-    }
-
-    fun replaceFragment(fragment: Fragment, addToBackStack: Boolean = true) {
-        val transaction = supportFragmentManager.beginTransaction()
-
-        transaction.replace(R.id.fragment_container, fragment)
-
-        if(addToBackStack) {
-            transaction.addToBackStack(null)
-        }
-
-        transaction.commit()
     }
 }
