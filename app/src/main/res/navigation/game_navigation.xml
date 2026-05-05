@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/game_navigation"
+    app:startDestination="@id/demoGameListFragment">
+
+    <fragment
+        android:id="@+id/demoGameListFragment"
+        android:name="rs.tim13.slagalica.core.ui.DemoGameListFragment"
+        android:label="Game List"
+        tools:layout="@layout/fragment_demo_game_list">
+
+        <action
+            android:id="@+id/action_list_to_mojBroj"
+            app:destination="@id/mojBrojFragment" />
+
+        <action
+            android:id="@+id/action_list_to_korakPoKorak"
+            app:destination="@id/korakPoKorakFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/mojBrojFragment"
+        android:name="rs.tim13.slagalica.mojbroj.ui.MojBrojFragment"
+        android:label="Moj Broj"
+        tools:layout="@layout/fragment_moj_broj" />
+
+    <fragment
+        android:id="@+id/korakPoKorakFragment"
+        android:name="rs.tim13.slagalica.korakpokorak.ui.KorakPoKorakFragment"
+        android:label="Korak po korak"
+        tools:layout="@layout/fragment_korak_po_korak" />
+
+</navigation>

@@ -29,5 +29,6 @@
 
     <string name="moj_broj_delete">Obriši</string>
     <string name="moj_broj_confirm">Potvrdi</string>
+    <string name="continue_as_guest">Nastavi kao gost</string>
 
 </resources>

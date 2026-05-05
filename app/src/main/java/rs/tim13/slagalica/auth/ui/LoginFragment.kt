@@ -20,5 +20,11 @@ class LoginFragment : BaseFragment<FragmentAuthLoginBinding>(FragmentAuthLoginBi
         binding.tvForgotPassword.setOnClickListener {
             findNavController().navigate(R.id.action_login_to_resetPassword)
         }
+
+        binding.tvContinueAsGuest.setOnClickListener {
+            val intent = android.content.Intent(requireActivity(), rs.tim13.slagalica.core.ui.GameActivity::class.java)
+            startActivity(intent)
+            requireActivity().finish()
+        }
     }
 }
