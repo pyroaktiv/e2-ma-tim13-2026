@@ -51,6 +51,10 @@ object MockNotificationRepository : NotificationRepository {
 
     override fun getAllNotifications(): List<NotificationModel> = _notifications.toList()
 
+    override fun addNotification(model: NotificationModel) {
+        _notifications.add(0, model)
+    }
+
     override fun markAsRead(notificationId: Long) {
         val index = _notifications.indexOfFirst { it.id == notificationId }
         if (index != -1) {
