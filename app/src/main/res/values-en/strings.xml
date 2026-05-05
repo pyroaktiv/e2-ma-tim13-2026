@@ -48,4 +48,9 @@
     <string name="notification_channel_nagrade_desc">Rewards, badges, and achievements</string>
     <string name="notification_channel_ostalo">Other</string>
     <string name="notification_channel_ostalo_desc">System and miscellaneous notifications</string>
+
+    <string name="asocijacije_round_label">Round %d / 2</string>
+    <string name="asocijacije_active_player">On turn: Player %s</string>
+    <string name="asocijacije_player1_score">Player 1\n%d</string>
+    <string name="asocijacije_player2_score">Player 2\n%d</string>
 </resources>

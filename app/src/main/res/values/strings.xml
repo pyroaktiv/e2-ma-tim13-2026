@@ -48,4 +48,9 @@
     <string name="notification_channel_ostalo">Ostalo</string>
     <string name="notification_channel_ostalo_desc">Sistemska i ostala obaveštenja</string>
 
+    <string name="asocijacije_round_label">Runda %d / 2</string>
+    <string name="asocijacije_active_player">Na potezu: Igrač %s</string>
+    <string name="asocijacije_player1_score">Igrač 1\n%d</string>
+    <string name="asocijacije_player2_score">Igrač 2\n%d</string>
+
 </resources>

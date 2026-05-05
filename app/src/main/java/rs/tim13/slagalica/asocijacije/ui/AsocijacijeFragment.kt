@@ -10,7 +10,6 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import rs.tim13.slagalica.R
-import rs.tim13.slagalica.asocijacije.model.AssociationsColumn
 import rs.tim13.slagalica.core.ui.BaseFragment
 import rs.tim13.slagalica.databinding.FragmentAsocijacijeBinding
 import rs.tim13.slagalica.databinding.ItemAsocijacijeCellBinding
@@ -141,10 +140,10 @@ class AsocijacijeFragment :
     }
 
     private fun updateHeader(state: AssociationsUiState) {
-        binding.tvRoundLabel.text = "Runda ${state.round} / 2"
-        binding.tvActivePlayer.text = "Na potezu: Igrač ${state.activePlayer.color}"
-        binding.gameHeader.tvPlayer1Score.text = "Igrač 1\n${state.blueScore}"
-        binding.gameHeader.tvPlayer2Score.text = "Igrač 2\n${state.redScore}"
+        binding.tvRoundLabel.text = getString(R.string.asocijacije_round_label, state.round)
+        binding.tvActivePlayer.text = getString(R.string.asocijacije_active_player, state.activePlayer.color)
+        binding.gameHeader.tvPlayer1Score.text = getString(R.string.asocijacije_player1_score, state.blueScore)
+        binding.gameHeader.tvPlayer2Score.text = getString(R.string.asocijacije_player2_score, state.redScore)
     }
 
     private fun updateGrid(state: AssociationsUiState) {
