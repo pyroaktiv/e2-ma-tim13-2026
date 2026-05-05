@@ -18,6 +18,10 @@
         <action
             android:id="@+id/action_list_to_korakPoKorak"
             app:destination="@id/korakPoKorakFragment" />
+
+        <action
+            android:id="@+id/action_list_to_notifications"
+            app:destination="@id/notificationsFragment" />
     </fragment>
 
     <fragment
@@ -31,5 +35,11 @@
         android:name="rs.tim13.slagalica.korakpokorak.ui.KorakPoKorakFragment"
         android:label="Korak po korak"
         tools:layout="@layout/fragment_korak_po_korak" />
+
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="rs.tim13.slagalica.notifications.ui.NotificationsFragment"
+        android:label="Obaveštenja"
+        tools:layout="@layout/fragment_notifications" />
 
 </navigation>

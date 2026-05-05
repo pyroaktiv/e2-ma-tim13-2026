@@ -31,4 +31,21 @@
     <string name="moj_broj_confirm">Potvrdi</string>
     <string name="continue_as_guest">Nastavi kao gost</string>
 
+    <string name="notification_screen_title">Obaveštenja</string>
+    <string name="notification_filter_all">Sve</string>
+    <string name="notification_filter_unread">Nepročitano</string>
+    <string name="notification_filter_read">Pročitano</string>
+    <string name="notification_mark_as_read">Označi kao pročitano</string>
+    <string name="notification_empty_state">Nema obaveštenja</string>
+    <string name="notification_unread_count">%d nepročitanih</string>
+
+    <string name="notification_channel_cet">Čet</string>
+    <string name="notification_channel_cet_desc">Poruke i pozivi od prijatelja</string>
+    <string name="notification_channel_rangiranje">Rangiranje</string>
+    <string name="notification_channel_rangiranje_desc">Obaveštenja o plasmanu na rang listi</string>
+    <string name="notification_channel_nagrade">Nagrade</string>
+    <string name="notification_channel_nagrade_desc">Nagrade, bedževi i dostignuća</string>
+    <string name="notification_channel_ostalo">Ostalo</string>
+    <string name="notification_channel_ostalo_desc">Sistemska i ostala obaveštenja</string>
+
 </resources>

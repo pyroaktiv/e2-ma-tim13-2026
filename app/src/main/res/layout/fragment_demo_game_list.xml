@@ -32,6 +32,14 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:text="Igraj: Korak po korak"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNotifications"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="@string/notification_screen_title"
             android:textSize="18sp" />
 
     </LinearLayout>
