@@ -11,12 +11,24 @@ class DemoGameListFragment : BaseFragment<FragmentDemoGameListBinding>(FragmentD
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.btnViewProfile.setOnClickListener {
+            findNavController().navigate(R.id.action_list_to_profil)
+        }
+
         binding.btnPlayMojBroj.setOnClickListener {
             findNavController().navigate(R.id.action_list_to_mojBroj)
         }
 
         binding.btnPlayKorakPoKorak.setOnClickListener {
             findNavController().navigate(R.id.action_list_to_korakPoKorak)
+        }
+
+        binding.btnPlayKoZnaZna.setOnClickListener {
+            findNavController().navigate(R.id.action_list_to_koZnaZna)
+        }
+
+        binding.btnPlaySpojnice.setOnClickListener {
+            findNavController().navigate(R.id.action_list_to_spojnice)
         }
     }
 }
