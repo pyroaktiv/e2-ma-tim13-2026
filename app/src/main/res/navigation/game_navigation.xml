@@ -22,6 +22,10 @@
         <action
             android:id="@+id/action_list_to_notifications"
             app:destination="@id/notificationsFragment" />
+
+        <action
+            android:id="@+id/action_list_to_asocijacije"
+            app:destination="@id/asocijacijeFragment" />
     </fragment>
 
     <fragment
@@ -41,5 +45,11 @@
         android:name="rs.tim13.slagalica.notifications.ui.NotificationsFragment"
         android:label="Obaveštenja"
         tools:layout="@layout/fragment_notifications" />
+
+    <fragment
+        android:id="@+id/asocijacijeFragment"
+        android:name="rs.tim13.slagalica.asocijacije.ui.AsocijacijeFragment"
+        android:label="Asocijacije"
+        tools:layout="@layout/fragment_asocijacije" />
 
 </navigation>
