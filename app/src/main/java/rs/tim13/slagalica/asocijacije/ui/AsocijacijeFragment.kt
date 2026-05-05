@@ -144,6 +144,7 @@ class AsocijacijeFragment :
         binding.tvActivePlayer.text = getString(R.string.asocijacije_active_player, state.activePlayer.color)
         binding.gameHeader.tvPlayer1Score.text = getString(R.string.asocijacije_player1_score, state.blueScore)
         binding.gameHeader.tvPlayer2Score.text = getString(R.string.asocijacije_player2_score, state.redScore)
+        binding.gameHeader.tvGameTimer.text = state.remainingSeconds.toString()
     }
 
     private fun updateGrid(state: AssociationsUiState) {

@@ -14,6 +14,7 @@ data class AssociationsUiState(
     val redScore: Int,
     val activePlayer: Player,
     val phase: GamePhase,
+    val remainingSeconds: Int,
     val statusMessage: String = "",
     val isNextMoveRevealing: Boolean = true,
 )

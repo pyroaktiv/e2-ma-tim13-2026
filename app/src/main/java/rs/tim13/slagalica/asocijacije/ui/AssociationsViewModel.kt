@@ -1,5 +1,6 @@
 package rs.tim13.slagalica.asocijacije.ui
 
+import android.os.CountDownTimer
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -19,81 +20,85 @@ class AssociationsViewModel(
     private var game = games[0]
     private var round = 1
     private var score = mutableMapOf(Player.BLUE to 0, Player.RED to 0)
-    private var activePlayer = Player.BLUE
+    private var roundScoreAwarded = false
+
+    private var remainingSeconds = ROUND_SECONDS
+    private var timer: CountDownTimer? = null
+
+    companion object {
+        const val ROUND_SECONDS = 120
+    }
 
     init {
-        emit(GamePhase.PLAYING, true)
+        emit(GamePhase.PLAYING)
+        startTimer()
     }
 
     fun revealField(columnIndex: Int, fieldIndex: Int) {
         if (phase() != GamePhase.PLAYING) return
-        if (!shouldReveal()) return
-
-        game.revealField(columnIndex, fieldIndex)
-        emit(GamePhase.PLAYING, false)
+        if (game.revealField(columnIndex, fieldIndex)) emit(GamePhase.PLAYING)
     }
 
     fun guessColumn(columnIndex: Int, guess: String): Boolean {
         if (phase() != GamePhase.PLAYING) return false
-        if (shouldReveal()) return false
-
-        val correct = game.guessColumn(columnIndex, guess, activePlayer)
-        if (correct)  {
-            emit(GamePhase.PLAYING, false)
-        } else {
-            switchPlayer()
-            emit(GamePhase.PLAYING, true)
-        }
-
+        val correct = game.guessColumn(columnIndex, guess)
+        emit(GamePhase.PLAYING)
         return correct
     }
 
     fun guessFinal(guess: String): Boolean {
         if (phase() != GamePhase.PLAYING) return false
-        if (shouldReveal()) return false
-
-        val correct = game.guessFinal(guess, activePlayer)
-        if (!correct) switchPlayer()
-        return correct.also { checkCompletion() }
+        val correct = game.guessFinal(guess)
+        if (correct) {
+            timer?.cancel()
+            awardRoundScore()
+            emit(if (round < 2) GamePhase.ROUND_OVER else GamePhase.GAME_OVER)
+        } else {
+            emit(GamePhase.PLAYING)
+        }
+        return correct
     }
 
     fun advanceToNextRound() {
-        if(phase() == GamePhase.GAME_OVER) return
-
-        awardRoundScore()
-        if (round == 1) {
-            round = 2
-            activePlayer = Player.RED
-            game = games[1]
-            emit(GamePhase.PLAYING, true)
-        } else {
-            emit(GamePhase.GAME_OVER, false)
-        }
+        if (phase() != GamePhase.ROUND_OVER) return
+        round = 2
+        game = AssociationsGame(games[1].columns, games[1].finalSolution, Player.RED)
+        remainingSeconds = ROUND_SECONDS
+        roundScoreAwarded = false
+        emit(GamePhase.PLAYING)
+        startTimer()
     }
 
-    private fun checkCompletion() {
-        if (game.isFinalSolved) {
-            awardRoundScore()
-            emit(if (round < 2) GamePhase.ROUND_OVER else GamePhase.GAME_OVER, false)
-        } else {
-            emit(GamePhase.PLAYING, true)
-        }
+    private fun startTimer() {
+        timer?.cancel()
+        timer = object : CountDownTimer(remainingSeconds * 1000L, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                remainingSeconds = (millisUntilFinished / 1000).toInt() + 1
+                emit(GamePhase.PLAYING)
+            }
+            override fun onFinish() {
+                remainingSeconds = 0
+                awardRoundScore()
+                emit(if (round < 2) GamePhase.ROUND_OVER else GamePhase.GAME_OVER)
+            }
+        }.start()
     }
 
     private fun awardRoundScore() {
+        if (roundScoreAwarded) return
+        roundScoreAwarded = true
         game.calculateScore().entries.forEach {
-            score.compute(it.key) {_ ,v -> (v?:0) + it.value}
+            score.compute(it.key) { _, v -> (v ?: 0) + it.value }
         }
     }
 
-    private fun switchPlayer() {
-        activePlayer = Player.entries.filter { it != activePlayer }[0]
+    override fun onCleared() {
+        timer?.cancel()
     }
 
     private fun phase(): GamePhase = _uiState.value?.phase ?: GamePhase.PLAYING
-    private fun shouldReveal(): Boolean = _uiState.value?.isNextMoveRevealing ?: true
 
-    private fun emit(phase: GamePhase, isNextMoveRevealing: Boolean) {
+    private fun emit(phase: GamePhase) {
         _uiState.value = AssociationsUiState(
             columns = game.columns,
             finalSolution = game.finalSolution,
@@ -101,9 +106,10 @@ class AssociationsViewModel(
             round = round,
             blueScore = score[Player.BLUE] ?: 0,
             redScore = score[Player.RED] ?: 0,
-            activePlayer = activePlayer,
+            activePlayer = game.activePlayer,
             phase = phase,
-            isNextMoveRevealing = isNextMoveRevealing,
+            remainingSeconds = remainingSeconds,
+            isNextMoveRevealing = game.isNextMoveRevealing,
         )
     }
 }
