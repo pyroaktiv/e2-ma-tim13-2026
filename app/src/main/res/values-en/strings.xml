@@ -27,4 +27,7 @@
     <string name="new_password_hint">New password</string>
     <string name="repeat_new_password_hint">Repeat new password</string>
     <string name="confirm_button">Confirm</string>
+
+    <string name="moj_broj_delete">Delete</string>
+    <string name="moj_broj_confirm">Confirm</string>
 </resources>

@@ -27,5 +27,7 @@
     <string name="repeat_new_password_hint">Ponovite novu lozinku</string>
     <string name="confirm_button">Potvrdi</string>
 
+    <string name="moj_broj_delete">Obriši</string>
+    <string name="moj_broj_confirm">Potvrdi</string>
 
 </resources>
