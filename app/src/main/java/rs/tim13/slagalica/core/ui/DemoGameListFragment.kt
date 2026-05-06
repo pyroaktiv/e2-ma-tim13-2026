@@ -23,6 +23,10 @@ class DemoGameListFragment : BaseFragment<FragmentDemoGameListBinding>(FragmentD
             findNavController().navigate(R.id.action_list_to_asocijacije)
         }
 
+        binding.btnPlaySkocko.setOnClickListener {
+            findNavController().navigate(R.id.action_list_to_skocko)
+        }
+
         binding.btnNotifications.setOnClickListener {
             findNavController().navigate(R.id.action_list_to_notifications)
         }

@@ -44,6 +44,14 @@
             android:layout_marginBottom="16dp"/>
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPlaySkocko"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Igraj: Skočko"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp"/>
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnNotifications"
             android:layout_width="match_parent"
             android:layout_height="60dp"

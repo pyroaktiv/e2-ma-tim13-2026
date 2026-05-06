@@ -53,4 +53,21 @@
     <string name="asocijacije_player1_score">Igrač 1\n%d</string>
     <string name="asocijacije_player2_score">Igrač 2\n%d</string>
 
+    <string name="skocko_round_label">Runda %d / 2</string>
+    <string name="skocko_player1_score">Igrač 1\n%d</string>
+    <string name="skocko_player2_score">Igrač 2\n%d</string>
+    <string name="skocko_submit">Potvrdi</string>
+    <string name="skocko_erase">Briši</string>
+    <string name="skocko_next_round">Sledeća runda</string>
+    <string name="skocko_game_over">Kraj igre</string>
+    <string name="skocko_bonus_row">Bonus</string>
+    <string name="skocko_solution_row">Rešenje</string>
+    <string name="skocko_status_main_turn">Na potezu: Igrač %s</string>
+    <string name="skocko_status_bonus_turn">Bonus potez: Igrač %s</string>
+    <string name="skocko_status_solved_main">Igrač %s pogodio!</string>
+    <string name="skocko_status_solved_bonus">Igrač %s pogodio bonus!</string>
+    <string name="skocko_status_no_one">Niko nije pogodio.</string>
+    <string name="skocko_status_winner">Pobedio Igrač %s!</string>
+    <string name="skocko_status_draw">Nerešeno!</string>
+
 </resources>

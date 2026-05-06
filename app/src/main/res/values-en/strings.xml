@@ -53,4 +53,21 @@
     <string name="asocijacije_active_player">On turn: Player %s</string>
     <string name="asocijacije_player1_score">Player 1\n%d</string>
     <string name="asocijacije_player2_score">Player 2\n%d</string>
+
+    <string name="skocko_round_label">Round %d / 2</string>
+    <string name="skocko_player1_score">Player 1\n%d</string>
+    <string name="skocko_player2_score">Player 2\n%d</string>
+    <string name="skocko_submit">Confirm</string>
+    <string name="skocko_erase">Delete</string>
+    <string name="skocko_next_round">Next round</string>
+    <string name="skocko_game_over">Game over</string>
+    <string name="skocko_bonus_row">Bonus</string>
+    <string name="skocko_solution_row">Solution</string>
+    <string name="skocko_status_main_turn">On turn: Player %s</string>
+    <string name="skocko_status_bonus_turn">Bonus turn: Player %s</string>
+    <string name="skocko_status_solved_main">Player %s solved it!</string>
+    <string name="skocko_status_solved_bonus">Player %s won the bonus!</string>
+    <string name="skocko_status_no_one">Nobody guessed correctly.</string>
+    <string name="skocko_status_winner">Player %s wins!</string>
+    <string name="skocko_status_draw">Draw!</string>
 </resources>

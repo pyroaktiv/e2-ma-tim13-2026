@@ -26,6 +26,10 @@
         <action
             android:id="@+id/action_list_to_asocijacije"
             app:destination="@id/asocijacijeFragment" />
+
+        <action
+            android:id="@+id/action_list_to_skocko"
+            app:destination="@id/skockoFragment" />
     </fragment>
 
     <fragment
@@ -51,5 +55,11 @@
         android:name="rs.tim13.slagalica.asocijacije.ui.AsocijacijeFragment"
         android:label="Asocijacije"
         tools:layout="@layout/fragment_asocijacije" />
+
+    <fragment
+        android:id="@+id/skockoFragment"
+        android:name="rs.tim13.slagalica.skocko.ui.SkockoFragment"
+        android:label="Skočko"
+        tools:layout="@layout/fragment_skocko" />
 
 </navigation>
