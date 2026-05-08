@@ -204,6 +204,16 @@
                 </LinearLayout>
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Moj broj (Tačan broj):" />
+                    <TextView android:id="@+id/tvMojBrojStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="55%" android:textStyle="bold"/>
+                </LinearLayout>
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Korak po korak (Pogođeni pojmovi):" />
+                    <TextView android:id="@+id/tvKorakPoKorakStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="70%" android:textStyle="bold"/>
+                </LinearLayout>
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Ko zna zna (Tačno/Netačno):" />
                     <TextView android:id="@+id/tvKoZnaZnaStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="75% / 25%" android:textStyle="bold"/>
                 </LinearLayout>
@@ -213,7 +223,15 @@
                     <TextView android:id="@+id/tvSpojniceStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="82%" android:textStyle="bold"/>
                 </LinearLayout>
 
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Ostale statistike (Moj Broj, Asocijacije, Skočko) se prikazuju po istom šablonu ispod." android:textSize="12sp" android:textStyle="italic" android:textColor="?android:attr/textColorSecondary"/>
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Asocijacije (Rešene/Nerešene):" />
+                    <TextView android:id="@+id/tvAsocijacijeStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="60% / 40%" android:textStyle="bold"/>
+                </LinearLayout>
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Skočko (Pogođene kombinacije):" />
+                    <TextView android:id="@+id/tvSkockoStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="45%" android:textStyle="bold"/>
+                </LinearLayout>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

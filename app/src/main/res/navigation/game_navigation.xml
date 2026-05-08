@@ -31,6 +31,18 @@
             android:id="@+id/action_list_to_spojnice"
             app:destination="@id/spojniceFragment" />
 
+
+        <action
+            android:id="@+id/action_list_to_notifications"
+            app:destination="@id/notificationsFragment" />
+
+        <action
+            android:id="@+id/action_list_to_asocijacije"
+            app:destination="@id/asocijacijeFragment" />
+
+        <action
+            android:id="@+id/action_list_to_skocko"
+            app:destination="@id/skockoFragment" />
     </fragment>
 
     <fragment
@@ -59,5 +71,23 @@
         android:id="@+id/spojniceFragment"
         android:name="rs.tim13.slagalica.spojnice.ui.SpojniceFragment"
         tools:layout="@layout/fragment_spojnice" />
+
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="rs.tim13.slagalica.notifications.ui.NotificationsFragment"
+        android:label="Obaveštenja"
+        tools:layout="@layout/fragment_notifications" />
+
+    <fragment
+        android:id="@+id/asocijacijeFragment"
+        android:name="rs.tim13.slagalica.asocijacije.ui.AsocijacijeFragment"
+        android:label="Asocijacije"
+        tools:layout="@layout/fragment_asocijacije" />
+
+    <fragment
+        android:id="@+id/skockoFragment"
+        android:name="rs.tim13.slagalica.skocko.ui.SkockoFragment"
+        android:label="Skočko"
+        tools:layout="@layout/fragment_skocko" />
 
 </navigation>

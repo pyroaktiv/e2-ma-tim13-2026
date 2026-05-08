@@ -30,5 +30,17 @@ class DemoGameListFragment : BaseFragment<FragmentDemoGameListBinding>(FragmentD
         binding.btnPlaySpojnice.setOnClickListener {
             findNavController().navigate(R.id.action_list_to_spojnice)
         }
+
+        binding.btnPlayAsocijacije.setOnClickListener {
+            findNavController().navigate(R.id.action_list_to_asocijacije)
+        }
+
+        binding.btnPlaySkocko.setOnClickListener {
+            findNavController().navigate(R.id.action_list_to_skocko)
+        }
+
+        binding.btnNotifications.setOnClickListener {
+            findNavController().navigate(R.id.action_list_to_notifications)
+        }
     }
 }

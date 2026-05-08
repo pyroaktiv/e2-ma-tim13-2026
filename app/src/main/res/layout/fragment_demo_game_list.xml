@@ -58,13 +58,24 @@
             app:layout_constraintEnd_toEndOf="parent"/>
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPlaySkocko"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="16dp"
+            android:text="Igraj: Skočko"
+            android:textSize="18sp"
+            app:layout_constraintTop_toBottomOf="@id/btnPlayKorakPoKorak"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPlayKoZnaZna"
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginTop="16dp"
             android:text="Igraj: Ko zna zna"
             android:textSize="18sp"
-            app:layout_constraintTop_toBottomOf="@id/btnPlayKorakPoKorak"
+            app:layout_constraintTop_toBottomOf="@id/btnPlaySkocko"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -76,6 +87,30 @@
             android:text="Igraj: Spojnice"
             android:textSize="18sp"
             app:layout_constraintTop_toBottomOf="@id/btnPlayKoZnaZna"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPlayAsocijacije"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="16dp"
+            android:text="Igraj: Asocijacije"
+            android:textSize="18sp"
+            app:layout_constraintTop_toBottomOf="@id/btnPlaySpojnice"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNotifications"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="32dp"
+            android:text="@string/notification_screen_title"
+            android:textSize="18sp"
+            app:layout_constraintTop_toBottomOf="@id/btnPlayAsocijacije"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 

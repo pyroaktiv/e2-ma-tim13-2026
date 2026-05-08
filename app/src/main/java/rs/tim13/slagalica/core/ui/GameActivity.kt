@@ -5,6 +5,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import rs.tim13.slagalica.core.NotificationHelper
 import rs.tim13.slagalica.databinding.ActivityGameBinding
 
 class GameActivity : AppCompatActivity() {
@@ -14,6 +15,7 @@ class GameActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        NotificationHelper.createChannels(this)
         binding = ActivityGameBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
