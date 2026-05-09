@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/game_navigation"
+    app:startDestination="@id/demoGameListFragment">
+
+    <fragment
+        android:id="@+id/demoGameListFragment"
+        android:name="rs.tim13.slagalica.core.ui.DemoGameListFragment"
+        android:label="Game List"
+        tools:layout="@layout/fragment_demo_game_list">
+
+        <action
+            android:id="@+id/action_list_to_profil"
+            app:destination="@id/profilFragment" />
+
+        <action
+            android:id="@+id/action_list_to_mojBroj"
+            app:destination="@id/mojBrojFragment" />
+
+        <action
+            android:id="@+id/action_list_to_korakPoKorak"
+            app:destination="@id/korakPoKorakFragment" />
+
+        <action
+            android:id="@+id/action_list_to_koZnaZna"
+            app:destination="@id/koZnaZnaFragment" />
+
+        <action
+            android:id="@+id/action_list_to_spojnice"
+            app:destination="@id/spojniceFragment" />
+
+
+        <action
+            android:id="@+id/action_list_to_notifications"
+            app:destination="@id/notificationsFragment" />
+
+        <action
+            android:id="@+id/action_list_to_asocijacije"
+            app:destination="@id/asocijacijeFragment" />
+
+        <action
+            android:id="@+id/action_list_to_skocko"
+            app:destination="@id/skockoFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/mojBrojFragment"
+        android:name="rs.tim13.slagalica.mojbroj.ui.MojBrojFragment"
+        android:label="Moj Broj"
+        tools:layout="@layout/fragment_moj_broj" />
+
+    <fragment
+        android:id="@+id/korakPoKorakFragment"
+        android:name="rs.tim13.slagalica.korakpokorak.ui.KorakPoKorakFragment"
+        android:label="Korak po korak"
+        tools:layout="@layout/fragment_korak_po_korak" />
+
+    <fragment
+        android:id="@+id/profilFragment"
+        android:name="rs.tim13.slagalica.profil.ui.ProfilFragment"
+        tools:layout="@layout/fragment_profil" />
+
+    <fragment
+        android:id="@+id/koZnaZnaFragment"
+        android:name="rs.tim13.slagalica.koznazna.ui.KoZnaZnaFragment"
+        tools:layout="@layout/fragment_ko_zna_zna" />
+
+    <fragment
+        android:id="@+id/spojniceFragment"
+        android:name="rs.tim13.slagalica.spojnice.ui.SpojniceFragment"
+        tools:layout="@layout/fragment_spojnice" />
+
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="rs.tim13.slagalica.notifications.ui.NotificationsFragment"
+        android:label="Obaveštenja"
+        tools:layout="@layout/fragment_notifications" />
+
+    <fragment
+        android:id="@+id/asocijacijeFragment"
+        android:name="rs.tim13.slagalica.asocijacije.ui.AsocijacijeFragment"
+        android:label="Asocijacije"
+        tools:layout="@layout/fragment_asocijacije" />
+
+    <fragment
+        android:id="@+id/skockoFragment"
+        android:name="rs.tim13.slagalica.skocko.ui.SkockoFragment"
+        android:label="Skočko"
+        tools:layout="@layout/fragment_skocko" />
+
+</navigation>

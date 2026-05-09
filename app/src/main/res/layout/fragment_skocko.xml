@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/gameHeader"
+        layout="@layout/layout_game_header" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp">
+
+        <TextView
+            android:id="@+id/tvRoundLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textStyle="bold"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvStatusMessage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+
+    <!-- Grid: 6 main guess rows + divider + 1 bonus row + 1 solution row -->
+    <!-- Rows are built programmatically in SkockoFragment.setupGrid() -->
+    <LinearLayout
+        android:id="@+id/llGrid"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp" />
+
+    <!-- Keyboard area -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="8dp"
+        android:paddingBottom="8dp">
+
+        <!-- Symbol buttons row 1 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="0dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSrce"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:layout_weight="1"
+                android:text=""
+                app:icon="@drawable/ic_srce"
+                app:iconGravity="textTop"
+                app:iconSize="28dp"
+                app:iconTint="@color/cardview_shadow_end_color"
+                app:iconTintMode="add" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTrougao"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:layout_weight="1"
+                android:text=""
+                app:icon="@drawable/ic_trougao"
+                app:iconGravity="textTop"
+                app:iconSize="28dp"
+                app:iconTint="@color/cardview_shadow_end_color"
+                app:iconTintMode="add" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnZvezda"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:layout_weight="1"
+                android:text=""
+                app:icon="@drawable/ic_zvezda"
+                app:iconGravity="textTop"
+                app:iconSize="28dp"
+                app:iconTint="@color/cardview_shadow_end_color"
+                app:iconTintMode="add" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="4dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSkocko"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:layout_weight="1"
+                android:text=""
+                app:icon="@drawable/ic_skocko"
+                app:iconGravity="top"
+                app:iconSize="28dp"
+                app:iconTint="@color/cardview_shadow_end_color"
+                app:iconTintMode="add" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnKvadrat"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:layout_weight="1"
+                android:text=""
+                app:icon="@drawable/ic_kvadrat"
+                app:iconGravity="textTop"
+                app:iconSize="28dp"
+                app:iconTint="@color/cardview_shadow_end_color"
+                app:iconTintMode="add" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnKrug"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:layout_weight="1"
+                android:text=""
+                app:icon="@drawable/ic_krug"
+                app:iconGravity="textTop"
+                app:iconSize="28dp"
+                app:iconTint="@color/cardview_shadow_end_color"
+                app:iconTintMode="add" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/keyboardBtnRow"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnErase"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:layout_weight="1"
+                android:text="@string/skocko_erase" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubmit"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:layout_weight="2"
+                android:text="@string/skocko_submit" />
+
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNextRound"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="0dp"
+            android:layout_marginBottom="0dp"
+            android:text="@string/skocko_next_round"
+            android:visibility="gone" />
+
+        <!-- Symbol buttons row 2 -->
+
+        <!-- Erase + Submit -->
+
+    </LinearLayout>
+
+</LinearLayout>

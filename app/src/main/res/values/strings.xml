@@ -1,0 +1,73 @@
+<resources>
+    <string name="app_name">Slagalica</string>
+
+    <string name="email_hint">Email</string>
+    <string name="username_hint">Korisničko ime</string>
+    <string name="password_hint">Lozinka</string>
+
+    <string name="passwords_do_not_match_error">Lozinke se ne poklapaju!</string>
+    <string name="all_fields_are_mandatory">Sva polja su obavezna!</string>
+
+    <string name="login_title">Dobrodošli!</string>
+    <string name="login_username_email_hint">Email ili korisničko ime</string>
+    <string name="login_button">Prijavi se</string>
+    <string name="forgot_password_prompt">Želite da promenite lozinku?</string>
+    <string name="no_account_prompt">Nemate nalog? Registrujte se</string>
+
+    <string name="register_title">Kreiraj nalog</string>
+    <string name="region_hint">Region</string>
+    <string name="repeat_password_hint">Ponovite lozinku</string>
+    <string name="register_button">Registruj se</string>
+    <string name="have_account_prompt">Već imaš nalog? Prijavi se</string>
+    <string name="reset_password_title">Promena lozinke</string>
+
+    <string name="reset_username_email_hint">Email ili korisničko ime</string>
+    <string name="old_password_hint">Stara lozinka</string>
+    <string name="new_password_hint">Nova lozinka</string>
+    <string name="repeat_new_password_hint">Ponovite novu lozinku</string>
+    <string name="confirm_button">Potvrdi</string>
+
+    <string name="moj_broj_delete">Obriši</string>
+    <string name="moj_broj_confirm">Potvrdi</string>
+    <string name="continue_as_guest">Nastavi kao gost</string>
+
+    <string name="notification_screen_title">Obaveštenja</string>
+    <string name="notification_filter_all">Sve</string>
+    <string name="notification_filter_unread">Nepročitano</string>
+    <string name="notification_filter_read">Pročitano</string>
+    <string name="notification_mark_as_read">Označi kao pročitano</string>
+    <string name="notification_empty_state">Nema obaveštenja</string>
+    <string name="notification_unread_count">%d nepročitanih</string>
+
+    <string name="notification_channel_cet">Čet</string>
+    <string name="notification_channel_cet_desc">Poruke i pozivi od prijatelja</string>
+    <string name="notification_channel_rangiranje">Rangiranje</string>
+    <string name="notification_channel_rangiranje_desc">Obaveštenja o plasmanu na rang listi</string>
+    <string name="notification_channel_nagrade">Nagrade</string>
+    <string name="notification_channel_nagrade_desc">Nagrade, bedževi i dostignuća</string>
+    <string name="notification_channel_ostalo">Ostalo</string>
+    <string name="notification_channel_ostalo_desc">Sistemska i ostala obaveštenja</string>
+
+    <string name="asocijacije_round_label">Runda %d / 2</string>
+    <string name="asocijacije_active_player">Na potezu: Igrač %s</string>
+    <string name="asocijacije_player1_score">Igrač 1\n%d</string>
+    <string name="asocijacije_player2_score">Igrač 2\n%d</string>
+
+    <string name="skocko_round_label">Runda %d / 2</string>
+    <string name="skocko_player1_score">Igrač 1\n%d</string>
+    <string name="skocko_player2_score">Igrač 2\n%d</string>
+    <string name="skocko_submit">Potvrdi</string>
+    <string name="skocko_erase">Briši</string>
+    <string name="skocko_next_round">Sledeća runda</string>
+    <string name="skocko_game_over">Kraj igre</string>
+    <string name="skocko_bonus_row">Bonus</string>
+    <string name="skocko_solution_row">Rešenje</string>
+    <string name="skocko_status_main_turn">Na potezu: Igrač %s</string>
+    <string name="skocko_status_bonus_turn">Bonus potez: Igrač %s</string>
+    <string name="skocko_status_solved_main">Igrač %s pogodio!</string>
+    <string name="skocko_status_solved_bonus">Igrač %s pogodio bonus!</string>
+    <string name="skocko_status_no_one">Niko nije pogodio.</string>
+    <string name="skocko_status_winner">Pobedio Igrač %s!</string>
+    <string name="skocko_status_draw">Nerešeno!</string>
+
+</resources>

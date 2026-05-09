@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/auth_navigation"
+    app:startDestination="@id/loginFragment">
+    <fragment
+    android:id="@+id/loginFragment"
+    android:name="rs.tim13.slagalica.auth.ui.LoginFragment"
+    android:label="Login"
+    tools:layout="@layout/fragment_auth_login">
+
+        <action
+            android:id="@+id/action_login_to_register"
+            app:destination="@id/registerFragment" />
+
+        <action
+            android:id="@+id/action_login_to_resetPassword"
+            app:destination="@id/resetPasswordFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="rs.tim13.slagalica.auth.ui.RegisterFragment"
+        android:label="Register"
+        tools:layout="@layout/fragment_auth_register">
+        <action
+            android:id="@+id/action_register_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/resetPasswordFragment"
+        android:name="rs.tim13.slagalica.auth.ui.ResetPasswordFragment"
+        android:label="Reset Password"
+        tools:layout="@layout/fragment_auth_reset_password" />
+
+</navigation>
