@@ -6,8 +6,9 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.findNavController
-import rs.tim13.slagalica.R
+import com.google.android.material.button.MaterialButton
 import rs.tim13.slagalica.core.ui.BaseFragment
 import rs.tim13.slagalica.databinding.FragmentKoZnaZnaBinding
 
@@ -17,6 +18,8 @@ class KoZnaZnaFragment : BaseFragment<FragmentKoZnaZnaBinding>(FragmentKoZnaZnaB
     private var timer: CountDownTimer? = null
     private var isAnswered = false
 
+    private var trenutniRezultat = 0
+
     private val mockPitanja = listOf(
         Pair("Koji glumac tumači lik Popa u filmu 'Munje!'?", listOf("Nikola Đuričko", "Sergej Trifunović", "Boris Milivojević", "Nenad Jezdić")),
         Pair("Koji je glavni grad Australije?", listOf("Sidnej", "Melburn", "Kanbera", "Pert")),
@@ -25,31 +28,48 @@ class KoZnaZnaFragment : BaseFragment<FragmentKoZnaZnaBinding>(FragmentKoZnaZnaB
         Pair("Koja je najduža reka u Evropi?", listOf("Dunav", "Volga", "Sava", "Rajna"))
     )
 
+    private val tacniOdgovori = listOf(1, 2, 3, 1, 1)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.gameHeader.tvPlayer1Score.text = "Player 1\n0"
+        binding.gameHeader.tvPlayer2Score.text = "Player 2\n0"
         setupUI()
     }
 
     private fun setupUI() {
         popuniPitanje()
 
-        val onAnswerClicked = View.OnClickListener { clickedView ->
-            if (isAnswered) return@OnClickListener
-            isAnswered = true
-            timer?.cancel()
-            val defaultColor = clickedView.backgroundTintList
-            clickedView.backgroundTintList = requireContext().getColorStateList(R.color.black)
+        val dugmici = listOf(binding.btnAnswerA, binding.btnAnswerB, binding.btnAnswerC, binding.btnAnswerD)
 
-            Handler(Looper.getMainLooper()).postDelayed({
-                clickedView.backgroundTintList = defaultColor
-                sledecePitanje()
-            }, 500)
+        dugmici.forEachIndexed { indexDugmeta, button ->
+            button.setOnClickListener { clickedView ->
+                if (isAnswered) return@setOnClickListener
+                isAnswered = true
+                timer?.cancel()
+
+                val correctIndex = tacniOdgovori[trenutniIndeks]
+                val clickedButton = clickedView as MaterialButton
+                val defaultColor = clickedButton.backgroundTintList
+
+                if (indexDugmeta == correctIndex) {
+                    trenutniRezultat += 10
+                    clickedButton.backgroundTintList = ContextCompat.getColorStateList(requireContext(), android.R.color.holo_green_light)
+                } else {
+                    trenutniRezultat -= 5
+                    clickedButton.backgroundTintList = ContextCompat.getColorStateList(requireContext(), android.R.color.holo_red_light)
+                    dugmici[correctIndex].backgroundTintList = ContextCompat.getColorStateList(requireContext(), android.R.color.holo_green_light)
+                }
+
+                //binding.gameHeader.tvPlayer1Score.text = trenutniRezultat.toString()
+                binding.gameHeader.tvPlayer1Score.text = "Player 1\n$trenutniRezultat"
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    dugmici.forEach { it.backgroundTintList = defaultColor }
+                    sledecePitanje()
+                }, 1000)
+            }
         }
-
-        binding.btnAnswerA.setOnClickListener(onAnswerClicked)
-        binding.btnAnswerB.setOnClickListener(onAnswerClicked)
-        binding.btnAnswerC.setOnClickListener(onAnswerClicked)
-        binding.btnAnswerD.setOnClickListener(onAnswerClicked)
     }
 
     private fun popuniPitanje() {
@@ -77,7 +97,17 @@ class KoZnaZnaFragment : BaseFragment<FragmentKoZnaZnaBinding>(FragmentKoZnaZnaB
                 binding.gameHeader.tvGameTimer.text = "0"
                 if (!isAnswered) {
                     isAnswered = true
-                    sledecePitanje()
+
+                    val dugmici = listOf(binding.btnAnswerA, binding.btnAnswerB, binding.btnAnswerC, binding.btnAnswerD)
+                    val correctIndex = tacniOdgovori[trenutniIndeks]
+                    val defaultColor = dugmici[correctIndex].backgroundTintList
+
+                    dugmici[correctIndex].backgroundTintList = ContextCompat.getColorStateList(requireContext(), android.R.color.holo_green_light)
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        dugmici[correctIndex].backgroundTintList = defaultColor
+                        sledecePitanje()
+                    }, 1000)
                 }
             }
         }.start()
@@ -94,7 +124,7 @@ class KoZnaZnaFragment : BaseFragment<FragmentKoZnaZnaBinding>(FragmentKoZnaZnaB
 
     private fun zavrsiIgru() {
         timer?.cancel()
-        Toast.makeText(requireContext(), "Kraj igre Ko zna zna!", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Kraj! Osvojili ste: $trenutniRezultat poena", Toast.LENGTH_LONG).show()
         findNavController().popBackStack()
     }
 
