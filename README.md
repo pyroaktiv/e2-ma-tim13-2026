@@ -7,7 +7,35 @@ U okviru KT1 fokus je bio na razvoju **grafičkog korisničkog interfejsa (GUI)*
 * **Registracija i logovanje**: Forme za prijavu, registraciju (email, korisničko ime, region, lozinka) i resetovanje lozinke.
 * **Igra "Moj broj"**: Interfejs za stopiranje brojeva (traženi i 6 ponuđenih), unos matematičkog izraza i potvrdu rešenja.
 * **Igra "Korak po korak"**: Interfejs sa progresivnim otkrivanjem 7 nivoa tragova i poljem za unos rešenja.
+* **Igra "Ko zna zna"**: Interfejs za brzi kviz opšte informisanosti sa tajmerom po pitanju i vizuelnim povratnim informacijama o tačnosti.
+* **Igra "Spojnice"**: Intefejs za dve runde spajanja pojmova sa specifičnom logikom "popravke" gde drugi igrač dobija priliku da poveže preostale parove.
+* **Igra "Skočko"**: Interfejs za pogađanje kombinacije znakova (6 pokušaja) sa vizuelnim indikatorima pogođenih mesta i simbola.
+* **Igra "Asocijacije"**: Klasičan interfejs sa četiri kolone (A, B, C, D), poljima za rešenja kolona i poljem za konačno rešenje asocijacije.
+* **Korisnički profil**: Prikaz podataka o igraču sa implementiranom funkcionalnošću odjave (Logout).
+* **Notifikacije**: Interfejs za prikaz i upravljanje obaveštenjima unutar aplikacije.
 * **Demo režim**: "Nastavi kao gost" opcija koja omogućava direktan pristup demonstraciji igara.
+
+## 🚀 Kako pokrenuti aplikaciju
+
+Pratite ove korake kako biste pokrenuli projekat u lokalnom razvojnom okruženju:
+
+1.  **Kloniranje repozitorijuma**:
+    ```bash
+    git clone [https://github.com/](https://github.com/)[korisničko_ime]/[ime_projekta].git
+    ```
+    *Napomena: Primarna i stabilna grana projekta je **master**.*
+
+2.  **Otvaranje u Android Studio**:
+    * Pokrenite **Android Studio** (preporučena verzija Ladybug ili novija).
+    * Idite na `File > Open` i odaberite root folder projekta.
+
+3.  **Sinhronizacija i SDK**:
+    * Sačekajte da se završi **Gradle sync**.
+    * Projekat zahteva **JDK 11** (podesiti u `Settings > Build, Execution, Deployment > Build Tools > Gradle`).
+
+4.  **Pokretanje**:
+    * Kreirajte ili pokrenite emulator sa **Minimalnim SDK: API 30 (Android 11.0)**.
+    * Kliknite na dugme **Run** (`Shift + F10`) u gornjem meniju.
 
 ## 🛠️ Tehničke karakteristike
 * **Jezik**: Kotlin
