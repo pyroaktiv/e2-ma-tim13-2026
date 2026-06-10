@@ -1,6 +1,7 @@
 import { Database } from "bun:sqlite";
 
-export const db = new Database("slagalica.db", { create: true });
+const dbPath = process.env.DB_PATH ?? "slagalica.db";
+export const db = new Database(dbPath, { create: true });
 
 db.run("PRAGMA journal_mode = WAL");
 db.run("PRAGMA foreign_keys = ON");
