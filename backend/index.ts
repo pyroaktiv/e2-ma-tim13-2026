@@ -10,6 +10,7 @@ import { handleLogout } from "./src/routes/auth/logout";
 import { handleGetProfile } from "./src/routes/user/profile";
 import { handleUpdateAvatar } from "./src/routes/user/avatar";
 import { handleGetStats } from "./src/routes/user/stats";
+import { handleGetNotifications, handleMarkAsRead } from "./src/routes/notifications";
 
 initDb();
 
@@ -36,6 +37,8 @@ Bun.serve({
     "/api/user/profile": { GET: handleGetProfile },
     "/api/user/avatar": { PUT: handleUpdateAvatar },
     "/api/user/stats": { GET: handleGetStats },
+    "/api/notifications": { GET: handleGetNotifications },
+    "/api/notifications/:id/read": { PATCH: handleMarkAsRead },
   },
   fetch(_) {
     return json({ error: "Not found" }, 404);

@@ -66,11 +66,24 @@ export function initDb(): void {
     )
   `);
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS notifications (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      category   TEXT    NOT NULL CHECK(category IN ('CET', 'RANGIRANJE', 'NAGRADE', 'OSTALO')),
+      title      TEXT    NOT NULL,
+      body       TEXT    NOT NULL,
+      is_read    INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch())
+    )
+  `);
+
   db.run("CREATE INDEX IF NOT EXISTS idx_users_email      ON users(email)");
   db.run("CREATE INDEX IF NOT EXISTS idx_users_username   ON users(username)");
   db.run("CREATE INDEX IF NOT EXISTS idx_email_ver_token  ON email_verifications(token)");
   db.run("CREATE INDEX IF NOT EXISTS idx_game_stats_user  ON game_stats(user_id)");
   db.run("CREATE INDEX IF NOT EXISTS idx_revoked_exp      ON revoked_tokens(expires_at)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, created_at DESC)");
 
   const seedLeagues = db.transaction(() => {
     const leagues = [
