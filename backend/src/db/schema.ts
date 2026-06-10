@@ -78,12 +78,42 @@ export function initDb(): void {
     )
   `);
 
-  db.run("CREATE INDEX IF NOT EXISTS idx_users_email      ON users(email)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_users_username   ON users(username)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_email_ver_token  ON email_verifications(token)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_game_stats_user  ON game_stats(user_id)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_revoked_exp      ON revoked_tokens(expires_at)");
+  db.run(`
+    CREATE TABLE IF NOT EXISTS friend_requests (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      from_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      to_user_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      status       TEXT    NOT NULL DEFAULT 'pending'
+                   CHECK(status IN ('pending', 'accepted', 'declined')),
+      created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+      UNIQUE(from_user_id, to_user_id)
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS game_invites (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      from_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      to_user_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      status       TEXT    NOT NULL DEFAULT 'pending'
+                   CHECK(status IN ('pending', 'accepted', 'declined', 'cancelled', 'expired')),
+      created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+      expires_at   INTEGER NOT NULL
+    )
+  `);
+
+  try { db.run("ALTER TABLE users ADD COLUMN in_game INTEGER NOT NULL DEFAULT 0"); } catch {}
+
+  db.run("CREATE INDEX IF NOT EXISTS idx_users_email        ON users(email)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_users_username     ON users(username)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_email_ver_token    ON email_verifications(token)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_game_stats_user    ON game_stats(user_id)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_revoked_exp        ON revoked_tokens(expires_at)");
   db.run("CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, created_at DESC)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_friend_req_from    ON friend_requests(from_user_id)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_friend_req_to      ON friend_requests(to_user_id)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_game_invites_to    ON game_invites(to_user_id)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_game_invites_from  ON game_invites(from_user_id)");
 
   const seedLeagues = db.transaction(() => {
     const leagues = [
