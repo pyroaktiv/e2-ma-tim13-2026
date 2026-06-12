@@ -9,6 +9,36 @@ data class LoginRequest(
     val password: String,
 )
 
+data class RegisterRequest(
+    val email: String,
+    val username: String,
+    val region: String,
+    val password: String,
+    @SerializedName("confirm_password") val confirmPassword: String,
+)
+
+data class ResetPasswordRequest(
+    @SerializedName("old_password") val oldPassword: String,
+    @SerializedName("new_password") val newPassword: String,
+    @SerializedName("new_password_confirm") val newPasswordConfirm: String,
+)
+
+data class MessageResponse(
+    val message: String?,
+    val error: String?,
+)
+
+data class AvatarRequest(val avatar: String)
+
+data class NotificationDto(
+    val id: Long,
+    val category: String,
+    val title: String,
+    val body: String,
+    val timestamp: String,
+    @SerializedName("is_read") val isRead: Boolean,
+)
+
 data class LoginResponse(
     val token: String,
     val user: UserDto,
@@ -45,18 +75,41 @@ data class OverallStats(
     @SerializedName("win_ratio") val winRatio: Double,
 )
 
-data class KoZnaZnaStats(val correct: Int, val missed: Int)
+data class KoZnaZnaStats(
+    val correct: Int,
+    val missed: Int,
+    @SerializedName("points_sum") val pointsSum: Int = 0,
+    val plays: Int = 0,
+)
 data class MojBrojStats(
     @SerializedName("total_attempts") val totalAttempts: Int,
     @SerializedName("exact_hits") val exactHits: Int,
+    @SerializedName("points_sum") val pointsSum: Int = 0,
+    val plays: Int = 0,
 )
-data class KorakPoKorakStats(@SerializedName("guessed_at_step") val guessedAtStep: List<Int>)
-data class AsocijacijeStats(val solved: Int, val unsolved: Int)
+data class KorakPoKorakStats(
+    @SerializedName("guessed_at_step") val guessedAtStep: List<Int>,
+    @SerializedName("points_sum") val pointsSum: Int = 0,
+    val plays: Int = 0,
+)
+data class AsocijacijeStats(
+    val solved: Int,
+    val unsolved: Int,
+    @SerializedName("points_sum") val pointsSum: Int = 0,
+    val plays: Int = 0,
+)
 data class SkockoStats(
     @SerializedName("correct_at_attempt") val correctAtAttempt: List<Int>,
     val failed: Int,
+    @SerializedName("points_sum") val pointsSum: Int = 0,
+    val plays: Int = 0,
 )
-data class SpojniceStats(val total: Int, val successful: Int)
+data class SpojniceStats(
+    val total: Int,
+    val successful: Int,
+    @SerializedName("points_sum") val pointsSum: Int = 0,
+    val plays: Int = 0,
+)
 
 data class StatsResponse(
     val overall: OverallStats,

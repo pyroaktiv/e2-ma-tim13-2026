@@ -67,6 +67,46 @@ export const KO_ZNA_ZNA_POOL: KoZnaZnaQuestion[] = [
     answers: ["Osaka", "Kjoto", "Tokio", "Nagoja"],
     correct: 2,
   },
+  {
+    text: "Koliko strana ima šestougao?",
+    answers: ["5", "6", "7", "8"],
+    correct: 1,
+  },
+  {
+    text: "Koji je najveći okean na svetu?",
+    answers: ["Atlantski", "Indijski", "Tihi", "Severni ledeni"],
+    correct: 2,
+  },
+  {
+    text: "Ko je režirao film 'Ko to tamo peva'?",
+    answers: ["Emir Kusturica", "Slobodan Šijan", "Goran Paskaljević", "Srđan Dragojević"],
+    correct: 1,
+  },
+  {
+    text: "Koliko žica ima klasična gitara?",
+    answers: ["4", "5", "6", "7"],
+    correct: 2,
+  },
+  {
+    text: "U kojoj državi se nalazi grad Marakeš?",
+    answers: ["Egipat", "Maroko", "Tunis", "Alžir"],
+    correct: 1,
+  },
+  {
+    text: "Koji metal je tečan na sobnoj temperaturi?",
+    answers: ["Živa", "Olovo", "Kalaj", "Cink"],
+    correct: 0,
+  },
+  {
+    text: "Koje godine je čovek prvi put kročio na Mesec?",
+    answers: ["1965", "1969", "1972", "1958"],
+    correct: 1,
+  },
+  {
+    text: "Ko je komponovao 'Za Elizu'?",
+    answers: ["Mocart", "Betoven", "Bah", "Šopen"],
+    correct: 1,
+  },
 ];
 
 export const SPOJNICE_POOL: SpojniceRound[] = [
@@ -93,6 +133,24 @@ export const SPOJNICE_POOL: SpojniceRound[] = [
     left: ["Novak Đoković", "Nikola Jokić", "Lionel Mesi", "Lebron Džejms", "Tajger Vuds"],
     right: ["Košarka", "Fudbal", "Tenis", "Golf", "NBA"],
     solution: [2, 0, 1, 4, 3],
+  },
+  {
+    criterion: "Poveži planetu sa rednim brojem od Sunca",
+    left: ["Merkur", "Zemlja", "Mars", "Jupiter", "Saturn"],
+    right: ["Treća", "Šesta", "Prva", "Peta", "Četvrta"],
+    solution: [2, 0, 4, 3, 1],
+  },
+  {
+    criterion: "Poveži izum sa pronalazačem",
+    left: ["Sijalica", "Telefon", "Radio", "Dinamit", "Točak"],
+    right: ["Tesla", "Nobel", "Edison", "Praistorija", "Bel"],
+    solution: [2, 4, 0, 1, 3],
+  },
+  {
+    criterion: "Poveži reku sa kontinentom",
+    left: ["Amazon", "Nil", "Dunav", "Misisipi", "Gang"],
+    right: ["Evropa", "Azija", "Južna Amerika", "Severna Amerika", "Afrika"],
+    solution: [2, 4, 0, 3, 1],
   },
 ];
 
@@ -147,6 +205,32 @@ export const KORAK_POOL: KorakPoKorakRound[] = [
       "Prezime mu nosi i poznata auto-kompanija",
     ],
   },
+  {
+    answer: "Dunav",
+    accepted: ["dunav"],
+    clues: [
+      "Druga je po dužini na svom kontinentu",
+      "Izvire u planini Švarcvald",
+      "Prolazi kroz deset država",
+      "Uliva se u Crno more",
+      "Na njemu leže Beč i Budimpešta",
+      "Kroz Srbiju protiče sa severa",
+      "U Beogradu se u njega uliva Sava",
+    ],
+  },
+  {
+    answer: "Šah",
+    accepted: ["sah", "šah"],
+    clues: [
+      "Potiče iz Indije",
+      "Igra se već vekovima",
+      "Postoji svetski šampionat",
+      "Tabla ima 64 polja",
+      "Igra za dva igrača",
+      "Cilj je matirati protivnika",
+      "Kralj, kraljica, top, lovac, skakač i pešak",
+    ],
+  },
 ];
 
 // ---- Asocijacije -----------------------------------------------------------
@@ -181,6 +265,26 @@ export const ASOCIJACIJE_POOL: AsocijacijeRound[] = [
     ],
     finalSolution: "FUDBAL",
     finalAccepted: ["fudbal"],
+  },
+  {
+    columns: [
+      { solution: "MORE", accepted: ["more"], fields: ["Talas", "So", "Plaža", "Brod"] },
+      { solution: "SUNCE", accepted: ["sunce"], fields: ["Zraci", "Toplota", "Leto", "Žuto"] },
+      { solution: "PESAK", accepted: ["pesak"], fields: ["Plaža", "Sat", "Pustinja", "Zrno"] },
+      { solution: "ODMOR", accepted: ["odmor"], fields: ["Godišnji", "Opuštanje", "Putovanje", "Hotel"] },
+    ],
+    finalSolution: "LETOVANJE",
+    finalAccepted: ["letovanje", "leto"],
+  },
+  {
+    columns: [
+      { solution: "SNEG", accepted: ["sneg"], fields: ["Belo", "Pahulja", "Hladno", "Grudva"] },
+      { solution: "JELKA", accepted: ["jelka"], fields: ["Iglice", "Ukrasi", "Lampice", "Zvezda"] },
+      { solution: "POKLON", accepted: ["poklon"], fields: ["Kutija", "Mašna", "Iznenađenje", "Deda Mraz"] },
+      { solution: "PRAZNIK", accepted: ["praznik"], fields: ["Slava", "Trpeza", "Porodica", "Neradni"] },
+    ],
+    finalSolution: "NOVA GODINA",
+    finalAccepted: ["nova godina", "novagodina"],
   },
 ];
 

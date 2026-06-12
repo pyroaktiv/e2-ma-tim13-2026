@@ -125,6 +125,26 @@ class Parser {
   }
 }
 
+// Per-cell hints (Wordle style) used to color the Skočko grid:
+// 2 = right symbol in the right place, 1 = symbol present elsewhere, 0 = absent.
+export function skockoCellHints(secret: number[], guess: number[]): number[] {
+  const hints = new Array(guess.length).fill(0);
+  const remaining = new Map<number, number>();
+  for (let i = 0; i < secret.length; i++) {
+    if (guess[i] === secret[i]) hints[i] = 2;
+    else remaining.set(secret[i]!, (remaining.get(secret[i]!) ?? 0) + 1);
+  }
+  for (let i = 0; i < guess.length; i++) {
+    if (hints[i] === 2) continue;
+    const left = remaining.get(guess[i]!) ?? 0;
+    if (left > 0) {
+      hints[i] = 1;
+      remaining.set(guess[i]!, left - 1);
+    }
+  }
+  return hints;
+}
+
 // Standard mastermind-style scoring used by Skočko.
 export function skockoFeedback(secret: number[], guess: number[]): { exact: number; color: number } {
   let exact = 0;

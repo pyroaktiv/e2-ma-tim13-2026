@@ -20,9 +20,20 @@ function setInGame(userId: number, value: boolean): void {
   db.query("UPDATE users SET in_game = ? WHERE id = ?").run(value ? 1 : 0, userId);
 }
 
+// Spec 3.a: one token starts one partija. Quick-match partije are ranked, so we
+// spend a token from each player (clamped at 0) when the match begins.
+function spendToken(userId: number): void {
+  db.query(
+    "UPDATE users SET tokens = MAX(0, tokens - 1) WHERE id = ?",
+  ).run(userId);
+}
+
 function startMatch(a: number, b: number): void {
   const p0: MatchPlayer = { userId: a, username: usernameOf(a) };
   const p1: MatchPlayer = { userId: b, username: usernameOf(b) };
+
+  spendToken(a);
+  spendToken(b);
 
   const match = new Match(crypto.randomUUID(), p0, p1, (m) => {
     // cleanup when the match ends

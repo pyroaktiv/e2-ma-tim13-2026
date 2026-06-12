@@ -3,8 +3,9 @@
 // finishes quickly instead of waiting out every timer.
 import { KORAK_POOL, ASOCIJACIJE_POOL } from "./src/game/data";
 
-const BASE = "http://localhost:3000";
-const WS = "ws://localhost:3000/ws";
+const PORT = process.env.TEST_PORT ?? "3000";
+const BASE = `http://localhost:${PORT}`;
+const WS = `ws://localhost:${PORT}/ws`;
 
 const KORAK_ANSWERS = KORAK_POOL.flatMap((r) => r.accepted);
 function asoFinalByFieldText(text: string): string | undefined {

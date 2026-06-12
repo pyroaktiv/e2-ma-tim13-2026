@@ -57,6 +57,7 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
     implementation("com.squareup.okhttp3:okhttp:5.4.0")
     implementation("com.squareup.okhttp3:logging-interceptor:5.4.0")
+    implementation("com.google.zxing:core:3.5.3")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

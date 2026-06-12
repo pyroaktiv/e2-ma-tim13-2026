@@ -11,7 +11,16 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendVerificationEmail(to: string, token: string): Promise<void> {
-  const link = `${process.env.BASE_URL}/api/auth/verify-email?token=${token}`;
+  const base = process.env.BASE_URL ?? `http://localhost:${process.env.PORT ?? 3000}`;
+  const link = `${base}/api/auth/verify-email?token=${token}`;
+
+  // Dev fallback: if no SMTP is configured, don't try to send a real email —
+  // just print the verification link so registration can be tested locally.
+  if (!process.env.SMTP_HOST) {
+    console.log(`\n[DEV] Verifikacioni link za ${to}:\n${link}\n`);
+    return;
+  }
+
   await transporter.sendMail({
     from: `"Slagalica" <${process.env.SMTP_USER}>`,
     to,

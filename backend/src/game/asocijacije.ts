@@ -115,11 +115,14 @@ export class AsocijacijeGame implements Game {
         const pts = 2 + (NUM_FIELDS - this.openedCount[col]!);
         this.scores[slot] += pts;
         this.columnSolved[col] = true;
+        // reveal every field of the column and lock them (cannot be opened later)
+        for (let f = 0; f < NUM_FIELDS; f++) this.opened[col]![f] = true;
         this.ctx.broadcast({
           type: "aso_solved",
           target: "column",
           col,
           text: column.solution,
+          fields: column.fields,
           points: pts,
           by: slot,
           scores: this.scores,

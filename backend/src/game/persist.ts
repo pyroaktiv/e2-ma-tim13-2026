@@ -54,6 +54,16 @@ export function recordMojBroj(
   });
 }
 
+// Accumulates points scored and number of plays for a game, so the profile can
+// show the average points earned per game (spec FR2.c.i).
+export function recordGamePoints(
+  userId: number,
+  game: GameType,
+  points: number,
+): void {
+  mergeGameStats(userId, game, { points_sum: points, plays: 1 });
+}
+
 export function recordAsocijacije(
   userId: number,
   solved: number,

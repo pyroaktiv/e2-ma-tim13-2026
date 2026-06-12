@@ -29,6 +29,7 @@ export class SpojniceGame implements Game {
   private repairAllowed = 0;
   private connectedCount = 0;
   private connectedLeft: boolean[] = [];
+  private lockedLeft: boolean[] = []; // left terms that were guessed wrong (locked out)
   private matchedRight: number[] = [];
   private roundOver = false;
   private timer: ReturnType<typeof setTimeout> | null = null;
@@ -53,6 +54,7 @@ export class SpojniceGame implements Game {
     this.repairAllowed = 0;
     this.connectedCount = 0;
     this.connectedLeft = new Array(round.left.length).fill(false);
+    this.lockedLeft = new Array(round.left.length).fill(false);
     this.matchedRight = new Array(round.left.length).fill(-1);
     this.roundOver = false;
 
@@ -88,7 +90,7 @@ export class SpojniceGame implements Game {
       left < 0 || left >= round.left.length ||
       right < 0 || right >= round.right.length
     ) return;
-    if (this.connectedLeft[left]) return; // already connected
+    if (this.connectedLeft[left] || this.lockedLeft[left]) return; // already used
     if (this.matchedRight.includes(right)) return; // right already used
 
     this.attempts++;
@@ -101,6 +103,9 @@ export class SpojniceGame implements Game {
       this.connectedCount++;
       this.scores[this.activePlayer] += 2;
       this.successful[this.activePlayer]++;
+    } else {
+      // wrong guess -> that left term is locked out for the rest of the round
+      this.lockedLeft[left] = true;
     }
 
     this.ctx.broadcast({
@@ -137,6 +142,8 @@ export class SpojniceGame implements Game {
     this.phase = "repair";
     this.activePlayer = other(this.leadPlayer);
     this.attempts = 0;
+    // unlock the still-unconnected left terms so the repair player can try them
+    this.lockedLeft = this.lockedLeft.map((_, i) => false);
     if (this.timer) clearTimeout(this.timer);
     this.ctx.broadcast({
       type: "spj_turn",

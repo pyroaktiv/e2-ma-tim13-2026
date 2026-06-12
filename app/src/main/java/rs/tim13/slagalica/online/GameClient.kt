@@ -10,7 +10,10 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import org.json.JSONObject
 import rs.tim13.slagalica.BuildConfig
+import rs.tim13.slagalica.core.AppState
+import rs.tim13.slagalica.core.NotificationHelper
 import rs.tim13.slagalica.core.util.TokenManager
+import rs.tim13.slagalica.notifications.model.NotificationCategory
 
 /**
  * Single shared WebSocket connection to the backend game server.
@@ -32,6 +35,7 @@ object GameClient {
     private val listeners = mutableListOf<Listener>()
 
     private var webSocket: WebSocket? = null
+    private var appContext: Context? = null
 
     @Volatile
     var isConnected: Boolean = false
@@ -54,8 +58,27 @@ object GameClient {
 
     private fun emitType(type: String) = emit(JSONObject().put("type", type))
 
+    // When the app is in the background, surface key events as OS notifications.
+    private fun maybePush(obj: JSONObject) {
+        if (AppState.isForeground) return
+        val ctx = appContext ?: return
+        when (obj.optString("type")) {
+            "match_over" -> NotificationHelper.sendNotification(
+                ctx, NotificationCategory.NAGRADE, "Partija završena",
+                if (obj.optBoolean("youWon")) "Pobedio si! Pogledaj nagrade." else "Partija je gotova."
+            )
+            "game_invite" -> {
+                val from = obj.optJSONObject("invite")?.optJSONObject("from")?.optString("username") ?: "Igrač"
+                NotificationHelper.sendNotification(
+                    ctx, NotificationCategory.OSTALO, "Poziv za partiju", "$from te poziva na partiju."
+                )
+            }
+        }
+    }
+
     /** Opens the connection if it is not already open. Safe to call repeatedly. */
     fun connect(context: Context) {
+        appContext = context.applicationContext
         if (webSocket != null) return
         val token = TokenManager(context.applicationContext).getToken()
         if (token.isNullOrBlank()) {
@@ -83,6 +106,7 @@ object GameClient {
                 } catch (_: Exception) {
                     return
                 }
+                maybePush(obj)
                 emit(obj)
             }
 

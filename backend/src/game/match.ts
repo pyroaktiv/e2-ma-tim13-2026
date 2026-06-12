@@ -3,27 +3,40 @@
 // declares an overall winner, awarding stars per the spec.
 
 import { pushToUser } from "../util/websocket";
+import { createNotification } from "../routes/notifications";
 import { KoZnaZnaGame } from "./koznazna";
 import { SpojniceGame } from "./spojnice";
 import { AsocijacijeGame } from "./asocijacije";
 import { SkockoGame } from "./skocko";
 import { KorakPoKorakGame } from "./korakpokorak";
 import { MojBrojGame } from "./mojbroj";
-import { finishMatch, type MatchResult, type Outcome } from "./persist";
+import { finishMatch, recordGamePoints, type MatchResult, type Outcome } from "./persist";
+import type { GameType } from "../model/stats";
 import type { Game, GameContext, GameMessage, Scores, Slot } from "./types";
+
+const KIND_TO_GAMETYPE: Record<string, GameType> = {
+  mojbroj: "moj_broj",
+  korakpokorak: "korak_po_korak",
+  skocko: "skocko",
+  koznazna: "ko_zna_zna",
+  spojnice: "spojnice",
+  asocijacije: "asocijacije",
+};
 
 export interface MatchPlayer {
   userId: number;
   username: string;
 }
 
+// Same order as the menu: Moj broj -> Korak po korak -> Skočko -> Ko zna zna
+// -> Spojnice -> Asocijacije.
 const GAME_SEQUENCE = [
+  "mojbroj",
+  "korakpokorak",
+  "skocko",
   "koznazna",
   "spojnice",
   "asocijacije",
-  "skocko",
-  "korakpokorak",
-  "mojbroj",
 ] as const;
 
 type GameKind = (typeof GAME_SEQUENCE)[number];
@@ -103,7 +116,17 @@ export class Match {
   }
 
   private onGameComplete(scores: Scores): void {
-    console.log(`[match ${this.id.slice(0, 6)}] game ${GAME_SEQUENCE[this.gameIndex]} complete: ${JSON.stringify(scores)}`);
+    const kind = GAME_SEQUENCE[this.gameIndex]!;
+    console.log(`[match ${this.id.slice(0, 6)}] game ${kind} complete: ${JSON.stringify(scores)}`);
+    const gameType = KIND_TO_GAMETYPE[kind];
+    if (gameType) {
+      try {
+        recordGamePoints(this.players[0].userId, gameType, scores[0]);
+        recordGamePoints(this.players[1].userId, gameType, scores[1]);
+      } catch (err) {
+        console.error("Failed to record game points:", err);
+      }
+    }
     this.total[0] += scores[0];
     this.total[1] += scores[1];
 
@@ -179,6 +202,24 @@ export class Match {
       starsDelta = finishMatch(results[0], results[1]);
     } catch (err) {
       console.error("Failed to persist match result:", err);
+    }
+
+    for (const slot of [0, 1] as Slot[]) {
+      const player = this.players[slot];
+      const won = winnerSlot === slot;
+      const delta = starsDelta[player.userId] ?? 0;
+      const title = winnerSlot === null ? "Nerešeno" : won ? "Pobeda!" : "Poraz";
+      const sign = delta >= 0 ? "+" : "";
+      try {
+        createNotification(
+          player.userId,
+          "NAGRADE",
+          title,
+          `Partija završena ${this.total[0]}:${this.total[1]}. Zvezde: ${sign}${delta}.`,
+        );
+      } catch (err) {
+        console.error("Failed to create match notification:", err);
+      }
     }
 
     for (const slot of [0, 1] as Slot[]) {

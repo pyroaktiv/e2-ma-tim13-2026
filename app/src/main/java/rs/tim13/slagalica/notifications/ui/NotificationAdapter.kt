@@ -43,6 +43,8 @@ class NotificationAdapter(
                 if (item.isRead) View.GONE else View.VISIBLE
 
             binding.btnMarkAsRead.setOnClickListener { onMarkAsRead(item.id) }
+            // tapping the notification also marks it read (react to it)
+            binding.root.setOnClickListener { if (!item.isRead) onMarkAsRead(item.id) }
         }
     }
 

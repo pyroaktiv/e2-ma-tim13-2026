@@ -5,7 +5,7 @@
 
 import { SKOCKO_LENGTH, SKOCKO_SYMBOLS } from "./data";
 import { recordSkocko } from "./persist";
-import { skockoFeedback } from "./util";
+import { skockoFeedback, skockoCellHints } from "./util";
 import { other, type Game, type GameContext, type GameMessage, type Scores, type Slot } from "./types";
 
 const ROUND_COUNT = 2;
@@ -86,6 +86,7 @@ export class SkockoGame implements Game {
 
     this.attempts++;
     const fb = skockoFeedback(this.secret, guess as number[]);
+    const hints = skockoCellHints(this.secret, guess as number[]);
     const solved = fb.exact === SKOCKO_LENGTH;
 
     if (solved) {
@@ -100,6 +101,7 @@ export class SkockoGame implements Game {
       type: "skocko_feedback",
       by: this.activePlayer,
       guess,
+      hints,
       exact: fb.exact,
       color: fb.color,
       attempt: this.attempts,
