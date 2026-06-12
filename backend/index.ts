@@ -2,8 +2,9 @@ import { initDb } from "./src/db/schema";
 import { db } from "./src/db/database";
 import { json } from "./src/util/response";
 import { verifyJWT } from "./src/util/jwt";
-import { registerConnection, removeConnection } from "./src/util/websocket";
+import { registerConnection, removeConnection, isOnline } from "./src/util/websocket";
 import type { WsData } from "./src/util/websocket";
+import { handleGameMessage, handleDisconnect } from "./src/game/registry";
 
 import { handleRegister } from "./src/routes/auth/register";
 import { handleVerifyEmail } from "./src/routes/auth/verify-email";
@@ -81,9 +82,13 @@ Bun.serve<WsData>({
     open(ws) {
       registerConnection(ws.data.userId, ws);
     },
-    message(_ws, _msg) {},
+    message(ws, msg) {
+      handleGameMessage(ws.data.userId, typeof msg === "string" ? msg : msg.toString());
+    },
     close(ws) {
       removeConnection(ws.data.userId, ws);
+      // Only treat as "left the game" once the user has no live connections.
+      if (!isOnline(ws.data.userId)) handleDisconnect(ws.data.userId);
     },
   },
   async fetch(req, server) {

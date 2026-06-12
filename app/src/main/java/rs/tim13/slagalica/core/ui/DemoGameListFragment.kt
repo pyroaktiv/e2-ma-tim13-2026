@@ -15,6 +15,10 @@ class DemoGameListFragment : BaseFragment<FragmentDemoGameListBinding>(FragmentD
             findNavController().navigate(R.id.action_list_to_profil)
         }
 
+        binding.btnPlayOnline.setOnClickListener {
+            findNavController().navigate(R.id.action_list_to_online)
+        }
+
         binding.btnPlayMojBroj.setOnClickListener {
             findNavController().navigate(R.id.action_list_to_mojBroj)
         }

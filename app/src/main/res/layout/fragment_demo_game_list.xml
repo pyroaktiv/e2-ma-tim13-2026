@@ -36,13 +36,24 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPlayOnline"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="32dp"
+            android:text="🎮 Igraj ONLINE (2 igrača)"
+            android:textSize="18sp"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPlayMojBroj"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_marginTop="32dp"
-            android:text="Igraj: Moj Broj"
+            android:layout_marginTop="24dp"
+            android:text="Igraj: Moj Broj (demo)"
             android:textSize="18sp"
-            app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            app:layout_constraintTop_toBottomOf="@id/btnPlayOnline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 

@@ -1,6 +1,5 @@
 package rs.tim13.slagalica.core.network
 
-import okhttp3.OkHttp
 import android.content.Context
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
