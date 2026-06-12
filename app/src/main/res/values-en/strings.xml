@@ -70,4 +70,5 @@
     <string name="skocko_status_no_one">Nobody guessed correctly.</string>
     <string name="skocko_status_winner">Player %s wins!</string>
     <string name="skocko_status_draw">Draw!</string>
+    <string name="change_password">Change password</string>
 </resources>

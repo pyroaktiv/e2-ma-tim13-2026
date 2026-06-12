@@ -21,6 +21,14 @@
     <string name="have_account_prompt">Već imaš nalog? Prijavi se</string>
     <string name="reset_password_title">Promena lozinke</string>
 
+    <string-array name="regioni_srbije">
+        <item>Banat</item>
+        <item>Bačka</item>
+        <item>Srem</item>
+        <item>Centralna Srbija</item>
+        <item>Kosovo</item>
+    </string-array>
+
     <string name="reset_username_email_hint">Email ili korisničko ime</string>
     <string name="old_password_hint">Stara lozinka</string>
     <string name="new_password_hint">Nova lozinka</string>
@@ -69,5 +77,6 @@
     <string name="skocko_status_no_one">Niko nije pogodio.</string>
     <string name="skocko_status_winner">Pobedio Igrač %s!</string>
     <string name="skocko_status_draw">Nerešeno!</string>
+    <string name="change_password">Promeni lozinku</string>
 
 </resources>

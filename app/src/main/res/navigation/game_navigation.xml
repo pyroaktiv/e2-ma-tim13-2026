@@ -43,6 +43,10 @@
         <action
             android:id="@+id/action_list_to_skocko"
             app:destination="@id/skockoFragment" />
+
+        <action
+            android:id="@+id/action_list_to_reset_password"
+            app:destination="@id/authResetPasswordFragment" />
     </fragment>
 
     <fragment
@@ -89,5 +93,11 @@
         android:name="rs.tim13.slagalica.skocko.ui.SkockoFragment"
         android:label="Skočko"
         tools:layout="@layout/fragment_skocko" />
+
+    <fragment
+        android:id="@+id/authResetPasswordFragment"
+        android:name="rs.tim13.slagalica.auth.ui.ResetPasswordFragment"
+        android:label="Resetuj lozinku"
+        tools:layout="@layout/fragment_auth_reset_password" />
 
 </navigation>
