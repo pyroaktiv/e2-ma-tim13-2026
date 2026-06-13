@@ -12,7 +12,8 @@ import rs.tim13.slagalica.core.model.Player
 abstract class BaseGameViewModel<S : GameUiState, E : GameEvent>(
     protected val localPlayer: Player,
     protected val isSinglePlayer: Boolean,
-    protected val maxRounds: Int
+    protected val maxRounds: Int,
+    initialOpponentDisconnected: Boolean = false
 ) : ViewModel() {
     private val _uiState = MutableLiveData<S>()
     val uiState: LiveData<S> = _uiState
@@ -22,6 +23,8 @@ abstract class BaseGameViewModel<S : GameUiState, E : GameEvent>(
     protected var currentRoundIndex = 0
     protected var totalBlueScore = 0
     protected var totalRedScore = 0
+
+    protected var isOpponentDisconnected = initialOpponentDisconnected
 
     private var timerJob: Job? = null
     protected var remainingSeconds = 0
@@ -55,9 +58,18 @@ abstract class BaseGameViewModel<S : GameUiState, E : GameEvent>(
 
     abstract fun calculateRoundScoresAndStats()
 
+    open fun onRemoteMove(action: String, payload: Map<String, Any>) {
+        // Ako je protivnik kliknuo "Sledeća runda", i naša igra je takođe u ROUND_OVER fazi, prelazimo
+        if (action == "NEXT_ROUND" && isRoundOver()) {
+            executeRoundTransition()
+        }
+    }
+
+    protected abstract fun isRoundOver(): Boolean
+
     abstract fun finishGame()
 
-    fun advanceToNextRound() {
+    private fun executeRoundTransition() {
         currentRoundIndex++
         if (currentRoundIndex < maxRounds) {
             startRound(currentRoundIndex)
@@ -66,8 +78,21 @@ abstract class BaseGameViewModel<S : GameUiState, E : GameEvent>(
         }
     }
 
+    fun advanceToNextRound() {
+        if (!isRoundOver()) return // Zaštita od višestrukih klikova
+
+        // Obaveštavamo server ako igramo protiv pravog igrača
+        if (!isSinglePlayer) {
+            @Suppress("UNCHECKED_CAST")
+            events.value = GameEvent.MovePlayed("NEXT_ROUND", emptyMap<String, Any>()) as E
+        }
+
+        executeRoundTransition()
+    }
+
     fun handleOpponentDisconnected() {
         if (isSinglePlayer) return
+        isOpponentDisconnected = true
         onOpponentDisconnected()
     }
 

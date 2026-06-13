@@ -9,14 +9,18 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import rs.tim13.slagalica.R
 import rs.tim13.slagalica.core.ui.BaseFragment
+import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentSkockoBinding
 import rs.tim13.slagalica.databinding.ItemSkockoCellBinding
 import rs.tim13.slagalica.skocko.model.SkockoHint
 import rs.tim13.slagalica.skocko.model.SkockoSymbol
 
-class SkockoFragment : BaseFragment<FragmentSkockoBinding>(FragmentSkockoBinding::inflate) {
+class SkockoFragment : BaseGameFragment<FragmentSkockoBinding, SkockoUiState, SkockoViewModel>(FragmentSkockoBinding::inflate) {
 
-    private val viewModel: SkockoViewModel by viewModels()
+    override val viewModel: SkockoViewModel by viewModels()
+
+    // Ugovor iz BaseGameFragment-a
+    override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer
 
     // gridCells[row][col], rows 0-5 = main, 6 = bonus, 7 = solution
     private lateinit var gridCells: Array<Array<ItemSkockoCellBinding>>
@@ -31,11 +35,9 @@ class SkockoFragment : BaseFragment<FragmentSkockoBinding>(FragmentSkockoBinding
         SkockoSymbol.ZVEZDA  to R.drawable.ic_zvezda,
     )
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun setupUI() {
         setupGrid()
         setupKeyboard()
-        viewModel.uiState.observe(viewLifecycleOwner, ::renderState)
     }
 
     // region Grid setup
@@ -120,7 +122,7 @@ class SkockoFragment : BaseFragment<FragmentSkockoBinding>(FragmentSkockoBinding
 
     // region State rendering
 
-    private fun renderState(state: SkockoUiState) {
+    override fun renderSpecificState(state: SkockoUiState) {
         updateHeader(state)
         updateGrid(state)
         updateKeyboard(state)
@@ -129,9 +131,6 @@ class SkockoFragment : BaseFragment<FragmentSkockoBinding>(FragmentSkockoBinding
     private fun updateHeader(state: SkockoUiState) {
         binding.tvRoundLabel.text = getString(R.string.skocko_round_label, state.round)
         binding.tvStatusMessage.text = state.statusMessage
-        binding.gameHeader.tvPlayer1Score.text = getString(R.string.skocko_player1_score, state.blueScore)
-        binding.gameHeader.tvPlayer2Score.text = getString(R.string.skocko_player2_score, state.redScore)
-        binding.gameHeader.tvGameTimer.text = state.remainingSeconds.toString()
     }
 
     private fun updateGrid(state: SkockoUiState) {

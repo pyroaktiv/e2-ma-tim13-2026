@@ -7,8 +7,9 @@ class AssociationsGame(
     columns: List<AssociationsColumn>,
     val finalSolution: String,
     initialPlayer: Player = Player.BLUE,
-    isSinglePlayer: Boolean = false
-) : TurnBasedGame(initialPlayer, isSinglePlayer) {
+    isSinglePlayer: Boolean = false,
+    initialOpponentDisconnected: Boolean = false
+) : TurnBasedGame(initialPlayer, isSinglePlayer, initialOpponentDisconnected) {
 
     init {
         require(columns.size == 4)

@@ -27,8 +27,9 @@ sealed class AssociationsEvent : GameEvent() {
 class AssociationsViewModel(
     private val games: List<AssociationsGame>,
     localPlayer: Player,
-    isSinglePlayer: Boolean = false
-) : BaseGameViewModel<AssociationsUiState, GameEvent>(localPlayer, isSinglePlayer, maxRounds = if (isSinglePlayer) 1 else 2) {
+    isSinglePlayer: Boolean = false,
+    initialOpponentDisconnected: Boolean = false
+) : BaseGameViewModel<AssociationsUiState, GameEvent>(localPlayer, isSinglePlayer, maxRounds = if (isSinglePlayer) 1 else 2, initialOpponentDisconnected) {
 
     private var blueSolvedCount = 0
     private var blueUnsolvedCount = 0
@@ -50,6 +51,10 @@ class AssociationsViewModel(
             initialPlayer = initialPlayer,
             isSinglePlayer = isSinglePlayer
         )
+
+        if (isOpponentDisconnected && initialPlayer != localPlayer) {
+            currentGame.handleOpponentDisconnect(localPlayer)
+        }
 
         startTimer(120)
         updateSpecificState(AssociationsGamePhase.PLAYING)
@@ -95,17 +100,30 @@ class AssociationsViewModel(
         updateSpecificState(AssociationsGamePhase.PLAYING, "Protivnik je napustio igru. Završite rundu sami.")
     }
 
+    override fun isRoundOver(): Boolean {
+        return uiState.value?.phase == AssociationsGamePhase.ROUND_OVER
+    }
+
     fun revealField(columnIndex: Int, fieldIndex: Int) {
         if (!isMyTurn() || uiState.value?.phase != AssociationsGamePhase.PLAYING) return
         if (currentGame.revealField(columnIndex, fieldIndex)) {
+            events.value = GameEvent.MovePlayed(
+                action = "REVEAL_FIELD",
+                payload = mapOf("column" to columnIndex, "field" to fieldIndex)
+            )
             updateSpecificState(AssociationsGamePhase.PLAYING)
-            // events.value = GameEvent.MovePlayed(...)
         }
     }
 
     fun guessColumn(columnIndex: Int, guess: String): Boolean {
         if (!isMyTurn() || uiState.value?.phase != AssociationsGamePhase.PLAYING) return false
         val isCorrect = currentGame.guessColumn(columnIndex, guess)
+
+        events.value = GameEvent.MovePlayed(
+            action = "GUESS_COLUMN",
+            payload = mapOf("column" to columnIndex, "guess" to guess)
+        )
+
         updateSpecificState(AssociationsGamePhase.PLAYING)
         return isCorrect
     }
@@ -114,6 +132,12 @@ class AssociationsViewModel(
         if (!isMyTurn() || uiState.value?.phase != AssociationsGamePhase.PLAYING) return false
 
         val isCorrect = currentGame.guessFinal(guess)
+
+        events.value = GameEvent.MovePlayed(
+            action = "GUESS_FINAL",
+            payload = mapOf("guess" to guess)
+        )
+
         if (isCorrect) {
             stopTimer()
             calculateRoundScoresAndStats()
@@ -127,6 +151,41 @@ class AssociationsViewModel(
     private fun isMyTurn(): Boolean {
         if (isSinglePlayer) return true
         return currentGame.activePlayer == localPlayer
+    }
+
+    override fun onRemoteMove(action: String, payload: Map<String, Any>) {
+        when (action) {
+            "REVEAL_FIELD" -> {
+                val col = (payload["column"] as Number).toInt()
+                val field = (payload["field"] as Number).toInt()
+
+                currentGame.revealField(col, field)
+
+                updateSpecificState(AssociationsGamePhase.PLAYING)
+            }
+            "GUESS_COLUMN" -> {
+                val col = (payload["column"] as Number).toInt()
+                val guess = payload["guess"] as String
+
+                currentGame.guessColumn(col, guess)
+
+                updateSpecificState(AssociationsGamePhase.PLAYING)
+            }
+            "GUESS_FINAL" -> {
+                val guess = payload["guess"] as String
+
+                val isCorrect = currentGame.guessFinal(guess)
+
+                if (isCorrect) {
+                    stopTimer()
+                    calculateRoundScoresAndStats()
+                    updateSpecificState(AssociationsGamePhase.ROUND_OVER, "Protivnik je pogodio konačno rešenje!")
+                } else {
+                    updateSpecificState(AssociationsGamePhase.PLAYING)
+                }
+            }
+            else -> super.onRemoteMove(action, payload)
+        }
     }
 
     private fun updateSpecificState(phase: AssociationsGamePhase, message: String = "") {

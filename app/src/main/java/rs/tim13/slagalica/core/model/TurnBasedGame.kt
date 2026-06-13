@@ -2,8 +2,9 @@ package rs.tim13.slagalica.core.model
 
 abstract class TurnBasedGame(
     val initialPlayer: Player,
-    isSinglePlayer: Boolean
-) : BaseGame(isSinglePlayer) {
+    isSinglePlayer: Boolean,
+    initialOpponentDisconnected: Boolean = false
+) : BaseGame(isSinglePlayer, initialOpponentDisconnected) {
 
     var activePlayer: Player = initialPlayer
         protected set

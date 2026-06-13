@@ -1,11 +1,14 @@
 package rs.tim13.slagalica.skocko.model
 
 import rs.tim13.slagalica.core.model.Player
+import rs.tim13.slagalica.core.model.TurnBasedGame
 
 class SkockoGame(
     val secret: List<SkockoSymbol>,
-    val initialPlayer: Player
-) {
+    initialPlayer: Player,
+    isSinglePlayer: Boolean = false,
+    initialOpponentDisconnected: Boolean = false
+) : TurnBasedGame(initialPlayer, isSinglePlayer, initialOpponentDisconnected) {
     init {
         require(secret.size == COMBINATION_SIZE)
     }
@@ -39,7 +42,13 @@ class SkockoGame(
         if (isMainPhaseExhausted) return null
         val guess = SkockoGuess(symbols, evaluate(symbols))
         _mainGuesses.add(guess)
-        if (guess.hints.all { it == SkockoHint.CORRECT }) isSolvedByMain = true
+        if (guess.hints.all { it == SkockoHint.CORRECT }) {
+            isSolvedByMain = true
+        } else if (isMainPhaseExhausted) {
+            if (!isSinglePlayer && !isOpponentDisconnected) {
+                switchPlayer()
+            }
+        }
         return guess
     }
 
@@ -47,13 +56,14 @@ class SkockoGame(
         require(symbols.size == COMBINATION_SIZE)
         if (!isMainPhaseExhausted) return null
         if (hasBonusAttempt) return null
+        if (isSinglePlayer || isOpponentDisconnected) return null
         val guess = SkockoGuess(symbols, evaluate(symbols))
         _bonusGuess = guess
         if (guess.hints.all { it == SkockoHint.CORRECT }) isSolvedByBonus = true
         return guess
     }
 
-    fun calculateScore(): Map<Player, Int> = SkockoScoringEngine.roundScore(
+    override fun calculateScore(): Map<Player, Int> = SkockoScoringEngine.roundScore(
         mainPlayer = initialPlayer,
         isSolvedByMain = isSolvedByMain,
         mainAttemptsUsed = mainAttemptsUsed,

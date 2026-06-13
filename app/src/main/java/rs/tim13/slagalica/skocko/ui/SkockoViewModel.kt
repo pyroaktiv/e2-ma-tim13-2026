@@ -2,198 +2,248 @@ package rs.tim13.slagalica.skocko.ui
 
 import android.app.Application
 import android.os.CountDownTimer
+import android.widget.BaseAdapter
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import rs.tim13.slagalica.R
+import rs.tim13.slagalica.core.model.BaseGame
 import rs.tim13.slagalica.core.model.Player
+import rs.tim13.slagalica.core.ui.BaseGameViewModel
+import rs.tim13.slagalica.core.ui.GameEvent
 import rs.tim13.slagalica.skocko.data.MockSkockoGameRepository
 import rs.tim13.slagalica.skocko.data.SkockoGameRepository
 import rs.tim13.slagalica.skocko.model.SkockoGame
 import rs.tim13.slagalica.skocko.model.SkockoSymbol
 
-class SkockoViewModel(application: Application) : AndroidViewModel(application) {
+sealed class SkockoEvent : GameEvent() {
+    data class SkockoGameFinished(
+        override val totalBlueScore: Int,
+        override val totalRedScore: Int,
+        val blueCorrectAtAttempt: List<Int>,
+        val blueFailed: Int,
+        val redCorrectAtAttempt: List<Int>,
+        val redFailed: Int
+    ) : GameEvent.GameFinished(totalBlueScore, totalRedScore)
+}
 
-    private val repository: SkockoGameRepository = MockSkockoGameRepository()
-
-    private val _uiState = MutableLiveData<SkockoUiState>()
-    val uiState: LiveData<SkockoUiState> = _uiState
-
-    private val secrets = repository.getSecrets()
-    private var game = SkockoGame(secrets[0], Player.BLUE)
-    private var round = 1
-    private var score = mutableMapOf(Player.BLUE to 0, Player.RED to 0)
+class SkockoViewModel(
+    private val secrets: List<List<SkockoSymbol>>,
+    localPlayer: Player,
+    isSinglePlayer: Boolean = false,
+    initialOpponentDisconnected: Boolean = false
+) : BaseGameViewModel<SkockoUiState, GameEvent>(
+    localPlayer,
+    isSinglePlayer,
+    maxRounds = if (isSinglePlayer) 1 else 2,
+    initialOpponentDisconnected
+) {
+    private lateinit var currentGame: SkockoGame
     private val currentInput = mutableListOf<SkockoSymbol>()
-    private var phase = SkockoGamePhase.MAIN_TURN
-    private var remainingSeconds = MAIN_SECONDS
-    private var mainTimer: CountDownTimer? = null
-    private var bonusTimer: CountDownTimer? = null
-    private var roundScoreAwarded = false
+    private var currentPhase = SkockoGamePhase.MAIN_TURN
 
-    companion object {
-        const val MAIN_SECONDS = 30
-        const val BONUS_SECONDS = 10
-    }
+    private val blueCorrectAtAttempt = IntArray(6) { 0 }
+    private var blueFailed = 0
+    private val redCorrectAtAttempt = IntArray(6) { 0 }
+    private var redFailed = 0
 
     init {
-        emit()
-        startMainTimer()
+        startRound(currentRoundIndex)
+    }
+
+    override fun startRound(index: Int) {
+        val initialPlayer = if (index == 0) Player.BLUE else Player.RED
+
+        currentGame = SkockoGame(secrets[index], initialPlayer, isSinglePlayer)
+        currentInput.clear()
+        currentPhase = SkockoGamePhase.MAIN_TURN
+
+        if (isOpponentDisconnected && initialPlayer != localPlayer) {
+            currentGame.handleOpponentDisconnect(localPlayer)
+        }
+
+        startTimer(30)
+        updateSpecificState()
+    }
+
+    override fun onTimerTick() {
+        updateSpecificState()
+    }
+
+    override fun onTimeUp() {
+        if (currentPhase == SkockoGamePhase.MAIN_TURN) {
+            if (isSinglePlayer || currentGame.isOpponentDisconnected) {
+                finishRoundLogic()
+            } else {
+                currentPhase = SkockoGamePhase.BONUS_TURN
+                currentInput.clear()
+                startTimer(10)
+                updateSpecificState("Vreme je isteklo! Protivnik ima šansu.")
+            }
+        } else if (currentPhase == SkockoGamePhase.BONUS_TURN) {
+            finishRoundLogic()
+        }
+    }
+
+    private fun finishRoundLogic() {
+        stopTimer()
+        calculateRoundScoresAndStats()
+        currentPhase = SkockoGamePhase.ROUND_OVER
+        updateSpecificState("Runda je završena.")
     }
 
     fun addSymbol(symbol: SkockoSymbol) {
-        if (phase != SkockoGamePhase.MAIN_TURN && phase != SkockoGamePhase.BONUS_TURN) return
+        if (!isMyTurn() || !isInputActive()) return
         if (currentInput.size >= 4) return
         currentInput.add(symbol)
-        emit()
+        updateSpecificState()
     }
 
     fun eraseSymbol() {
-        if (phase != SkockoGamePhase.MAIN_TURN && phase != SkockoGamePhase.BONUS_TURN) return
+        if (!isMyTurn() || !isInputActive()) return
         if (currentInput.isNotEmpty()) currentInput.removeAt(currentInput.lastIndex)
-        emit()
+        updateSpecificState()
     }
 
     fun submitGuess() {
+        if (!isMyTurn() || !isInputActive()) return
         if (currentInput.size != 4) return
-        when (phase) {
-            SkockoGamePhase.MAIN_TURN -> {
-                game.submitMainGuess(currentInput.toList()) ?: return
-                currentInput.clear()
-                when {
-                    game.isSolvedByMain -> {
-                        mainTimer?.cancel()
-                        awardRoundScore()
-                        phase = if (round < 2) SkockoGamePhase.ROUND_OVER else SkockoGamePhase.GAME_OVER
-                    }
-                    game.isMainPhaseExhausted -> {
-                        mainTimer?.cancel()
-                        phase = SkockoGamePhase.BONUS_TURN
-                        remainingSeconds = BONUS_SECONDS
-                        emit()
-                        startBonusTimer()
-                        return
-                    }
+
+        if (currentPhase == SkockoGamePhase.MAIN_TURN) {
+            val guess = currentGame.submitMainGuess(currentInput.toList()) ?: return
+            currentInput.clear()
+
+            events.value = GameEvent.MovePlayed("MAIN_GUESS", mapOf("symbols" to guess.symbols.map { it.name }))
+
+            if (currentGame.isSolvedByMain) {
+                finishRoundLogic()
+            } else if (currentGame.isMainPhaseExhausted) {
+                // Promašeno svih 6 puta
+                if (isSinglePlayer || currentGame.isOpponentDisconnected) {
+                    finishRoundLogic()
+                } else {
+                    currentPhase = SkockoGamePhase.BONUS_TURN
+                    startTimer(10)
+                    updateSpecificState("Netačno! Protivnik ima šansu.")
                 }
-                emit()
+            } else {
+                updateSpecificState()
             }
-            SkockoGamePhase.BONUS_TURN -> {
-                game.submitBonusGuess(currentInput.toList()) ?: return
-                currentInput.clear()
-                bonusTimer?.cancel()
-                awardRoundScore()
-                phase = if (round < 2) SkockoGamePhase.ROUND_OVER else SkockoGamePhase.GAME_OVER
-                emit()
-            }
-            else -> return
+        } else if (currentPhase == SkockoGamePhase.BONUS_TURN) {
+            val guess = currentGame.submitBonusGuess(currentInput.toList()) ?: return
+            currentInput.clear()
+
+            events.value = GameEvent.MovePlayed("BONUS_GUESS", mapOf("symbols" to guess.symbols.map { it.name }))
+
+            finishRoundLogic()
         }
     }
 
-    fun advanceToNextRound() {
-        if (phase != SkockoGamePhase.ROUND_OVER) return
-        round = 2
-        game = SkockoGame(secrets[1], Player.RED)
-        currentInput.clear()
-        phase = SkockoGamePhase.MAIN_TURN
-        remainingSeconds = MAIN_SECONDS
-        roundScoreAwarded = false
-        emit()
-        startMainTimer()
-    }
+    override fun calculateRoundScoresAndStats() {
+        val scores = currentGame.calculateScore()
+        totalBlueScore += scores[Player.BLUE] ?: 0
+        totalRedScore += scores[Player.RED] ?: 0
 
-    private fun startMainTimer() {
-        mainTimer?.cancel()
-        mainTimer = object : CountDownTimer(remainingSeconds * 1000L, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                remainingSeconds = (millisUntilFinished / 1000).toInt() + 1
-                emit()
-            }
-            override fun onFinish() {
-                remainingSeconds = 0
-                phase = SkockoGamePhase.BONUS_TURN
-                remainingSeconds = BONUS_SECONDS
-                emit()
-                startBonusTimer()
-            }
-        }.start()
-    }
-
-    private fun startBonusTimer() {
-        bonusTimer?.cancel()
-        bonusTimer = object : CountDownTimer(remainingSeconds * 1000L, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                remainingSeconds = (millisUntilFinished / 1000).toInt() + 1
-                emit()
-            }
-            override fun onFinish() {
-                remainingSeconds = 0
-                awardRoundScore()
-                phase = if (round < 2) SkockoGamePhase.ROUND_OVER else SkockoGamePhase.GAME_OVER
-                emit()
-            }
-        }.start()
-    }
-
-    private fun awardRoundScore() {
-        if (roundScoreAwarded) return
-        roundScoreAwarded = true
-        game.calculateScore().forEach { (player, pts) ->
-            score.compute(player) { _, v -> (v ?: 0) + pts }
+        val mainPlayer = currentGame.initialPlayer
+        if (currentGame.isSolvedByMain) {
+            val attemptIndex = currentGame.mainAttemptsUsed - 1 // 0-indeksirano
+            if (mainPlayer == Player.BLUE) blueCorrectAtAttempt[attemptIndex]++
+            else redCorrectAtAttempt[attemptIndex]++
+        } else {
+            if (mainPlayer == Player.BLUE) blueFailed++
+            else redFailed++
         }
     }
 
-    override fun onCleared() {
-        mainTimer?.cancel()
-        bonusTimer?.cancel()
-    }
-
-    private fun emit() {
-        val revealSecret = phase == SkockoGamePhase.ROUND_OVER || phase == SkockoGamePhase.GAME_OVER
-        val isActive = phase == SkockoGamePhase.MAIN_TURN || phase == SkockoGamePhase.BONUS_TURN
-        _uiState.value = SkockoUiState(
-            round = round,
-            blueScore = score[Player.BLUE] ?: 0,
-            redScore = score[Player.RED] ?: 0,
-            mainPlayer = game.initialPlayer,
-            phase = phase,
-            remainingSeconds = remainingSeconds,
-            mainGuesses = game.mainGuesses,
-            bonusGuess = game.bonusGuess,
-            secret = if (revealSecret) game.secret else null,
-            currentInput = currentInput.toList(),
-            isInputEnabled = isActive && remainingSeconds > 0,
-            statusMessage = buildStatusMessage()
+    override fun finishGame() {
+        currentPhase = SkockoGamePhase.GAME_OVER
+        updateSpecificState("Igra je završena!")
+        events.value = SkockoEvent.SkockoGameFinished(
+            totalBlueScore, totalRedScore,
+            blueCorrectAtAttempt.toList(), blueFailed,
+            redCorrectAtAttempt.toList(), redFailed
         )
     }
 
-    private fun buildStatusMessage(): String {
-        val ctx = getApplication<Application>()
-        val opponent = Player.entries.first { it != game.initialPlayer }
-        return when (phase) {
-            SkockoGamePhase.MAIN_TURN ->
-                ctx.getString(R.string.skocko_status_main_turn, game.initialPlayer.color)
-            SkockoGamePhase.BONUS_TURN ->
-                ctx.getString(R.string.skocko_status_bonus_turn, opponent.color)
-            SkockoGamePhase.ROUND_OVER -> when {
-                game.isSolvedByMain ->
-                    ctx.getString(R.string.skocko_status_solved_main, game.initialPlayer.color)
-                game.isSolvedByBonus ->
-                    ctx.getString(R.string.skocko_status_solved_bonus, opponent.color)
-                else ->
-                    ctx.getString(R.string.skocko_status_no_one)
-            }
-            SkockoGamePhase.GAME_OVER -> {
-                val blue = score[Player.BLUE] ?: 0
-                val red = score[Player.RED] ?: 0
-                val winner = when {
-                    blue > red -> Player.BLUE
-                    red > blue -> Player.RED
-                    else -> null
-                }
-                if (winner != null)
-                    ctx.getString(R.string.skocko_status_winner, winner.color)
-                else
-                    ctx.getString(R.string.skocko_status_draw)
-            }
+    override fun isRoundOver(): Boolean {
+        return uiState.value?.phase == SkockoGamePhase.ROUND_OVER
+    }
+
+    override fun onOpponentDisconnected() {
+        currentGame.handleOpponentDisconnect(localPlayer)
+
+        if (currentPhase == SkockoGamePhase.BONUS_TURN && currentGame.activePlayer == localPlayer) {
+            finishRoundLogic()
+        } else {
+            updateSpecificState("Protivnik je napustio igru.")
         }
+    }
+
+    private fun isMyTurn(): Boolean {
+        if (isSinglePlayer) return true
+        return currentGame.activePlayer == localPlayer
+    }
+
+    private fun isInputActive(): Boolean {
+        return (currentPhase == SkockoGamePhase.MAIN_TURN || currentPhase == SkockoGamePhase.BONUS_TURN) && remainingSeconds > 0
+    }
+
+    override fun onRemoteMove(action: String, payload: Map<String, Any>) {
+        when (action) {
+            "MAIN_GUESS" -> {
+                val rawSymbols = payload["symbols"] as List<*>
+                val symbols = rawSymbols.map {
+                    if (it is SkockoSymbol) it else SkockoSymbol.valueOf(it.toString())
+                }
+
+                currentGame.submitMainGuess(symbols)
+
+                if (currentGame.isSolvedByMain) {
+                    finishRoundLogic()
+                } else if (currentGame.isMainPhaseExhausted) {
+                    if (isSinglePlayer || currentGame.isOpponentDisconnected) {
+                        finishRoundLogic()
+                    } else {
+                        currentPhase = SkockoGamePhase.BONUS_TURN
+                        startTimer(10)
+                        updateSpecificState("Protivnik nije uspeo! Vaša šansa za bonus bodove.")
+                    }
+                } else {
+                    updateSpecificState()
+                }
+            }
+            "BONUS_GUESS" -> {
+                val rawSymbols = payload["symbols"] as List<*>
+                val symbols = rawSymbols.map {
+                    if (it is SkockoSymbol) it else SkockoSymbol.valueOf(it.toString())
+                }
+
+                currentGame.submitBonusGuess(symbols)
+
+                finishRoundLogic()
+            }
+            else -> super.onRemoteMove(action, payload)
+        }
+    }
+
+    private fun updateSpecificState(message: String = "") {
+        val revealSecret = currentPhase == SkockoGamePhase.ROUND_OVER || currentPhase == SkockoGamePhase.GAME_OVER
+
+        updateState(
+            SkockoUiState(
+                round = currentRoundIndex + 1,
+                activePlayer = currentGame.activePlayer,
+                isMyTurn = isMyTurn(),
+                phase = currentPhase,
+                remainingSeconds = remainingSeconds,
+                statusMessage = message,
+                mainPlayer = currentGame.initialPlayer,
+                mainGuesses = currentGame.mainGuesses,
+                bonusGuess = currentGame.bonusGuess,
+                secret = if (revealSecret) currentGame.secret else null,
+                currentInput = currentInput.toList(),
+                isInputEnabled = isInputActive() && isMyTurn()
+            )
+        )
     }
 }
