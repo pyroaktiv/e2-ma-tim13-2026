@@ -1,6 +1,6 @@
 package rs.tim13.slagalica.skocko.ui
 
-import rs.tim13.slagalica.core.Player
+import rs.tim13.slagalica.core.model.Player
 import rs.tim13.slagalica.skocko.model.SkockoGuess
 import rs.tim13.slagalica.skocko.model.SkockoSymbol
 

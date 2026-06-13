@@ -1,7 +1,6 @@
 package rs.tim13.slagalica.asocijacije.ui
 
 import android.graphics.Typeface
-import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -10,27 +9,30 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import rs.tim13.slagalica.R
-import rs.tim13.slagalica.core.ui.BaseFragment
+import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentAsocijacijeBinding
 import rs.tim13.slagalica.databinding.ItemAsocijacijeCellBinding
 
-class AsocijacijeFragment :
-    BaseFragment<FragmentAsocijacijeBinding>(FragmentAsocijacijeBinding::inflate) {
+class AssociationsFragment :
+    BaseGameFragment<FragmentAsocijacijeBinding, AssociationsUiState, AssociationsViewModel>(FragmentAsocijacijeBinding::inflate) {
 
-    private val viewModel: AssociationsViewModel by viewModels()
+    override val viewModel: AssociationsViewModel by viewModels()
 
-    // [columnIndex][fieldIndex] → cell binding; solutionBindings[columnIndex]
+    override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer
+
     private lateinit var fieldBindings: Array<Array<ItemAsocijacijeCellBinding>>
     private lateinit var solutionBindings: Array<ItemAsocijacijeCellBinding>
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun setupUI() {
         setupGrid()
         setupInputButtons()
-        viewModel.uiState.observe(viewLifecycleOwner, ::renderState)
     }
 
-    // region Grid setup
+    override fun renderSpecificState(state: AssociationsUiState) {
+        updateCustomHeaderInfo(state)
+        updateGrid(state)
+        updatePhaseUi(state)
+    }
 
     private fun setupGrid() {
         val numCols = 4
@@ -47,7 +49,6 @@ class AsocijacijeFragment :
                 )
             }
 
-            // Column label header
             colLayout.addView(TextView(requireContext()).apply {
                 text = listOf("A", "B", "C", "D")[col]
                 gravity = Gravity.CENTER
@@ -80,10 +81,6 @@ class AsocijacijeFragment :
         b.root.isClickable = false
         return b
     }
-
-    // endregion
-
-    // region Input buttons
 
     private fun setupInputButtons() {
         val colButtons = listOf(
@@ -129,22 +126,10 @@ class AsocijacijeFragment :
         binding.etGuess.text?.clear()
     }
 
-    // endregion
-
-    // region State rendering
-
-    private fun renderState(state: AssociationsUiState) {
-        updateHeader(state)
-        updateGrid(state)
-        updatePhaseUi(state)
-    }
-
-    private fun updateHeader(state: AssociationsUiState) {
+    private fun updateCustomHeaderInfo(state: AssociationsUiState) {
+        binding.tvRoundLabel.visibility = View.VISIBLE
         binding.tvRoundLabel.text = getString(R.string.asocijacije_round_label, state.round)
-        binding.tvActivePlayer.text = getString(R.string.asocijacije_active_player, state.activePlayer.color)
-        binding.gameHeader.tvPlayer1Score.text = getString(R.string.asocijacije_player1_score, state.blueScore)
-        binding.gameHeader.tvPlayer2Score.text = getString(R.string.asocijacije_player2_score, state.redScore)
-        binding.gameHeader.tvGameTimer.text = state.remainingSeconds.toString()
+        binding.tvActivePlayer.text = getString(R.string.asocijacije_active_player, state.activePlayer.name)
     }
 
     private fun updateGrid(state: AssociationsUiState) {
@@ -159,7 +144,7 @@ class AsocijacijeFragment :
                     )
                 } else {
                     b.tvCellContent.text = "?"
-                    b.root.isClickable = !column.isSolved && state.isNextMoveRevealing
+                    b.root.isClickable = !column.isSolved && state.isNextMoveRevealing && state.isMyTurn
                 }
             }
 
@@ -178,26 +163,21 @@ class AsocijacijeFragment :
     }
 
     private fun updatePhaseUi(state: AssociationsUiState) {
-        val roundOver = state.phase == GamePhase.ROUND_OVER || state.phase == GamePhase.GAME_OVER
-        binding.btnNextRound.visibility =  if ( roundOver) View.VISIBLE else View.GONE
+        val roundOver = state.phase == AssociationsGamePhase.ROUND_OVER || state.phase == AssociationsGamePhase.GAME_OVER
+        binding.btnNextRound.visibility =  if (roundOver) View.VISIBLE else View.GONE
         binding.btnGuessFinal.visibility = if (!roundOver) View.VISIBLE else View.GONE
-        binding.btnNextRound.text = if (state.phase == GamePhase.GAME_OVER) "Kraj igre" else "Sledeća runda"
+        binding.btnNextRound.text = if (state.phase == AssociationsGamePhase.GAME_OVER) "Kraj igre" else "Sledeća runda"
 
+        val canGuess = !state.isNextMoveRevealing && state.isMyTurn
         listOf(binding.btnGuessA, binding.btnGuessB, binding.btnGuessC, binding.btnGuessD, binding.btnGuessFinal)
-            .forEach { it.isEnabled = !state.isNextMoveRevealing }
+            .forEach { it.isEnabled = canGuess }
+        binding.etGuess.isEnabled = canGuess
 
-        if (state.phase == GamePhase.GAME_OVER) {
-            val winner = when {
-                state.blueScore > state.redScore -> "Plavi igrač je pobedio!"
-                state.redScore > state.blueScore -> "Crveni igrač je pobedio!"
-                else -> "Nerešeno!"
-            }
-            binding.tvStatusMessage.text = winner
+        if (state.phase == AssociationsGamePhase.GAME_OVER) {
+            binding.tvStatusMessage.text = "Kraj Asocijacija!"
             binding.btnGuessFinal.isEnabled = false
             listOf(binding.btnGuessA, binding.btnGuessB, binding.btnGuessC, binding.btnGuessD)
                 .forEach { it.isEnabled = false }
         }
     }
-
-    // endregion
 }

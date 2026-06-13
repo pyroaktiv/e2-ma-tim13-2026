@@ -1,6 +1,6 @@
 package rs.tim13.slagalica.skocko.model
 
-import rs.tim13.slagalica.core.Player
+import rs.tim13.slagalica.core.model.Player
 
 object SkockoScoringEngine {
 

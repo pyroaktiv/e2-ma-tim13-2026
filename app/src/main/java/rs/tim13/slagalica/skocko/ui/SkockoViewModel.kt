@@ -6,7 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import rs.tim13.slagalica.R
-import rs.tim13.slagalica.core.Player
+import rs.tim13.slagalica.core.model.Player
 import rs.tim13.slagalica.skocko.data.MockSkockoGameRepository
 import rs.tim13.slagalica.skocko.data.SkockoGameRepository
 import rs.tim13.slagalica.skocko.model.SkockoGame

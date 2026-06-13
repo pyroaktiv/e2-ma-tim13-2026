@@ -84,7 +84,7 @@
 
     <fragment
         android:id="@+id/asocijacijeFragment"
-        android:name="rs.tim13.slagalica.asocijacije.ui.AsocijacijeFragment"
+        android:name="rs.tim13.slagalica.asocijacije.ui.AssociationsFragment"
         android:label="Asocijacije"
         tools:layout="@layout/fragment_asocijacije" />
 

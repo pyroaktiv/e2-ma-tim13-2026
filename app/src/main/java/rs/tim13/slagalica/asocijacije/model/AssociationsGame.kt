@@ -1,12 +1,15 @@
 package rs.tim13.slagalica.asocijacije.model
 
-import rs.tim13.slagalica.core.Player
+import rs.tim13.slagalica.core.model.Player
+import rs.tim13.slagalica.core.model.TurnBasedGame
 
 class AssociationsGame(
     columns: List<AssociationsColumn>,
     val finalSolution: String,
-    initialPlayer: Player = Player.BLUE
-) {
+    initialPlayer: Player = Player.BLUE,
+    isSinglePlayer: Boolean = false
+) : TurnBasedGame(initialPlayer, isSinglePlayer) {
+
     init {
         require(columns.size == 4)
     }
@@ -20,9 +23,6 @@ class AssociationsGame(
     var solvedBy: Player = initialPlayer
         private set
 
-    var activePlayer: Player = initialPlayer
-        private set
-
     var isNextMoveRevealing: Boolean = true
         private set
 
@@ -30,9 +30,11 @@ class AssociationsGame(
         if (!isNextMoveRevealing) return false
         val col = _columns[columnIndex]
         if (col.isSolved || col.fields[fieldIndex].isRevealed) return false
+
         val fields = col.fields.toMutableList()
         fields[fieldIndex] = fields[fieldIndex].copy(isRevealed = true, isRevealedByPlayer = true)
         _columns[columnIndex] = col.copy(fields = fields)
+
         isNextMoveRevealing = false
         return true
     }
@@ -51,11 +53,12 @@ class AssociationsGame(
         if (isNextMoveRevealing) return false
         val col = _columns[columnIndex]
         if (col.isSolved) return false
+
         return if (guess.trim().equals(col.solution, ignoreCase = true)) {
             revealColumn(columnIndex, true, activePlayer)
             true
         } else {
-            switchPlayer()
+            if (!isSinglePlayer && !isOpponentDisconnected) switchPlayer()
             isNextMoveRevealing = true
             false
         }
@@ -64,21 +67,18 @@ class AssociationsGame(
     fun guessFinal(guess: String): Boolean {
         if (isNextMoveRevealing) return false
         if (isFinalSolved) return false
+
         return if (guess.trim().equals(finalSolution, ignoreCase = true)) {
             isFinalSolved = true
             solvedBy = activePlayer
             _columns.indices.forEach { i -> revealColumn(i, null, activePlayer) }
             true
         } else {
-            switchPlayer()
+            if (!isSinglePlayer && !isOpponentDisconnected) switchPlayer()
             isNextMoveRevealing = true
             false
         }
     }
 
-    private fun switchPlayer() {
-        activePlayer = Player.entries.first { it != activePlayer }
-    }
-
-    fun calculateScore() = ScoringEngine.roundScore(_columns, isFinalSolved, solvedBy)
+    override fun calculateScore(): Map<Player, Int> = ScoringEngine.roundScore(_columns, isFinalSolved, solvedBy)
 }
