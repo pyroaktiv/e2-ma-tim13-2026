@@ -1,0 +1,33 @@
+import type { ServerWebSocket } from "bun";
+
+export type WsData = { userId: number };
+
+const connections = new Map<number, Set<ServerWebSocket<WsData>>>();
+
+export function isOnline(userId: number): boolean {
+  const set = connections.get(userId);
+  return !!set && set.size > 0;
+}
+
+export function pushToUser(userId: number, payload: object): void {
+  const set = connections.get(userId);
+  if (!set) return;
+  const msg = JSON.stringify(payload);
+  for (const ws of set) {
+    ws.send(msg);
+  }
+}
+
+export function registerConnection(userId: number, ws: ServerWebSocket<WsData>): void {
+  if (!connections.has(userId)) {
+    connections.set(userId, new Set());
+  }
+  connections.get(userId)!.add(ws);
+}
+
+export function removeConnection(userId: number, ws: ServerWebSocket<WsData>): void {
+  const set = connections.get(userId);
+  if (!set) return;
+  set.delete(ws);
+  if (set.size === 0) connections.delete(userId);
+}

@@ -12,6 +12,10 @@
         tools:layout="@layout/fragment_demo_game_list">
 
         <action
+            android:id="@+id/action_list_to_online"
+            app:destination="@id/onlineMatchFragment" />
+
+        <action
             android:id="@+id/action_list_to_profil"
             app:destination="@id/profilFragment" />
 
@@ -44,6 +48,12 @@
             android:id="@+id/action_list_to_skocko"
             app:destination="@id/skockoFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/onlineMatchFragment"
+        android:name="rs.tim13.slagalica.online.OnlineMatchFragment"
+        android:label="Online partija"
+        tools:layout="@layout/fragment_online_match" />
 
     <fragment
         android:id="@+id/mojBrojFragment"

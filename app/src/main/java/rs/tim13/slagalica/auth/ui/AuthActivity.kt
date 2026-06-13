@@ -7,6 +7,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import rs.tim13.slagalica.R
+import rs.tim13.slagalica.core.AppState
 import rs.tim13.slagalica.databinding.ActivityAuthBinding
 
 class AuthActivity : AppCompatActivity() {
@@ -25,4 +26,7 @@ class AuthActivity : AppCompatActivity() {
             insets
         }
     }
+
+    override fun onStart() { super.onStart(); AppState.onActivityStarted() }
+    override fun onStop() { super.onStop(); AppState.onActivityStopped() }
 }

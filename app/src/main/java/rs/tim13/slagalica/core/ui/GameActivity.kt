@@ -5,6 +5,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import rs.tim13.slagalica.core.AppState
 import rs.tim13.slagalica.core.NotificationHelper
 import rs.tim13.slagalica.databinding.ActivityGameBinding
 
@@ -25,4 +26,7 @@ class GameActivity : AppCompatActivity() {
             insets
         }
     }
+
+    override fun onStart() { super.onStart(); AppState.onActivityStarted() }
+    override fun onStop() { super.onStop(); AppState.onActivityStopped() }
 }

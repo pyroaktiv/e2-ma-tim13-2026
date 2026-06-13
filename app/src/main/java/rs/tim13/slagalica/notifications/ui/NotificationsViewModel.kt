@@ -3,50 +3,38 @@ package rs.tim13.slagalica.notifications.ui
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import rs.tim13.slagalica.notifications.data.MockNotificationRepository
-import rs.tim13.slagalica.notifications.data.NotificationRepository
 import rs.tim13.slagalica.notifications.model.NotificationModel
 
 enum class NotificationFilter { ALL, UNREAD, READ }
 
-class NotificationsViewModel(
-    private val repository: NotificationRepository = MockNotificationRepository
-) : ViewModel() {
+class NotificationsViewModel : ViewModel() {
 
-    private val _filter = MutableLiveData(NotificationFilter.ALL)
+    private var master: List<NotificationModel> = emptyList()
+    private var filter = NotificationFilter.ALL
 
-    private val _notifications = MutableLiveData<List<NotificationModel>>()
+    private val _notifications = MutableLiveData<List<NotificationModel>>(emptyList())
     val notifications: LiveData<List<NotificationModel>> = _notifications
 
     private val _unreadCount = MutableLiveData(0)
     val unreadCount: LiveData<Int> = _unreadCount
 
-    init {
-        loadNotifications()
-    }
-
-    fun setFilter(filter: NotificationFilter) {
-        _filter.value = filter
+    /** Called by the fragment after loading notifications from the backend. */
+    fun setNotifications(list: List<NotificationModel>) {
+        master = list
+        _unreadCount.value = list.count { !it.isRead }
         applyFilter()
     }
 
-    fun markAsRead(notificationId: Long) {
-        repository.markAsRead(notificationId)
-        loadNotifications()
-    }
-
-    private fun loadNotifications() {
-        val all = repository.getAllNotifications()
-        _unreadCount.value = all.count { !it.isRead }
+    fun setFilter(filter: NotificationFilter) {
+        this.filter = filter
         applyFilter()
     }
 
     private fun applyFilter() {
-        val all = repository.getAllNotifications()
-        _notifications.value = when (_filter.value) {
-            NotificationFilter.UNREAD -> all.filter { !it.isRead }
-            NotificationFilter.READ -> all.filter { it.isRead }
-            else -> all
+        _notifications.value = when (filter) {
+            NotificationFilter.UNREAD -> master.filter { !it.isRead }
+            NotificationFilter.READ -> master.filter { it.isRead }
+            else -> master
         }.sortedByDescending { it.timestamp }
     }
 }
