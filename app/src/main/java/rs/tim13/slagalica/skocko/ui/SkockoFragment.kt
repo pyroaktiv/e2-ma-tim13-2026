@@ -8,16 +8,22 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import rs.tim13.slagalica.R
-import rs.tim13.slagalica.core.ui.BaseFragment
+import rs.tim13.slagalica.core.model.GameConfig
 import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentSkockoBinding
 import rs.tim13.slagalica.databinding.ItemSkockoCellBinding
+import rs.tim13.slagalica.skocko.data.MockSkockoGameRepository
 import rs.tim13.slagalica.skocko.model.SkockoHint
 import rs.tim13.slagalica.skocko.model.SkockoSymbol
 
 class SkockoFragment : BaseGameFragment<FragmentSkockoBinding, SkockoUiState, SkockoViewModel>(FragmentSkockoBinding::inflate) {
 
-    override val viewModel: SkockoViewModel by viewModels()
+    override val viewModel: SkockoViewModel by viewModels {
+        SkockoViewModelFactory(
+            repository = MockSkockoGameRepository(),
+            config = GameConfig.fromBundle(arguments)
+        )
+    }
 
     // Ugovor iz BaseGameFragment-a
     override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer

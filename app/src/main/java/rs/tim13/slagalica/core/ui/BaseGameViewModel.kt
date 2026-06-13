@@ -9,7 +9,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import rs.tim13.slagalica.core.model.Player
 
-abstract class BaseGameViewModel<S : GameUiState, E : GameEvent>(
+abstract class BaseGameViewModel<S : GameUiState>(
     protected val localPlayer: Player,
     protected val isSinglePlayer: Boolean,
     protected val maxRounds: Int,
@@ -18,7 +18,7 @@ abstract class BaseGameViewModel<S : GameUiState, E : GameEvent>(
     private val _uiState = MutableLiveData<S>()
     val uiState: LiveData<S> = _uiState
 
-    val events = MutableLiveData<E>()
+    val events = MutableLiveData<GameEvent>()
 
     protected var currentRoundIndex = 0
     protected var totalBlueScore = 0
@@ -83,8 +83,7 @@ abstract class BaseGameViewModel<S : GameUiState, E : GameEvent>(
 
         // Obaveštavamo server ako igramo protiv pravog igrača
         if (!isSinglePlayer) {
-            @Suppress("UNCHECKED_CAST")
-            events.value = GameEvent.MovePlayed("NEXT_ROUND", emptyMap<String, Any>()) as E
+            events.value = GameEvent.MovePlayed("NEXT_ROUND", emptyMap())
         }
 
         executeRoundTransition()

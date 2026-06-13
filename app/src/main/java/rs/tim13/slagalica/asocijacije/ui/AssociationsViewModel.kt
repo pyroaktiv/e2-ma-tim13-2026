@@ -8,28 +8,18 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import rs.tim13.slagalica.asocijacije.model.AssociationsGame
+import rs.tim13.slagalica.asocijacije.model.AssociationsStatistics
+import rs.tim13.slagalica.core.model.GameResult
 import rs.tim13.slagalica.core.model.Player
 import rs.tim13.slagalica.core.ui.BaseGameViewModel
 import rs.tim13.slagalica.core.ui.GameEvent
-import rs.tim13.slagalica.core.ui.GamePhase
-
-sealed class AssociationsEvent : GameEvent() {
-    data class AssociationsGameFinished(
-        override val totalBlueScore: Int,
-        override val totalRedScore: Int,
-        val blueSolvedCount: Int,
-        val blueUnsolvedCount: Int,
-        val redSolvedCount: Int,
-        val redUnsolvedCount: Int
-    ) : GameEvent.GameFinished(totalBlueScore, totalRedScore)
-}
 
 class AssociationsViewModel(
     private val games: List<AssociationsGame>,
     localPlayer: Player,
     isSinglePlayer: Boolean = false,
     initialOpponentDisconnected: Boolean = false
-) : BaseGameViewModel<AssociationsUiState, GameEvent>(localPlayer, isSinglePlayer, maxRounds = if (isSinglePlayer) 1 else 2, initialOpponentDisconnected) {
+) : BaseGameViewModel<AssociationsUiState>(localPlayer, isSinglePlayer, maxRounds = if (isSinglePlayer) 1 else 2, initialOpponentDisconnected) {
 
     private var blueSolvedCount = 0
     private var blueUnsolvedCount = 0
@@ -90,8 +80,14 @@ class AssociationsViewModel(
 
     override fun finishGame() {
         updateSpecificState(AssociationsGamePhase.GAME_OVER)
-        events.value = AssociationsEvent.AssociationsGameFinished(
-            totalBlueScore, totalRedScore, blueSolvedCount, blueUnsolvedCount, redSolvedCount, redUnsolvedCount
+        events.value = GameEvent.GameFinished(
+            GameResult(
+                blueScore = totalBlueScore,
+                redScore = totalRedScore,
+                statistics = AssociationsStatistics(
+                    blueSolvedCount, blueUnsolvedCount, redSolvedCount, redUnsolvedCount
+                )
+            )
         )
     }
 

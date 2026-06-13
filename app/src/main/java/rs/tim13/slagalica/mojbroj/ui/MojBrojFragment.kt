@@ -1,248 +1,128 @@
 package rs.tim13.slagalica.mojbroj.ui
 
-import android.os.Bundle
-import android.os.CountDownTimer
-import android.os.Handler
-import android.os.Looper
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.view.View
 import android.widget.Button
-import android.widget.Toast
-import androidx.navigation.fragment.findNavController
-import rs.tim13.slagalica.core.ui.BaseFragment
+import android.widget.TextView
+import androidx.fragment.app.viewModels
+import rs.tim13.slagalica.R
+import rs.tim13.slagalica.core.model.GameConfig
+import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentMojBrojBinding
-import kotlin.random.Random
+import rs.tim13.slagalica.mojbroj.data.MockMojBrojGameRepository
+import kotlin.math.sqrt
 
-enum class TokenType { NUMBER, OPERATOR, OPEN_BRACKET, CLOSE_BRACKET, EMPTY }
-data class ExpressionToken(val text: String, val type: TokenType, val sourceButtonId: Int? = null)
+class MojBrojFragment :
+    BaseGameFragment<FragmentMojBrojBinding, MojBrojUiState, MojBrojViewModel>(FragmentMojBrojBinding::inflate) {
 
-class MojBrojFragment : BaseFragment<FragmentMojBrojBinding>(FragmentMojBrojBinding::inflate) {
-
-    private var stopPhase = 0
-    private var trenutnaRunda = 1
-    private var rezultatIgrac1 = 0
-    private var rezultatIgrac2 = 0
-
-    private var timer: CountDownTimer? = null
-    private var autoStopTimer: CountDownTimer? = null
-
-    private val expressionTokens = mutableListOf<ExpressionToken>()
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        binding.gameHeader.tvPlayer1Score.text = "Igrač 1\n0"
-        binding.gameHeader.tvPlayer2Score.text = "Igrač 2\n0"
-
-        setupButtons()
-        zapocniRundu()
+    override val viewModel: MojBrojViewModel by viewModels {
+        MojBrojViewModelFactory(
+            repository = MockMojBrojGameRepository(),
+            config = GameConfig.fromBundle(arguments)
+        )
     }
 
-    private fun zapocniRundu() {
-        stopPhase = 0
-        expressionTokens.clear()
-        osveziPrikazIzraza()
+    override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer
 
-        binding.tvTargetNumber.text = "???"
-        binding.glOperations.visibility = View.GONE
-        binding.btnSubmit.visibility = View.GONE
-        binding.btnStop.visibility = View.VISIBLE
+    private lateinit var numberButtons: List<Button>
 
-        val numButtons = listOf<Button>(
+    // Shake senzor za „stop" (spec 6.l)
+    private var sensorManager: SensorManager? = null
+    private var accelerometer: Sensor? = null
+    private var lastShakeMs = 0L
+    private var canStopNow = false
+
+    override fun setupUI() {
+        numberButtons = listOf(
             binding.btnNum1, binding.btnNum2, binding.btnNum3,
             binding.btnNum4, binding.btnNum5, binding.btnNum6
         )
-        numButtons.forEach {
-            it.isEnabled = true
-            it.text = "?"
+
+        binding.btnStop.setOnClickListener { viewModel.requestStop() }
+        numberButtons.forEachIndexed { index, button ->
+            button.setOnClickListener { viewModel.addNumber(index) }
         }
+        binding.btnPlus.setOnClickListener { viewModel.addOperator("+") }
+        binding.btnMinus.setOnClickListener { viewModel.addOperator("-") }
+        binding.btnMultiply.setOnClickListener { viewModel.addOperator("*") }
+        binding.btnDivide.setOnClickListener { viewModel.addOperator("/") }
+        binding.btnOpenBracket.setOnClickListener { viewModel.addOpenBracket() }
+        binding.btnCloseBracket.setOnClickListener { viewModel.addCloseBracket() }
+        binding.btnBackspace.setOnClickListener { viewModel.backspace() }
+        binding.btnSubmit.setOnClickListener { viewModel.submitSolution() }
+        binding.btnNextRound.setOnClickListener { viewModel.advanceToNextRound() }
 
-        binding.gameHeader.tvGameTimer.text = "60"
-
-        pokreniAutoStopTajmer()
+        sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
     }
 
-    private fun pokreniAutoStopTajmer() {
-        autoStopTimer?.cancel()
-        autoStopTimer = object : CountDownTimer(5000, 1000) {
-            override fun onTick(millisUntilFinished: Long) { }
-            override fun onFinish() {
-                izvrsiStopAkciju()
-            }
-        }.start()
-    }
+    override fun renderSpecificState(state: MojBrojUiState) {
+        canStopNow = state.canStop
 
-    private fun izvrsiStopAkciju() {
-        autoStopTimer?.cancel()
-        if (stopPhase == 0) {
-            stopPhase = 1
-            binding.tvTargetNumber.text = Random.nextInt(1, 1000).toString()
-            pokreniAutoStopTajmer()
-        } else if (stopPhase == 1) {
-            stopPhase = 2
-            otkrijBrojeve()
-            binding.btnStop.visibility = View.GONE
-            binding.glOperations.visibility = View.VISIBLE
-            binding.btnSubmit.visibility = View.VISIBLE
-            zapocniTajmerZaIgru()
+        binding.gameHeader.tvPlayer1Score.text = getString(R.string.game_player1_score, state.blueScore)
+        binding.gameHeader.tvPlayer2Score.text = getString(R.string.game_player2_score, state.redScore)
+        binding.tvRoundLabel.text = getString(R.string.game_round_label, state.round)
+
+        binding.tvTargetNumber.text = state.target?.toString() ?: "???"
+        binding.tvCurrentExpression.text = state.expressionDisplay
+        binding.tvStatusMessage.text = state.statusMessage
+
+        numberButtons.forEachIndexed { index, button ->
+            button.text = state.numbers?.getOrNull(index)?.toString() ?: "?"
+            button.isEnabled = state.isSolving && index !in state.usedNumberIndices
         }
+        listOf(
+            binding.btnPlus, binding.btnMinus, binding.btnMultiply, binding.btnDivide,
+            binding.btnOpenBracket, binding.btnCloseBracket, binding.btnBackspace
+        ).forEach { it.isEnabled = state.isSolving }
+        binding.btnSubmit.isEnabled = state.isSolving && state.isExpressionComplete
+
+        binding.btnStop.visibility = if (state.canStop) View.VISIBLE else View.GONE
+        val solvingVisibility = if (state.isSolving) View.VISIBLE else View.GONE
+        binding.llOfferedNumbers.visibility = solvingVisibility
+        binding.glOperations.visibility = solvingVisibility
+        binding.btnSubmit.visibility = solvingVisibility
+
+        val roundOver = state.phase == MojBrojGamePhase.ROUND_OVER || state.phase == MojBrojGamePhase.GAME_OVER
+        binding.btnNextRound.visibility = if (roundOver) View.VISIBLE else View.GONE
+        binding.btnNextRound.text =
+            if (state.phase == MojBrojGamePhase.GAME_OVER) getString(R.string.game_over)
+            else getString(R.string.game_next_round)
     }
 
-    private fun otkrijBrojeve() {
-        binding.btnNum1.text = Random.nextInt(1, 10).toString()
-        binding.btnNum2.text = Random.nextInt(1, 10).toString()
-        binding.btnNum3.text = Random.nextInt(1, 10).toString()
-        binding.btnNum4.text = Random.nextInt(1, 10).toString()
-
-        binding.btnNum5.text = listOf(10, 15, 20).random().toString()
-        binding.btnNum6.text = listOf(25, 50, 75, 100).random().toString()
+    override fun onResume() {
+        super.onResume()
+        accelerometer?.let { sensorManager?.registerListener(shakeListener, it, SensorManager.SENSOR_DELAY_NORMAL) }
     }
 
-    // --- POMOĆNE FUNKCIJE ZA LOGIKU UNOSA ---
-    private fun getLastType(): TokenType = expressionTokens.lastOrNull()?.type ?: TokenType.EMPTY
-    private fun getUnclosedBrackets(): Int = expressionTokens.count { it.type == TokenType.OPEN_BRACKET } - expressionTokens.count { it.type == TokenType.CLOSE_BRACKET }
-
-    private fun canPressNum(): Boolean {
-        val lastType = getLastType()
-        return lastType == TokenType.EMPTY || lastType == TokenType.OPERATOR || lastType == TokenType.OPEN_BRACKET
+    override fun onPause() {
+        super.onPause()
+        sensorManager?.unregisterListener(shakeListener)
     }
 
-    private fun canPressOp(): Boolean {
-        val lastType = getLastType()
-        return lastType == TokenType.NUMBER || lastType == TokenType.CLOSE_BRACKET
-    }
-
-    private fun canPressOpenBracket(): Boolean {
-        val lastType = getLastType()
-        return lastType == TokenType.EMPTY || lastType == TokenType.OPERATOR || lastType == TokenType.OPEN_BRACKET
-    }
-
-    private fun canPressCloseBracket(): Boolean {
-        val lastType = getLastType()
-        return (lastType == TokenType.NUMBER || lastType == TokenType.CLOSE_BRACKET) && getUnclosedBrackets() > 0
-    }
-
-    private fun isExpressionValid(): Boolean {
-        val lastType = getLastType()
-        return expressionTokens.isNotEmpty() &&
-                getUnclosedBrackets() == 0 &&
-                (lastType == TokenType.NUMBER || lastType == TokenType.CLOSE_BRACKET)
-    }
-    // ----------------------------------------
-
-    private fun setupButtons() {
-        binding.btnStop.setOnClickListener {
-            izvrsiStopAkciju()
-        }
-
-        val numButtons = listOf<Button>(
-            binding.btnNum1, binding.btnNum2, binding.btnNum3,
-            binding.btnNum4, binding.btnNum5, binding.btnNum6
-        )
-        numButtons.forEach { button ->
-            button.setOnClickListener {
-                // Dugme vizuelno ostaje klikabilno celo vreme, ali ako pravilo kaže NE, ništa se ne dešava
-                if (canPressNum()) {
-                    expressionTokens.add(ExpressionToken(button.text.toString(), TokenType.NUMBER, button.id))
-                    button.isEnabled = false // Isključujemo ga da se ne bi kliknuo dvaput isti broj sa stola
-                    osveziPrikazIzraza()
-                }
+    private val shakeListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent) {
+            if (!canStopNow) return
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+            val gForce = sqrt(x * x + y * y + z * z) / SensorManager.GRAVITY_EARTH
+            val now = System.currentTimeMillis()
+            if (gForce > SHAKE_THRESHOLD && now - lastShakeMs > SHAKE_DEBOUNCE_MS) {
+                lastShakeMs = now
+                viewModel.requestStop()
             }
         }
 
-        val opButtons = listOf<Button>(
-            binding.btnPlus, binding.btnMinus, binding.btnMultiply, binding.btnDivide
-        )
-        opButtons.forEach { button ->
-            button.setOnClickListener {
-                if (canPressOp()) {
-                    expressionTokens.add(ExpressionToken(button.text.toString(), TokenType.OPERATOR))
-                    osveziPrikazIzraza()
-                }
-            }
-        }
-
-        binding.btnOpenBracket.setOnClickListener {
-            if (canPressOpenBracket()) {
-                expressionTokens.add(ExpressionToken(binding.btnOpenBracket.text.toString(), TokenType.OPEN_BRACKET))
-                osveziPrikazIzraza()
-            }
-        }
-
-        binding.btnCloseBracket.setOnClickListener {
-            if (canPressCloseBracket()) {
-                expressionTokens.add(ExpressionToken(binding.btnCloseBracket.text.toString(), TokenType.CLOSE_BRACKET))
-                osveziPrikazIzraza()
-            }
-        }
-
-        binding.btnBackspace.setOnClickListener {
-            if (expressionTokens.isNotEmpty()) {
-                val obrisaniToken = expressionTokens.removeAt(expressionTokens.lastIndex)
-                if (obrisaniToken.sourceButtonId != null) {
-                    view?.findViewById<Button>(obrisaniToken.sourceButtonId)?.isEnabled = true
-                }
-                osveziPrikazIzraza()
-            }
-        }
-
-        // Submit dugme uvek vidljivo, ali proverava da li je izraz dovršen kad se klikne
-        binding.btnSubmit.setOnClickListener {
-            if (!isExpressionValid()) {
-                Toast.makeText(requireContext(), "Matematički izraz nije dovršen!", Toast.LENGTH_SHORT).show()
-            } else {
-                proveriRešenjeIKrajRunde()
-            }
-        }
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
     }
 
-    private fun osveziPrikazIzraza() {
-        binding.tvCurrentExpression.text = expressionTokens.joinToString("") { it.text }
-    }
-
-    private fun zapocniTajmerZaIgru() {
-        timer?.cancel()
-        timer = object : CountDownTimer(60000, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                binding.gameHeader.tvGameTimer.text = (millisUntilFinished / 1000).toString()
-            }
-            override fun onFinish() {
-                binding.gameHeader.tvGameTimer.text = "0"
-                Toast.makeText(requireContext(), "Vreme je isteklo!", Toast.LENGTH_SHORT).show()
-                proveriRešenjeIKrajRunde()
-            }
-        }.start()
-    }
-
-    private fun proveriRešenjeIKrajRunde() {
-        timer?.cancel()
-
-        if (expressionTokens.isNotEmpty()) {
-            if (trenutnaRunda == 1) {
-                rezultatIgrac1 += 10
-                binding.gameHeader.tvPlayer1Score.text = "Igrač 1\n$rezultatIgrac1"
-            } else {
-                rezultatIgrac2 += 10
-                binding.gameHeader.tvPlayer2Score.text = "Igrač 2\n$rezultatIgrac2"
-            }
-        }
-
-        if (trenutnaRunda == 1) {
-            trenutnaRunda = 2
-            Toast.makeText(requireContext(), "Runda 2 - Igra drugi igrač!", Toast.LENGTH_LONG).show()
-            Handler(Looper.getMainLooper()).postDelayed({
-                zapocniRundu()
-            }, 1500)
-        } else {
-            Toast.makeText(requireContext(), "Kraj igre! P1: $rezultatIgrac1 | P2: $rezultatIgrac2", Toast.LENGTH_LONG).show()
-            Handler(Looper.getMainLooper()).postDelayed({
-                findNavController().popBackStack()
-            }, 2000)
-        }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        timer?.cancel()
-        autoStopTimer?.cancel()
+    companion object {
+        private const val SHAKE_THRESHOLD = 2.7f
+        private const val SHAKE_DEBOUNCE_MS = 1000L
     }
 }

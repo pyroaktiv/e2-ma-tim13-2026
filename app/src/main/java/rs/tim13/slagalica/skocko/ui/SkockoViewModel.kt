@@ -1,38 +1,19 @@
 package rs.tim13.slagalica.skocko.ui
 
-import android.app.Application
-import android.os.CountDownTimer
-import android.widget.BaseAdapter
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import rs.tim13.slagalica.R
-import rs.tim13.slagalica.core.model.BaseGame
+import rs.tim13.slagalica.core.model.GameResult
 import rs.tim13.slagalica.core.model.Player
 import rs.tim13.slagalica.core.ui.BaseGameViewModel
 import rs.tim13.slagalica.core.ui.GameEvent
-import rs.tim13.slagalica.skocko.data.MockSkockoGameRepository
-import rs.tim13.slagalica.skocko.data.SkockoGameRepository
 import rs.tim13.slagalica.skocko.model.SkockoGame
+import rs.tim13.slagalica.skocko.model.SkockoStatistics
 import rs.tim13.slagalica.skocko.model.SkockoSymbol
-
-sealed class SkockoEvent : GameEvent() {
-    data class SkockoGameFinished(
-        override val totalBlueScore: Int,
-        override val totalRedScore: Int,
-        val blueCorrectAtAttempt: List<Int>,
-        val blueFailed: Int,
-        val redCorrectAtAttempt: List<Int>,
-        val redFailed: Int
-    ) : GameEvent.GameFinished(totalBlueScore, totalRedScore)
-}
 
 class SkockoViewModel(
     private val secrets: List<List<SkockoSymbol>>,
     localPlayer: Player,
     isSinglePlayer: Boolean = false,
     initialOpponentDisconnected: Boolean = false
-) : BaseGameViewModel<SkockoUiState, GameEvent>(
+) : BaseGameViewModel<SkockoUiState>(
     localPlayer,
     isSinglePlayer,
     maxRounds = if (isSinglePlayer) 1 else 2,
@@ -158,10 +139,15 @@ class SkockoViewModel(
     override fun finishGame() {
         currentPhase = SkockoGamePhase.GAME_OVER
         updateSpecificState("Igra je završena!")
-        events.value = SkockoEvent.SkockoGameFinished(
-            totalBlueScore, totalRedScore,
-            blueCorrectAtAttempt.toList(), blueFailed,
-            redCorrectAtAttempt.toList(), redFailed
+        events.value = GameEvent.GameFinished(
+            GameResult(
+                blueScore = totalBlueScore,
+                redScore = totalRedScore,
+                statistics = SkockoStatistics(
+                    blueCorrectAtAttempt.toList(), blueFailed,
+                    redCorrectAtAttempt.toList(), redFailed
+                )
+            )
         )
     }
 

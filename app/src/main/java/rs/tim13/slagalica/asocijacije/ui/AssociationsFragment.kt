@@ -9,6 +9,8 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import rs.tim13.slagalica.R
+import rs.tim13.slagalica.asocijacije.data.MockAssociationsGameRepository
+import rs.tim13.slagalica.core.model.GameConfig
 import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentAsocijacijeBinding
 import rs.tim13.slagalica.databinding.ItemAsocijacijeCellBinding
@@ -16,7 +18,12 @@ import rs.tim13.slagalica.databinding.ItemAsocijacijeCellBinding
 class AssociationsFragment :
     BaseGameFragment<FragmentAsocijacijeBinding, AssociationsUiState, AssociationsViewModel>(FragmentAsocijacijeBinding::inflate) {
 
-    override val viewModel: AssociationsViewModel by viewModels()
+    override val viewModel: AssociationsViewModel by viewModels {
+        AssociationsViewModelFactory(
+            repository = MockAssociationsGameRepository(),
+            config = GameConfig.fromBundle(arguments)
+        )
+    }
 
     override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer
 

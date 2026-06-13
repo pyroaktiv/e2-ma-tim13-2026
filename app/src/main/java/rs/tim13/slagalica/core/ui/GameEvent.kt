@@ -1,11 +1,16 @@
 package rs.tim13.slagalica.core.ui
 
-abstract class GameEvent {
+import rs.tim13.slagalica.core.model.GameResult
+
+/**
+ * Događaji koje ViewModel igre emituje ka okruženju (fragmentu i budućem koordinatoru).
+ *
+ * - [MovePlayed]: potez koji treba poslati protivniku u multiplayer partiji.
+ * - [GameFinished]: igra je gotova; nosi jedinstveni [GameResult] (skor + statistika 2.c).
+ */
+sealed class GameEvent {
 
     data class MovePlayed(val action: String, val payload: Map<String, Any>) : GameEvent()
 
-    abstract class GameFinished(
-        open val totalBlueScore: Int,
-        open val totalRedScore: Int
-    ) : GameEvent()
+    data class GameFinished(val result: GameResult) : GameEvent()
 }

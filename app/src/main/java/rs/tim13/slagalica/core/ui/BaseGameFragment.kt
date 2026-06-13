@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.viewbinding.ViewBinding
 
-abstract class BaseGameFragment<VB : ViewBinding, S : GameUiState, VM: BaseGameViewModel<S, *>>(
+abstract class BaseGameFragment<VB : ViewBinding, S : GameUiState, VM : BaseGameViewModel<S>>(
     inflate: (LayoutInflater, ViewGroup?, Boolean) -> VB
 ) : BaseFragment<VB>(inflate) {
 
