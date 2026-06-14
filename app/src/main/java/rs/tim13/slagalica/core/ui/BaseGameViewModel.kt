@@ -14,7 +14,7 @@ abstract class BaseGameViewModel<S : GameUiState>(
     protected val isSinglePlayer: Boolean,
     protected val maxRounds: Int,
     initialOpponentDisconnected: Boolean = false
-) : ViewModel() {
+) : ViewModel(), RemoteGame {
     private val _uiState = MutableLiveData<S>()
     val uiState: LiveData<S> = _uiState
 
@@ -27,6 +27,7 @@ abstract class BaseGameViewModel<S : GameUiState>(
     protected var isOpponentDisconnected = initialOpponentDisconnected
 
     private var timerJob: Job? = null
+    private var roundAdvanceJob: Job? = null
     protected var remainingSeconds = 0
 
     protected fun updateState(newState: S) {
@@ -58,16 +59,23 @@ abstract class BaseGameViewModel<S : GameUiState>(
 
     abstract fun calculateRoundScoresAndStats()
 
-    open fun onRemoteMove(action: String, payload: Map<String, Any>) {
-        // Ako je protivnik kliknuo "Sledeća runda", i naša igra je takođe u ROUND_OVER fazi, prelazimo
-        if (action == "NEXT_ROUND" && isRoundOver()) {
+    override fun onRemoteMove(action: String, payload: Map<String, Any>) {
+        // Podrazumevano ništa; igre koje sinhronizuju poteze override-uju ovu metodu.
+    }
+
+    abstract fun finishGame()
+
+    /**
+     * Posle kratke pauze ([ROUND_GAP_MS]) automatski prelazi na sledeću rundu ili završava igru.
+     * Zamenjuje nekadašnje dugme „Sledeća runda" — oba klijenta nezavisno napreduju po isteku pauze.
+     */
+    protected fun scheduleRoundAdvance() {
+        roundAdvanceJob?.cancel()
+        roundAdvanceJob = viewModelScope.launch {
+            delay(ROUND_GAP_MS)
             executeRoundTransition()
         }
     }
-
-    protected abstract fun isRoundOver(): Boolean
-
-    abstract fun finishGame()
 
     private fun executeRoundTransition() {
         currentRoundIndex++
@@ -78,18 +86,7 @@ abstract class BaseGameViewModel<S : GameUiState>(
         }
     }
 
-    fun advanceToNextRound() {
-        if (!isRoundOver()) return // Zaštita od višestrukih klikova
-
-        // Obaveštavamo server ako igramo protiv pravog igrača
-        if (!isSinglePlayer) {
-            events.value = GameEvent.MovePlayed("NEXT_ROUND", emptyMap())
-        }
-
-        executeRoundTransition()
-    }
-
-    fun handleOpponentDisconnected() {
+    override fun handleOpponentDisconnected() {
         if (isSinglePlayer) return
         isOpponentDisconnected = true
         onOpponentDisconnected()
@@ -100,5 +97,10 @@ abstract class BaseGameViewModel<S : GameUiState>(
     override fun onCleared() {
         super.onCleared()
         stopTimer()
+        roundAdvanceJob?.cancel()
+    }
+
+    companion object {
+        const val ROUND_GAP_MS = 5000L
     }
 }

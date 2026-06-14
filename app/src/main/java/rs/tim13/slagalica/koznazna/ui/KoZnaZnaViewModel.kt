@@ -106,8 +106,6 @@ class KoZnaZnaViewModel(
         )
     }
 
-    override fun isRoundOver(): Boolean = uiState.value?.phase == KoZnaZnaGamePhase.GAME_OVER
-
     override fun onOpponentDisconnected() {
         // Ako čekamo protivnika a mi smo već odgovorili, ne čekamo dalje.
         if (uiState.value?.phase == KoZnaZnaGamePhase.PLAYING && game.hasAnswered(localPlayer)) {

@@ -8,21 +8,19 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import rs.tim13.slagalica.R
-import rs.tim13.slagalica.core.model.GameConfig
 import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentSkockoBinding
 import rs.tim13.slagalica.databinding.ItemSkockoCellBinding
-import rs.tim13.slagalica.skocko.data.MockSkockoGameRepository
+import rs.tim13.slagalica.match.MatchHost
 import rs.tim13.slagalica.skocko.model.SkockoHint
 import rs.tim13.slagalica.skocko.model.SkockoSymbol
 
 class SkockoFragment : BaseGameFragment<FragmentSkockoBinding, SkockoUiState, SkockoViewModel>(FragmentSkockoBinding::inflate) {
 
+    private val host get() = requireParentFragment() as MatchHost
+
     override val viewModel: SkockoViewModel by viewModels {
-        SkockoViewModelFactory(
-            repository = MockSkockoGameRepository(),
-            config = GameConfig.fromBundle(arguments)
-        )
+        SkockoViewModelFactory(host.match.skockoRepository(), host.match.gameConfig)
     }
 
     // Ugovor iz BaseGameFragment-a
@@ -121,7 +119,6 @@ class SkockoFragment : BaseGameFragment<FragmentSkockoBinding, SkockoUiState, Sk
         binding.btnZvezda.setOnClickListener  { viewModel.addSymbol(SkockoSymbol.ZVEZDA) }
         binding.btnErase.setOnClickListener   { viewModel.eraseSymbol() }
         binding.btnSubmit.setOnClickListener  { viewModel.submitGuess() }
-        binding.btnNextRound.setOnClickListener { viewModel.advanceToNextRound() }
     }
 
     // endregion
@@ -220,10 +217,7 @@ class SkockoFragment : BaseGameFragment<FragmentSkockoBinding, SkockoUiState, Sk
         binding.btnSubmit.isEnabled = enabled && state.currentInput.size == 4
 
         val roundOver = state.phase == SkockoGamePhase.ROUND_OVER || state.phase == SkockoGamePhase.GAME_OVER
-        binding.btnNextRound.visibility = if (roundOver) View.VISIBLE else View.GONE
         binding.keyboardBtnRow.visibility = if (!roundOver) View.VISIBLE else View.GONE
-        binding.btnNextRound.text = if (state.phase == SkockoGamePhase.GAME_OVER)
-            getString(R.string.skocko_game_over) else getString(R.string.skocko_next_round)
     }
 
     // endregion

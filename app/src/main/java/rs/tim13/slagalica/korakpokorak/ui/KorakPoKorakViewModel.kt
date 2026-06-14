@@ -104,6 +104,7 @@ class KorakPoKorakViewModel(
         stopTimer()
         calculateRoundScoresAndStats()
         updateSpecificState(KorakPoKorakGamePhase.ROUND_OVER, message)
+        scheduleRoundAdvance()
     }
 
     override fun calculateRoundScoresAndStats() {
@@ -138,8 +139,6 @@ class KorakPoKorakViewModel(
             )
         )
     }
-
-    override fun isRoundOver(): Boolean = uiState.value?.phase == KorakPoKorakGamePhase.ROUND_OVER
 
     override fun onOpponentDisconnected() {
         game.handleOpponentDisconnect(localPlayer)

@@ -7,20 +7,18 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import com.google.android.material.button.MaterialButton
 import rs.tim13.slagalica.R
-import rs.tim13.slagalica.core.model.GameConfig
 import rs.tim13.slagalica.core.model.Player
 import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentSpojniceBinding
-import rs.tim13.slagalica.spojnice.data.MockSpojniceGameRepository
+import rs.tim13.slagalica.match.MatchHost
 
 class SpojniceFragment :
     BaseGameFragment<FragmentSpojniceBinding, SpojniceUiState, SpojniceViewModel>(FragmentSpojniceBinding::inflate) {
 
+    private val host get() = requireParentFragment() as MatchHost
+
     override val viewModel: SpojniceViewModel by viewModels {
-        SpojniceViewModelFactory(
-            repository = MockSpojniceGameRepository(),
-            config = GameConfig.fromBundle(arguments)
-        )
+        SpojniceViewModelFactory(host.match.spojniceRepository(), host.match.gameConfig)
     }
 
     override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer
@@ -44,7 +42,6 @@ class SpojniceFragment :
         rightButtons.forEachIndexed { index, button ->
             button.setOnClickListener { viewModel.selectRight(index) }
         }
-        binding.btnNextRound.setOnClickListener { viewModel.advanceToNextRound() }
     }
 
     override fun renderSpecificState(state: SpojniceUiState) {
@@ -65,12 +62,6 @@ class SpojniceFragment :
             val connected = index in state.connectedRightIndices
             renderConnectableButton(button, connected, selected = false, state.isMyTurn, state.phase)
         }
-
-        val roundOver = state.phase != SpojniceGamePhase.PLAYING
-        binding.btnNextRound.visibility = if (roundOver) View.VISIBLE else View.GONE
-        binding.btnNextRound.text =
-            if (state.phase == SpojniceGamePhase.GAME_OVER) getString(R.string.game_over)
-            else getString(R.string.game_next_round)
     }
 
     private fun renderConnectableButton(

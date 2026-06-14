@@ -121,6 +121,7 @@ class SpojniceViewModel(
         stopTimer()
         calculateRoundScoresAndStats()
         updateSpecificState(SpojniceGamePhase.ROUND_OVER, message)
+        scheduleRoundAdvance()
     }
 
     override fun calculateRoundScoresAndStats() {
@@ -143,8 +144,6 @@ class SpojniceViewModel(
             )
         )
     }
-
-    override fun isRoundOver(): Boolean = uiState.value?.phase == SpojniceGamePhase.ROUND_OVER
 
     override fun onOpponentDisconnected() {
         currentGame.handleOpponentDisconnect(localPlayer)

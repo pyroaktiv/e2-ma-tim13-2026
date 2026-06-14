@@ -71,6 +71,7 @@ class SkockoViewModel(
         calculateRoundScoresAndStats()
         currentPhase = SkockoGamePhase.ROUND_OVER
         updateSpecificState("Runda je završena.")
+        scheduleRoundAdvance()
     }
 
     fun addSymbol(symbol: SkockoSymbol) {
@@ -149,10 +150,6 @@ class SkockoViewModel(
                 )
             )
         )
-    }
-
-    override fun isRoundOver(): Boolean {
-        return uiState.value?.phase == SkockoGamePhase.ROUND_OVER
     }
 
     override fun onOpponentDisconnected() {

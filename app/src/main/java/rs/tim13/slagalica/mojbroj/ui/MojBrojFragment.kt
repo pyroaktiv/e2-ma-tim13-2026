@@ -10,20 +10,18 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.viewModels
 import rs.tim13.slagalica.R
-import rs.tim13.slagalica.core.model.GameConfig
 import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentMojBrojBinding
-import rs.tim13.slagalica.mojbroj.data.MockMojBrojGameRepository
+import rs.tim13.slagalica.match.MatchHost
 import kotlin.math.sqrt
 
 class MojBrojFragment :
     BaseGameFragment<FragmentMojBrojBinding, MojBrojUiState, MojBrojViewModel>(FragmentMojBrojBinding::inflate) {
 
+    private val host get() = requireParentFragment() as MatchHost
+
     override val viewModel: MojBrojViewModel by viewModels {
-        MojBrojViewModelFactory(
-            repository = MockMojBrojGameRepository(),
-            config = GameConfig.fromBundle(arguments)
-        )
+        MojBrojViewModelFactory(host.match.mojBrojRepository(), host.match.gameConfig)
     }
 
     override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer
@@ -54,7 +52,6 @@ class MojBrojFragment :
         binding.btnCloseBracket.setOnClickListener { viewModel.addCloseBracket() }
         binding.btnBackspace.setOnClickListener { viewModel.backspace() }
         binding.btnSubmit.setOnClickListener { viewModel.submitSolution() }
-        binding.btnNextRound.setOnClickListener { viewModel.advanceToNextRound() }
 
         sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as? SensorManager
         accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
@@ -86,12 +83,6 @@ class MojBrojFragment :
         binding.llOfferedNumbers.visibility = solvingVisibility
         binding.glOperations.visibility = solvingVisibility
         binding.btnSubmit.visibility = solvingVisibility
-
-        val roundOver = state.phase == MojBrojGamePhase.ROUND_OVER || state.phase == MojBrojGamePhase.GAME_OVER
-        binding.btnNextRound.visibility = if (roundOver) View.VISIBLE else View.GONE
-        binding.btnNextRound.text =
-            if (state.phase == MojBrojGamePhase.GAME_OVER) getString(R.string.game_over)
-            else getString(R.string.game_next_round)
     }
 
     override fun onResume() {

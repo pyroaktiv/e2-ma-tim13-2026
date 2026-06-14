@@ -85,13 +85,4 @@
             android:paddingVertical="16dp" />
     </LinearLayout>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnNextRound"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="16dp"
-        android:text="@string/game_next_round"
-        android:visibility="gone" />
-
 </LinearLayout>

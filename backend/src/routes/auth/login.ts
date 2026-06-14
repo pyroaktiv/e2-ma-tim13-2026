@@ -2,6 +2,7 @@ import { z } from "zod";
 import { db } from "../../db/database";
 import { signJWT } from "../../util/jwt";
 import { json } from "../../util/response";
+import { grantDailyTokensIfDue } from "../../util/tokens";
 import type { UserRow } from "../../model/user";
 
 const LoginSchema = z.object({
@@ -45,6 +46,9 @@ export async function handleLogin(req: Request): Promise<Response> {
   if (!user.email_verified) {
     return json({ error: "Email not verified" }, 403);
   }
+
+  // Spec 3.a: dnevnih 5 tokena (ako danas još nisu dodeljeni).
+  grantDailyTokensIfDue(user.id);
 
   const token = await signJWT(user.id, user.username);
 

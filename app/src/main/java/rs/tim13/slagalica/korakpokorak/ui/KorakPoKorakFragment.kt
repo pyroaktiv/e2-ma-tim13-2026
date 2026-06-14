@@ -5,20 +5,18 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.fragment.app.viewModels
 import rs.tim13.slagalica.R
-import rs.tim13.slagalica.core.model.GameConfig
 import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentKorakPoKorakBinding
 import rs.tim13.slagalica.databinding.ItemKorakPoKorakFieldBinding
-import rs.tim13.slagalica.korakpokorak.data.MockKorakPoKorakGameRepository
+import rs.tim13.slagalica.match.MatchHost
 
 class KorakPoKorakFragment :
     BaseGameFragment<FragmentKorakPoKorakBinding, KorakPoKorakUiState, KorakPoKorakViewModel>(FragmentKorakPoKorakBinding::inflate) {
 
+    private val host get() = requireParentFragment() as MatchHost
+
     override val viewModel: KorakPoKorakViewModel by viewModels {
-        KorakPoKorakViewModelFactory(
-            repository = MockKorakPoKorakGameRepository(),
-            config = GameConfig.fromBundle(arguments)
-        )
+        KorakPoKorakViewModelFactory(host.match.korakPoKorakRepository(), host.match.gameConfig)
     }
 
     override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer
@@ -38,7 +36,6 @@ class KorakPoKorakFragment :
                 true
             } else false
         }
-        binding.btnNextRound.setOnClickListener { viewModel.advanceToNextRound() }
     }
 
     private fun submitCurrentGuess() {
@@ -60,12 +57,6 @@ class KorakPoKorakFragment :
 
         binding.etSolution.isEnabled = state.canGuess
         binding.btnSubmitSolution.isEnabled = state.canGuess
-
-        val roundOver = state.phase != KorakPoKorakGamePhase.PLAYING
-        binding.btnNextRound.visibility = if (roundOver) View.VISIBLE else View.GONE
-        binding.btnNextRound.text =
-            if (state.phase == KorakPoKorakGamePhase.GAME_OVER) getString(R.string.game_over)
-            else getString(R.string.game_next_round)
     }
 
     private fun renderStep(step: ItemKorakPoKorakFieldBinding, index: Int, state: KorakPoKorakUiState) {

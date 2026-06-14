@@ -102,7 +102,34 @@ export function initDb(): void {
     )
   `);
 
+  // Sadržaj igara (asocijacije, spojnice, korak po korak, ko zna zna) — spec napomena
+  // „podatke ... uneti u bazu". content_json je pool sadržaja za datu igru.
+  db.run(`
+    CREATE TABLE IF NOT EXISTS game_content (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      game         TEXT    NOT NULL UNIQUE,
+      content_json TEXT    NOT NULL
+    )
+  `);
+
+  // Istorija odigranih partija (osnova za rang liste i statistiku).
+  db.run(`
+    CREATE TABLE IF NOT EXISTS matches (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      blue_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      red_user_id  INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      blue_score   INTEGER NOT NULL,
+      red_score    INTEGER NOT NULL,
+      winner       TEXT    NOT NULL CHECK(winner IN ('blue', 'red', 'draw')),
+      is_ranked    INTEGER NOT NULL DEFAULT 1,
+      created_at   INTEGER NOT NULL DEFAULT (unixepoch())
+    )
+  `);
+
   try { db.run("ALTER TABLE users ADD COLUMN in_game INTEGER NOT NULL DEFAULT 0"); } catch {}
+  // Datum poslednje dnevne dodele tokena (YYYY-MM-DD) i napredak ka tokenu od zvezda (50 -> 1).
+  try { db.run("ALTER TABLE users ADD COLUMN last_token_grant TEXT"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN stars_token_progress INTEGER NOT NULL DEFAULT 0"); } catch {}
 
   db.run("CREATE INDEX IF NOT EXISTS idx_users_email        ON users(email)");
   db.run("CREATE INDEX IF NOT EXISTS idx_users_username     ON users(username)");

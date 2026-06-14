@@ -54,12 +54,14 @@ export async function handleRegister(req: Request): Promise<Response> {
 
   const passwordHash = await Bun.password.hash(password);
   const qrToken = crypto.randomUUID();
+  const today = new Date().toISOString().slice(0, 10);
 
+  // Spec 3.a: igrač dobija 5 tokena pri registraciji (sledećih 5 stiže narednog dana).
   const { lastInsertRowid: userId } = db
     .query(
-      "INSERT INTO users (email, username, password_hash, region, qr_token) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO users (email, username, password_hash, region, qr_token, tokens, last_token_grant) VALUES (?, ?, ?, ?, ?, 5, ?)",
     )
-    .run(email, username, passwordHash, region, qrToken);
+    .run(email, username, passwordHash, region, qrToken, today);
 
   db.query("INSERT INTO match_summary (user_id) VALUES (?)").run(userId);
 

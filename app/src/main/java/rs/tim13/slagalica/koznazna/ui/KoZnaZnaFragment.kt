@@ -6,19 +6,17 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import com.google.android.material.button.MaterialButton
 import rs.tim13.slagalica.R
-import rs.tim13.slagalica.core.model.GameConfig
 import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentKoZnaZnaBinding
-import rs.tim13.slagalica.koznazna.data.MockKoZnaZnaGameRepository
+import rs.tim13.slagalica.match.MatchHost
 
 class KoZnaZnaFragment :
     BaseGameFragment<FragmentKoZnaZnaBinding, KoZnaZnaUiState, KoZnaZnaViewModel>(FragmentKoZnaZnaBinding::inflate) {
 
+    private val host get() = requireParentFragment() as MatchHost
+
     override val viewModel: KoZnaZnaViewModel by viewModels {
-        KoZnaZnaViewModelFactory(
-            repository = MockKoZnaZnaGameRepository(),
-            config = GameConfig.fromBundle(arguments)
-        )
+        KoZnaZnaViewModelFactory(host.match.koZnaZnaRepository(), host.match.gameConfig)
     }
 
     override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer

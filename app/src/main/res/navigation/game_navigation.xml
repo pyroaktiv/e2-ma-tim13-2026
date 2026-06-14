@@ -3,63 +3,35 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/game_navigation"
-    app:startDestination="@id/demoGameListFragment">
+    app:startDestination="@id/homeFragment">
 
     <fragment
-        android:id="@+id/demoGameListFragment"
-        android:name="rs.tim13.slagalica.core.ui.DemoGameListFragment"
-        android:label="Game List"
-        tools:layout="@layout/fragment_demo_game_list">
+        android:id="@+id/homeFragment"
+        android:name="rs.tim13.slagalica.core.ui.HomeFragment"
+        android:label="Slagalica"
+        tools:layout="@layout/fragment_home">
 
         <action
-            android:id="@+id/action_list_to_profil"
+            android:id="@+id/action_home_to_match"
+            app:destination="@id/matchHostFragment" />
+        <action
+            android:id="@+id/action_home_to_profil"
             app:destination="@id/profilFragment" />
-
         <action
-            android:id="@+id/action_list_to_mojBroj"
-            app:destination="@id/mojBrojFragment" />
-
-        <action
-            android:id="@+id/action_list_to_korakPoKorak"
-            app:destination="@id/korakPoKorakFragment" />
-
-        <action
-            android:id="@+id/action_list_to_koZnaZna"
-            app:destination="@id/koZnaZnaFragment" />
-
-        <action
-            android:id="@+id/action_list_to_spojnice"
-            app:destination="@id/spojniceFragment" />
-
-
-        <action
-            android:id="@+id/action_list_to_notifications"
+            android:id="@+id/action_home_to_notifications"
             app:destination="@id/notificationsFragment" />
-
-        <action
-            android:id="@+id/action_list_to_asocijacije"
-            app:destination="@id/asocijacijeFragment" />
-
-        <action
-            android:id="@+id/action_list_to_skocko"
-            app:destination="@id/skockoFragment" />
-
-        <action
-            android:id="@+id/action_list_to_reset_password"
-            app:destination="@id/authResetPasswordFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/mojBrojFragment"
-        android:name="rs.tim13.slagalica.mojbroj.ui.MojBrojFragment"
-        android:label="Moj Broj"
-        tools:layout="@layout/fragment_moj_broj" />
-
-    <fragment
-        android:id="@+id/korakPoKorakFragment"
-        android:name="rs.tim13.slagalica.korakpokorak.ui.KorakPoKorakFragment"
-        android:label="Korak po korak"
-        tools:layout="@layout/fragment_korak_po_korak" />
+        android:id="@+id/matchHostFragment"
+        android:name="rs.tim13.slagalica.match.ui.MatchHostFragment"
+        android:label="Partija"
+        tools:layout="@layout/fragment_match_host">
+        <argument
+            android:name="mode"
+            app:argType="string"
+            android:defaultValue="SOLO" />
+    </fragment>
 
     <fragment
         android:id="@+id/profilFragment"
@@ -67,37 +39,9 @@
         tools:layout="@layout/fragment_profil" />
 
     <fragment
-        android:id="@+id/koZnaZnaFragment"
-        android:name="rs.tim13.slagalica.koznazna.ui.KoZnaZnaFragment"
-        tools:layout="@layout/fragment_ko_zna_zna" />
-
-    <fragment
-        android:id="@+id/spojniceFragment"
-        android:name="rs.tim13.slagalica.spojnice.ui.SpojniceFragment"
-        tools:layout="@layout/fragment_spojnice" />
-
-    <fragment
         android:id="@+id/notificationsFragment"
         android:name="rs.tim13.slagalica.notifications.ui.NotificationsFragment"
         android:label="Obaveštenja"
         tools:layout="@layout/fragment_notifications" />
-
-    <fragment
-        android:id="@+id/asocijacijeFragment"
-        android:name="rs.tim13.slagalica.asocijacije.ui.AssociationsFragment"
-        android:label="Asocijacije"
-        tools:layout="@layout/fragment_asocijacije" />
-
-    <fragment
-        android:id="@+id/skockoFragment"
-        android:name="rs.tim13.slagalica.skocko.ui.SkockoFragment"
-        android:label="Skočko"
-        tools:layout="@layout/fragment_skocko" />
-
-    <fragment
-        android:id="@+id/authResetPasswordFragment"
-        android:name="rs.tim13.slagalica.auth.ui.ResetPasswordFragment"
-        android:label="Resetuj lozinku"
-        tools:layout="@layout/fragment_auth_reset_password" />
 
 </navigation>

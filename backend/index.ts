@@ -1,9 +1,11 @@
 import { initDb } from "./src/db/schema";
+import { seedGameContent } from "./src/db/seed-content";
 import { db } from "./src/db/database";
 import { json } from "./src/util/response";
 import { verifyJWT } from "./src/util/jwt";
 import { registerConnection, removeConnection } from "./src/util/websocket";
 import type { WsData } from "./src/util/websocket";
+import { onSocketMessage, onSocketClose } from "./src/match/manager";
 
 import { handleRegister } from "./src/routes/auth/register";
 import { handleVerifyEmail } from "./src/routes/auth/verify-email";
@@ -33,6 +35,7 @@ import {
 } from "./src/routes/friends/invites";
 
 initDb();
+seedGameContent();
 
 setInterval(
   () => {
@@ -79,30 +82,53 @@ Bun.serve<WsData>({
   },
   websocket: {
     open(ws) {
-      registerConnection(ws.data.userId, ws);
+      if (ws.data.kind === "user") registerConnection(ws.data.userId, ws);
     },
-    message(_ws, _msg) {},
+    message(ws, msg) {
+      onSocketMessage(ws, msg);
+    },
     close(ws) {
-      removeConnection(ws.data.userId, ws);
+      if (ws.data.kind === "user") removeConnection(ws.data.userId, ws);
+      onSocketClose(ws);
     },
   },
   async fetch(req, server) {
     const url = new URL(req.url);
     if (url.pathname === "/ws") {
       const token = url.searchParams.get("token");
-      if (!token) return new Response("Unauthorized", { status: 401 });
 
-      const payload = await verifyJWT(token);
-      if (!payload) return new Response("Unauthorized", { status: 401 });
+      if (token) {
+        const payload = await verifyJWT(token);
+        if (!payload) return new Response("Unauthorized", { status: 401 });
 
-      const revoked = db
-        .query("SELECT jti FROM revoked_tokens WHERE jti = ?")
-        .get(payload.jti) as { jti: string } | null;
-      if (revoked) return new Response("Unauthorized", { status: 401 });
+        const revoked = db
+          .query("SELECT jti FROM revoked_tokens WHERE jti = ?")
+          .get(payload.jti) as { jti: string } | null;
+        if (revoked) return new Response("Unauthorized", { status: 401 });
 
-      const upgraded = server.upgrade(req, { data: { userId: Number(payload.sub) } });
-      if (upgraded) return undefined as unknown as Response;
-      return new Response("WebSocket upgrade failed", { status: 400 });
+        const data: WsData = {
+          kind: "user",
+          userId: Number(payload.sub),
+          username: payload.username,
+        };
+        const upgraded = server.upgrade(req, { data });
+        if (upgraded) return undefined as unknown as Response;
+        return new Response("WebSocket upgrade failed", { status: 400 });
+      }
+
+      // Gost — bez tokena, dobija privremeni identitet (može da igra, bez nagrada).
+      if (url.searchParams.get("guest") === "1") {
+        const data: WsData = {
+          kind: "guest",
+          guestId: crypto.randomUUID(),
+          username: "Gost",
+        };
+        const upgraded = server.upgrade(req, { data });
+        if (upgraded) return undefined as unknown as Response;
+        return new Response("WebSocket upgrade failed", { status: 400 });
+      }
+
+      return new Response("Unauthorized", { status: 401 });
     }
     return json({ error: "Not found" }, 404);
   },

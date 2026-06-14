@@ -57,6 +57,7 @@ class AssociationsViewModel(
     override fun onTimeUp() {
         calculateRoundScoresAndStats()
         updateSpecificState(AssociationsGamePhase.ROUND_OVER, "Vreme je isteklo!")
+        scheduleRoundAdvance()
     }
 
     override fun calculateRoundScoresAndStats() {
@@ -94,10 +95,6 @@ class AssociationsViewModel(
     override fun onOpponentDisconnected() {
         currentGame.handleOpponentDisconnect(localPlayer)
         updateSpecificState(AssociationsGamePhase.PLAYING, "Protivnik je napustio igru. Završite rundu sami.")
-    }
-
-    override fun isRoundOver(): Boolean {
-        return uiState.value?.phase == AssociationsGamePhase.ROUND_OVER
     }
 
     fun revealField(columnIndex: Int, fieldIndex: Int) {
@@ -138,6 +135,7 @@ class AssociationsViewModel(
             stopTimer()
             calculateRoundScoresAndStats()
             updateSpecificState(AssociationsGamePhase.ROUND_OVER, "Tačno rešenje!")
+            scheduleRoundAdvance()
         } else {
             updateSpecificState(AssociationsGamePhase.PLAYING)
         }
@@ -176,6 +174,7 @@ class AssociationsViewModel(
                     stopTimer()
                     calculateRoundScoresAndStats()
                     updateSpecificState(AssociationsGamePhase.ROUND_OVER, "Protivnik je pogodio konačno rešenje!")
+                    scheduleRoundAdvance()
                 } else {
                     updateSpecificState(AssociationsGamePhase.PLAYING)
                 }

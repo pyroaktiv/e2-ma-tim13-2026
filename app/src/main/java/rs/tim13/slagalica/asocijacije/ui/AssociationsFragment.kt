@@ -9,20 +9,18 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import rs.tim13.slagalica.R
-import rs.tim13.slagalica.asocijacije.data.MockAssociationsGameRepository
-import rs.tim13.slagalica.core.model.GameConfig
 import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentAsocijacijeBinding
 import rs.tim13.slagalica.databinding.ItemAsocijacijeCellBinding
+import rs.tim13.slagalica.match.MatchHost
 
 class AssociationsFragment :
     BaseGameFragment<FragmentAsocijacijeBinding, AssociationsUiState, AssociationsViewModel>(FragmentAsocijacijeBinding::inflate) {
 
+    private val host get() = requireParentFragment() as MatchHost
+
     override val viewModel: AssociationsViewModel by viewModels {
-        AssociationsViewModelFactory(
-            repository = MockAssociationsGameRepository(),
-            config = GameConfig.fromBundle(arguments)
-        )
+        AssociationsViewModelFactory(host.match.asocijacijeRepository(), host.match.gameConfig)
     }
 
     override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer
@@ -100,7 +98,6 @@ class AssociationsFragment :
             btn.setOnClickListener { submitColumnGuess(index) }
         }
         binding.btnGuessFinal.setOnClickListener { submitFinalGuess() }
-        binding.btnNextRound.setOnClickListener { viewModel.advanceToNextRound() }
 
         binding.etGuess.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
@@ -171,9 +168,7 @@ class AssociationsFragment :
 
     private fun updatePhaseUi(state: AssociationsUiState) {
         val roundOver = state.phase == AssociationsGamePhase.ROUND_OVER || state.phase == AssociationsGamePhase.GAME_OVER
-        binding.btnNextRound.visibility =  if (roundOver) View.VISIBLE else View.GONE
         binding.btnGuessFinal.visibility = if (!roundOver) View.VISIBLE else View.GONE
-        binding.btnNextRound.text = if (state.phase == AssociationsGamePhase.GAME_OVER) "Kraj igre" else "Sledeća runda"
 
         val canGuess = !state.isNextMoveRevealing && state.isMyTurn
         listOf(binding.btnGuessA, binding.btnGuessB, binding.btnGuessC, binding.btnGuessD, binding.btnGuessFinal)

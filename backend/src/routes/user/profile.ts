@@ -1,11 +1,15 @@
 import { db } from "../../db/database";
 import { requireAuth } from "../../middleware/auth";
 import { json } from "../../util/response";
+import { grantDailyTokensIfDue } from "../../util/tokens";
 import type { UserProfile } from "../../model/user";
 
 export async function handleGetProfile(req: Request): Promise<Response> {
   const auth = await requireAuth(req);
   if (auth instanceof Response) return auth;
+
+  // Spec 3.a: osiguraj dnevnih 5 tokena i pri otvaranju profila.
+  grantDailyTokensIfDue(auth.user_id);
 
   const row = db
     .query(

@@ -130,6 +130,7 @@ class MojBrojViewModel(
         calculateRoundScoresAndStats()
         currentPhase = MojBrojGamePhase.ROUND_OVER
         updateSpecificState(resultMessage())
+        scheduleRoundAdvance()
     }
 
     private fun resultMessage(): String = when {
@@ -164,8 +165,6 @@ class MojBrojViewModel(
             )
         )
     }
-
-    override fun isRoundOver(): Boolean = currentPhase == MojBrojGamePhase.ROUND_OVER
 
     override fun onOpponentDisconnected() {
         if (currentPhase == MojBrojGamePhase.SOLVING && game.hasSubmitted(localPlayer)) {

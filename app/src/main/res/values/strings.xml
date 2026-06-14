@@ -56,6 +56,13 @@
     <string name="notification_channel_ostalo">Ostalo</string>
     <string name="notification_channel_ostalo_desc">Sistemska i ostala obaveštenja</string>
 
+    <string name="home_tokens">Tokeni: %d</string>
+    <string name="home_stars">Zvezde: %d</string>
+    <string name="home_league">Liga: %s</string>
+    <string name="home_guest">Gost</string>
+    <string name="home_tokens_guest">Tokeni: nedostupno</string>
+    <string name="home_stars_guest">Zvezde: nedostupno</string>
+
     <!-- Zajednički nizovi za igre (Ko zna zna, Spojnice, Moj broj, Korak po korak) -->
     <string name="game_player1_score">Igrač 1\n%d</string>
     <string name="game_player2_score">Igrač 2\n%d</string>

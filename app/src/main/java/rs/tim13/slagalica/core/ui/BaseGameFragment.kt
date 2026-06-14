@@ -24,6 +24,18 @@ abstract class BaseGameFragment<VB : ViewBinding, S : GameUiState, VM : BaseGame
             renderCommonState(state)
             renderSpecificState(state)
         }
+
+        // Ako nas hostuje orkestrator partije, vežemo igru na njega: potezi i kraj igre idu
+        // ka koordinatoru, a protivnikovi potezi stižu nazad kroz coordinator.attachGame.
+        (parentFragment as? GameCoordinatorHost)?.gameCoordinator?.let { coordinator ->
+            coordinator.attachGame(viewModel)
+            viewModel.events.observe(viewLifecycleOwner) { event ->
+                when (event) {
+                    is GameEvent.MovePlayed -> coordinator.onLocalMove(event.action, event.payload)
+                    is GameEvent.GameFinished -> coordinator.onGameFinished(event.result)
+                }
+            }
+        }
     }
 
     protected abstract fun setupUI()

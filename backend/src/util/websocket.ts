@@ -1,6 +1,12 @@
 import type { ServerWebSocket } from "bun";
 
-export type WsData = { userId: number };
+/**
+ * Identitet socket konekcije. Registrovan korisnik ima userId; gost ima privremeni guestId
+ * (nema userId, ne ulazi u presence/prijatelje, ne dobija nagrade).
+ */
+export type WsData =
+  | { kind: "user"; userId: number; username: string }
+  | { kind: "guest"; guestId: string; username: string };
 
 const connections = new Map<number, Set<ServerWebSocket<WsData>>>();
 
