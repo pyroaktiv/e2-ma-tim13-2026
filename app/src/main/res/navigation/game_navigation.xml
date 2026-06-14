@@ -36,7 +36,17 @@
     <fragment
         android:id="@+id/profilFragment"
         android:name="rs.tim13.slagalica.profil.ui.ProfilFragment"
-        tools:layout="@layout/fragment_profil" />
+        tools:layout="@layout/fragment_profil">
+        <action
+            android:id="@+id/action_profil_to_resetPassword"
+            app:destination="@id/resetPasswordFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/resetPasswordFragment"
+        android:name="rs.tim13.slagalica.auth.ui.ResetPasswordFragment"
+        android:label="@string/reset_password_title"
+        tools:layout="@layout/fragment_auth_reset_password" />
 
     <fragment
         android:id="@+id/notificationsFragment"

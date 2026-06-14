@@ -18,5 +18,8 @@ interface AuthApiService {
     suspend fun register(@Body request: RegisterRequest): Response<RegisterResponse>
 
     @POST("/api/auth/reset-password")
-    suspend fun resetPassword(@Body request: ResetPasswordRequest) : Response<ResetPasswordResponse>
+    suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<ResetPasswordResponse>
+
+    @POST("/api/auth/logout")
+    suspend fun logout(): Response<Void>
 }
