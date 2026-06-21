@@ -15,4 +15,6 @@ data class AssociationsUiState(
     val finalSolution: String,
     val isFinalSolved: Boolean,
     val isNextMoveRevealing: Boolean = true,
+    val blueScore: Int = 0,
+    val redScore: Int = 0
 ) : GameUiState

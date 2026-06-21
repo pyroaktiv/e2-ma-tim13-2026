@@ -2,12 +2,12 @@ package rs.tim13.slagalica.korakpokorak.ui
 
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.TextView
 import androidx.fragment.app.viewModels
 import rs.tim13.slagalica.R
 import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentKorakPoKorakBinding
 import rs.tim13.slagalica.databinding.ItemKorakPoKorakFieldBinding
+import rs.tim13.slagalica.databinding.LayoutGameHeaderBinding
 import rs.tim13.slagalica.match.MatchHost
 
 class KorakPoKorakFragment :
@@ -19,7 +19,7 @@ class KorakPoKorakFragment :
         KorakPoKorakViewModelFactory(host.match.korakPoKorakRepository(), host.match.gameConfig)
     }
 
-    override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer
+    override val gameHeader: LayoutGameHeaderBinding get() = binding.gameHeader
 
     private lateinit var stepViews: List<ItemKorakPoKorakFieldBinding>
 

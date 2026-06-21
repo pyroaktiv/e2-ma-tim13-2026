@@ -1,13 +1,14 @@
 package rs.tim13.slagalica.koznazna.ui
 
 import android.content.res.ColorStateList
-import android.widget.TextView
+import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import com.google.android.material.button.MaterialButton
 import rs.tim13.slagalica.R
 import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentKoZnaZnaBinding
+import rs.tim13.slagalica.databinding.LayoutGameHeaderBinding
 import rs.tim13.slagalica.match.MatchHost
 
 class KoZnaZnaFragment :
@@ -19,7 +20,7 @@ class KoZnaZnaFragment :
         KoZnaZnaViewModelFactory(host.match.koZnaZnaRepository(), host.match.gameConfig)
     }
 
-    override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer
+    override val gameHeader: LayoutGameHeaderBinding get() = binding.gameHeader
 
     private lateinit var answerButtons: List<MaterialButton>
     private var defaultTint: ColorStateList? = null

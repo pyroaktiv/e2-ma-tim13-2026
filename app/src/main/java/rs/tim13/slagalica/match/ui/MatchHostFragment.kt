@@ -38,7 +38,9 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
         runCatching { MatchMode.valueOf(arguments?.getString(ARG_MODE) ?: "") }.getOrDefault(MatchMode.SOLO)
     }
 
-    override val match: MatchViewModel by viewModels { MatchViewModelFactory(mode) }
+    override val match: MatchViewModel by viewModels {
+        MatchViewModelFactory(requireContext().applicationContext, mode)
+    }
     override val gameCoordinator: GameCoordinator get() = match
 
     private var shownGame: MatchGame? = null

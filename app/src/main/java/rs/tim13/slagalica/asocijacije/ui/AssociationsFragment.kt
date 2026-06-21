@@ -3,15 +3,17 @@ package rs.tim13.slagalica.asocijacije.ui
 import android.graphics.Typeface
 import android.view.Gravity
 import android.view.View
-import android.view.inputmethod.EditorInfo
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import rs.tim13.slagalica.R
 import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentAsocijacijeBinding
 import rs.tim13.slagalica.databinding.ItemAsocijacijeCellBinding
+import rs.tim13.slagalica.databinding.LayoutGameHeaderBinding
 import rs.tim13.slagalica.match.MatchHost
 
 class AssociationsFragment :
@@ -23,7 +25,7 @@ class AssociationsFragment :
         AssociationsViewModelFactory(host.match.asocijacijeRepository(), host.match.gameConfig)
     }
 
-    override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer
+    override val gameHeader: LayoutGameHeaderBinding get() = binding.gameHeader
 
     private lateinit var fieldBindings: Array<Array<ItemAsocijacijeCellBinding>>
     private lateinit var solutionBindings: Array<ItemAsocijacijeCellBinding>
@@ -95,45 +97,52 @@ class AssociationsFragment :
             binding.btnGuessD to 3
         )
         colButtons.forEach { (btn, index) ->
-            btn.setOnClickListener { submitColumnGuess(index) }
+            btn.setOnClickListener { promptColumnGuess(index) }
         }
-        binding.btnGuessFinal.setOnClickListener { submitFinalGuess() }
-
-        binding.etGuess.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                submitFinalGuess()
-                true
-            } else false
-        }
+        binding.btnGuessFinal.setOnClickListener { promptFinalGuess() }
+        binding.btnSkip.setOnClickListener { viewModel.skipGuess() }
     }
 
-    private fun submitColumnGuess(columnIndex: Int) {
-        val guess = binding.etGuess.text?.toString()?.trim() ?: return
-        if (guess.isEmpty()) { showError("Unesite odgovor"); return }
-        val correct = viewModel.guessColumn(columnIndex, guess)
+    private fun promptColumnGuess(columnIndex: Int) {
         val colLabel = listOf("A", "B", "C", "D")[columnIndex]
-        binding.tvStatusMessage.text = if (correct)
-            "✓ Tačno! Kolona $colLabel"
-        else
-            "✗ Netačno. Sledeći igrač na potezu."
-        binding.etGuess.text?.clear()
+        showGuessDialog("Rešenje kolone $colLabel") { guess ->
+            val correct = viewModel.guessColumn(columnIndex, guess)
+            binding.tvStatusMessage.text = if (correct)
+                "✓ Tačno! Kolona $colLabel"
+            else
+                "✗ Netačno. Sledeći igrač na potezu."
+        }
     }
 
-    private fun submitFinalGuess() {
-        val guess = binding.etGuess.text?.toString()?.trim() ?: return
-        if (guess.isEmpty()) { showError("Unesite odgovor"); return }
-        val correct = viewModel.guessFinal(guess)
-        binding.tvStatusMessage.text = if (correct)
-            "✓ Tačno konačno rešenje!"
-        else
-            "✗ Netačno. Sledeći igrač na potezu."
-        binding.etGuess.text?.clear()
+    private fun promptFinalGuess() {
+        showGuessDialog("Konačno rešenje") { guess ->
+            val correct = viewModel.guessFinal(guess)
+            binding.tvStatusMessage.text = if (correct)
+                "✓ Tačno konačno rešenje!"
+            else
+                "✗ Netačno. Sledeći igrač na potezu."
+        }
+    }
+
+    private fun showGuessDialog(title: String, onSubmit: (String) -> Unit) {
+        val input = EditText(requireContext())
+        AlertDialog.Builder(requireContext())
+            .setTitle(title)
+            .setView(input)
+            .setPositiveButton("Potvrdi") { _, _ ->
+                val guess = input.text?.toString()?.trim().orEmpty()
+                if (guess.isEmpty()) showError("Unesite odgovor") else onSubmit(guess)
+            }
+            .setNegativeButton("Otkaži", null)
+            .show()
     }
 
     private fun updateCustomHeaderInfo(state: AssociationsUiState) {
         binding.tvRoundLabel.visibility = View.VISIBLE
         binding.tvRoundLabel.text = getString(R.string.asocijacije_round_label, state.round)
         binding.tvActivePlayer.text = getString(R.string.asocijacije_active_player, state.activePlayer.name)
+        binding.gameHeader.tvPlayer1Score.text = getString(R.string.game_player1_score, state.blueScore)
+        binding.gameHeader.tvPlayer2Score.text = getString(R.string.game_player2_score, state.redScore)
     }
 
     private fun updateGrid(state: AssociationsUiState) {
@@ -169,15 +178,17 @@ class AssociationsFragment :
     private fun updatePhaseUi(state: AssociationsUiState) {
         val roundOver = state.phase == AssociationsGamePhase.ROUND_OVER || state.phase == AssociationsGamePhase.GAME_OVER
         binding.btnGuessFinal.visibility = if (!roundOver) View.VISIBLE else View.GONE
+        binding.btnSkip.visibility = if (!roundOver) View.VISIBLE else View.GONE
 
         val canGuess = !state.isNextMoveRevealing && state.isMyTurn
         listOf(binding.btnGuessA, binding.btnGuessB, binding.btnGuessC, binding.btnGuessD, binding.btnGuessFinal)
             .forEach { it.isEnabled = canGuess }
-        binding.etGuess.isEnabled = canGuess
+        binding.btnSkip.isEnabled = canGuess
 
         if (state.phase == AssociationsGamePhase.GAME_OVER) {
             binding.tvStatusMessage.text = "Kraj Asocijacija!"
             binding.btnGuessFinal.isEnabled = false
+            binding.btnSkip.isEnabled = false
             listOf(binding.btnGuessA, binding.btnGuessB, binding.btnGuessC, binding.btnGuessD)
                 .forEach { it.isEnabled = false }
         }

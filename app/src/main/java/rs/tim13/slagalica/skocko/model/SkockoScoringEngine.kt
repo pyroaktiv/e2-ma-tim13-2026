@@ -8,7 +8,8 @@ object SkockoScoringEngine {
         mainPlayer: Player,
         isSolvedByMain: Boolean,
         mainAttemptsUsed: Int,
-        isSolvedByBonus: Boolean
+        isSolvedByBonus: Boolean,
+        bonusPlayer: Player? = null
     ): Map<Player, Int> {
         val scores = mutableMapOf(Player.BLUE to 0, Player.RED to 0)
         val opponent = Player.entries.first { it != mainPlayer }
@@ -20,7 +21,7 @@ object SkockoScoringEngine {
                 else -> 10
             }
         } else if (isSolvedByBonus) {
-            scores[opponent] = 10
+            scores[bonusPlayer ?: opponent] = 10
         }
 
         return scores

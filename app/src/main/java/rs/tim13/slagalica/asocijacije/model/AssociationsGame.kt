@@ -50,6 +50,17 @@ class AssociationsGame(
         )
     }
 
+    /** Ima li još neotvorenih polja u nerešenim kolonama; ako nema, preskače se faza otkrivanja polja. */
+    private fun hasRevealableField(): Boolean =
+        _columns.any { col -> !col.isSolved && col.fields.any { !it.isRevealed } }
+
+    /** Preskače pogađanje nakon otkrivanja polja i prebacuje potez na protivnika. */
+    fun skipGuess() {
+        if (isNextMoveRevealing) return
+        if (!isSinglePlayer && !isOpponentDisconnected) switchPlayer()
+        isNextMoveRevealing = hasRevealableField()
+    }
+
     fun guessColumn(columnIndex: Int, guess: String): Boolean {
         if (isNextMoveRevealing) return false
         val col = _columns[columnIndex]
@@ -60,7 +71,7 @@ class AssociationsGame(
             true
         } else {
             if (!isSinglePlayer && !isOpponentDisconnected) switchPlayer()
-            isNextMoveRevealing = true
+            isNextMoveRevealing = hasRevealableField()
             false
         }
     }
@@ -76,7 +87,7 @@ class AssociationsGame(
             true
         } else {
             if (!isSinglePlayer && !isOpponentDisconnected) switchPlayer()
-            isNextMoveRevealing = true
+            isNextMoveRevealing = hasRevealableField()
             false
         }
     }

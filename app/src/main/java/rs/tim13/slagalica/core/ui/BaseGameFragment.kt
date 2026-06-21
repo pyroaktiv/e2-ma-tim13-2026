@@ -1,11 +1,15 @@
 package rs.tim13.slagalica.core.ui
 
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.viewbinding.ViewBinding
+import rs.tim13.slagalica.R
+import rs.tim13.slagalica.core.model.Player
+import rs.tim13.slagalica.databinding.LayoutGameHeaderBinding
 
 abstract class BaseGameFragment<VB : ViewBinding, S : GameUiState, VM : BaseGameViewModel<S>>(
     inflate: (LayoutInflater, ViewGroup?, Boolean) -> VB
@@ -13,12 +17,14 @@ abstract class BaseGameFragment<VB : ViewBinding, S : GameUiState, VM : BaseGame
 
     protected abstract val viewModel: VM
 
-    protected abstract val tvTimer: TextView
+    /** Include binding za "layout_game_header.xml", zajednički za sve igre. */
+    protected abstract val gameHeader: LayoutGameHeaderBinding
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         setupUI()
+        applyPlayerBackground()
 
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             renderCommonState(state)
@@ -38,11 +44,38 @@ abstract class BaseGameFragment<VB : ViewBinding, S : GameUiState, VM : BaseGame
         }
     }
 
+    /** Pozadina cele partije nosi blagu nijansu boje lokalnog igrača (plava za Igrača 1, crvena za Igrača 2). */
+    private fun applyPlayerBackground() {
+        val colorRes = if (viewModel.localPlayer == Player.BLUE) R.color.match_bg_player_blue else R.color.match_bg_player_red
+        binding.root.setBackgroundColor(ContextCompat.getColor(requireContext(), colorRes))
+    }
+
     protected abstract fun setupUI()
 
     protected abstract fun renderSpecificState(state: S)
 
     private fun renderCommonState(state: S) {
-        tvTimer.text = state.remainingSeconds.toString()
+        gameHeader.tvGameTimer.text = state.remainingSeconds.toString()
+        highlightActivePlayer(state.activePlayer)
+        renderTokensAndStars()
+    }
+
+    /** Tokeni/zvezde dolaze iz [GameConfig] koordinatora partije — isti izvor kao na home ekranu. */
+    private fun renderTokensAndStars() {
+        val config = (parentFragment as? GameCoordinatorHost)?.gameCoordinator?.gameConfig ?: return
+        gameHeader.tvHeaderTokens.text = getString(R.string.home_tokens, config.tokens)
+        gameHeader.tvHeaderStars.text = getString(R.string.home_stars, config.stars)
+    }
+
+    private fun highlightActivePlayer(activePlayer: Player) {
+        val (active, inactive) = if (activePlayer == Player.BLUE) {
+            gameHeader.tvPlayer1Score to gameHeader.tvPlayer2Score
+        } else {
+            gameHeader.tvPlayer2Score to gameHeader.tvPlayer1Score
+        }
+        active.alpha = 1f
+        active.setTypeface(active.typeface, Typeface.BOLD)
+        inactive.alpha = 0.5f
+        inactive.setTypeface(inactive.typeface, Typeface.NORMAL)
     }
 }

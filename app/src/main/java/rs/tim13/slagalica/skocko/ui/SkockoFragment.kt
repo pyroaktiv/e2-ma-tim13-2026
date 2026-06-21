@@ -11,6 +11,7 @@ import rs.tim13.slagalica.R
 import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentSkockoBinding
 import rs.tim13.slagalica.databinding.ItemSkockoCellBinding
+import rs.tim13.slagalica.databinding.LayoutGameHeaderBinding
 import rs.tim13.slagalica.match.MatchHost
 import rs.tim13.slagalica.skocko.model.SkockoHint
 import rs.tim13.slagalica.skocko.model.SkockoSymbol
@@ -24,7 +25,7 @@ class SkockoFragment : BaseGameFragment<FragmentSkockoBinding, SkockoUiState, Sk
     }
 
     // Ugovor iz BaseGameFragment-a
-    override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer
+    override val gameHeader: LayoutGameHeaderBinding get() = binding.gameHeader
 
     // gridCells[row][col], rows 0-5 = main, 6 = bonus, 7 = solution
     private lateinit var gridCells: Array<Array<ItemSkockoCellBinding>>
@@ -134,6 +135,8 @@ class SkockoFragment : BaseGameFragment<FragmentSkockoBinding, SkockoUiState, Sk
     private fun updateHeader(state: SkockoUiState) {
         binding.tvRoundLabel.text = getString(R.string.skocko_round_label, state.round)
         binding.tvStatusMessage.text = state.statusMessage
+        binding.gameHeader.tvPlayer1Score.text = getString(R.string.game_player1_score, state.blueScore)
+        binding.gameHeader.tvPlayer2Score.text = getString(R.string.game_player2_score, state.redScore)
     }
 
     private fun updateGrid(state: SkockoUiState) {

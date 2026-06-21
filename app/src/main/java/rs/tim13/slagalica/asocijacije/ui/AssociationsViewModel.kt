@@ -42,7 +42,7 @@ class AssociationsViewModel(
             isSinglePlayer = isSinglePlayer
         )
 
-        if (isOpponentDisconnected && initialPlayer != localPlayer) {
+        if (isOpponentDisconnected) {
             currentGame.handleOpponentDisconnect(localPlayer)
         }
 
@@ -121,6 +121,15 @@ class AssociationsViewModel(
         return isCorrect
     }
 
+    fun skipGuess() {
+        if (!isMyTurn() || uiState.value?.phase != AssociationsGamePhase.PLAYING) return
+        currentGame.skipGuess()
+
+        events.value = GameEvent.MovePlayed(action = "SKIP_GUESS", payload = emptyMap())
+
+        updateSpecificState(AssociationsGamePhase.PLAYING)
+    }
+
     fun guessFinal(guess: String): Boolean {
         if (!isMyTurn() || uiState.value?.phase != AssociationsGamePhase.PLAYING) return false
 
@@ -155,6 +164,10 @@ class AssociationsViewModel(
 
                 currentGame.revealField(col, field)
 
+                updateSpecificState(AssociationsGamePhase.PLAYING)
+            }
+            "SKIP_GUESS" -> {
+                currentGame.skipGuess()
                 updateSpecificState(AssociationsGamePhase.PLAYING)
             }
             "GUESS_COLUMN" -> {
@@ -195,7 +208,9 @@ class AssociationsViewModel(
                 phase = phase,
                 remainingSeconds = remainingSeconds,
                 statusMessage = message,
-                isNextMoveRevealing = currentGame.isNextMoveRevealing
+                isNextMoveRevealing = currentGame.isNextMoveRevealing,
+                blueScore = totalBlueScore,
+                redScore = totalRedScore
             )
         )
     }

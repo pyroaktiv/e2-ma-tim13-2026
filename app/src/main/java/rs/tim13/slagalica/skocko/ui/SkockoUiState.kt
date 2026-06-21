@@ -17,5 +17,7 @@ data class SkockoUiState(
     val bonusGuess: SkockoGuess?,
     val secret: List<SkockoSymbol>?,
     val currentInput: List<SkockoSymbol>,
-    val isInputEnabled: Boolean
+    val isInputEnabled: Boolean,
+    val blueScore: Int,
+    val redScore: Int
 ) : GameUiState

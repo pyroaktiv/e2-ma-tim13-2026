@@ -1,5 +1,6 @@
 package rs.tim13.slagalica.match
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,6 +13,7 @@ import rs.tim13.slagalica.asocijacije.model.AssociationsGameRepository
 import rs.tim13.slagalica.core.model.GameConfig
 import rs.tim13.slagalica.core.model.GameResult
 import rs.tim13.slagalica.core.model.Player
+import rs.tim13.slagalica.core.network.RetrofitClient
 import rs.tim13.slagalica.core.network.socket.ClientMessage
 import rs.tim13.slagalica.core.network.socket.MatchContentDto
 import rs.tim13.slagalica.core.network.socket.PerGameStatsDto
@@ -19,6 +21,8 @@ import rs.tim13.slagalica.core.network.socket.ServerMessage
 import rs.tim13.slagalica.core.network.socket.SocketManager
 import rs.tim13.slagalica.core.ui.GameCoordinator
 import rs.tim13.slagalica.core.ui.RemoteGame
+import rs.tim13.slagalica.core.util.TokenManager
+import rs.tim13.slagalica.profil.data.api.ProfileApiService
 import rs.tim13.slagalica.koznazna.data.KoZnaZnaGameRepository
 import rs.tim13.slagalica.koznazna.data.MockKoZnaZnaGameRepository
 import rs.tim13.slagalica.koznazna.data.RemoteKoZnaZnaGameRepository
@@ -44,7 +48,10 @@ import rs.tim13.slagalica.spojnice.data.SpojniceGameRepository
  * ONLINE: server šalje sadržaj i protivnika; potezi idu preko [SocketManager]; nagrade obračunava
  * server po prijavi rezultata.
  */
-class MatchViewModel(private val mode: MatchMode) : ViewModel(), GameCoordinator {
+class MatchViewModel(
+    private val appContext: Context,
+    private val mode: MatchMode
+) : ViewModel(), GameCoordinator {
 
     private val _uiState = MutableLiveData<MatchUiState>()
     val uiState: LiveData<MatchUiState> = _uiState
@@ -63,12 +70,31 @@ class MatchViewModel(private val mode: MatchMode) : ViewModel(), GameCoordinator
     private var opponentLeft = false
     private var findSent = false
 
+    private var tokens = 0
+    private var stars = 0
+
     val isOnline: Boolean get() = mode == MatchMode.ONLINE
 
     init {
+        fetchProfileSnapshot()
         when (mode) {
             MatchMode.SOLO -> showGame(0)
             MatchMode.ONLINE -> _uiState.value = MatchUiState.Connecting
+        }
+    }
+
+    /** Učita trenutne tokene/zvezde za prikaz u header-u partije; gost ili offline ostaje na 0. */
+    private fun fetchProfileSnapshot() {
+        if (TokenManager(appContext).getToken() == null) return
+        viewModelScope.launch {
+            runCatching {
+                val api = RetrofitClient.getClient(appContext).create(ProfileApiService::class.java)
+                val response = api.getProfile()
+                if (response.isSuccessful) response.body() else null
+            }.getOrNull()?.let { profile ->
+                tokens = profile.tokens
+                stars = profile.totalStars
+            }
         }
     }
 
@@ -128,7 +154,9 @@ class MatchViewModel(private val mode: MatchMode) : ViewModel(), GameCoordinator
         get() = GameConfig(
             localPlayer = localColor,
             isSinglePlayer = mode == MatchMode.SOLO,
-            initialOpponentDisconnected = opponentLeft
+            initialOpponentDisconnected = opponentLeft,
+            tokens = tokens,
+            stars = stars
         )
 
     override fun attachGame(game: RemoteGame) {

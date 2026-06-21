@@ -39,8 +39,8 @@ class SkockoViewModel(
         currentInput.clear()
         currentPhase = SkockoGamePhase.MAIN_TURN
 
-        if (isOpponentDisconnected && initialPlayer != localPlayer) {
-            currentGame.handleOpponentDisconnect(localPlayer)
+        if (isOpponentDisconnected) {
+            currentGame.onOpponentLeft(localPlayer)
         }
 
         startTimer(30)
@@ -53,9 +53,10 @@ class SkockoViewModel(
 
     override fun onTimeUp() {
         if (currentPhase == SkockoGamePhase.MAIN_TURN) {
-            if (isSinglePlayer || currentGame.isOpponentDisconnected) {
+            if (isSinglePlayer) {
                 finishRoundLogic()
             } else {
+                currentGame.forfeitMainTurn()
                 currentPhase = SkockoGamePhase.BONUS_TURN
                 currentInput.clear()
                 startTimer(10)
@@ -101,7 +102,7 @@ class SkockoViewModel(
                 finishRoundLogic()
             } else if (currentGame.isMainPhaseExhausted) {
                 // Promašeno svih 6 puta
-                if (isSinglePlayer || currentGame.isOpponentDisconnected) {
+                if (isSinglePlayer) {
                     finishRoundLogic()
                 } else {
                     currentPhase = SkockoGamePhase.BONUS_TURN
@@ -126,7 +127,7 @@ class SkockoViewModel(
         totalBlueScore += scores[Player.BLUE] ?: 0
         totalRedScore += scores[Player.RED] ?: 0
 
-        val mainPlayer = currentGame.initialPlayer
+        val mainPlayer = currentGame.mainPlayer
         if (currentGame.isSolvedByMain) {
             val attemptIndex = currentGame.mainAttemptsUsed - 1 // 0-indeksirano
             if (mainPlayer == Player.BLUE) blueCorrectAtAttempt[attemptIndex]++
@@ -153,13 +154,8 @@ class SkockoViewModel(
     }
 
     override fun onOpponentDisconnected() {
-        currentGame.handleOpponentDisconnect(localPlayer)
-
-        if (currentPhase == SkockoGamePhase.BONUS_TURN && currentGame.activePlayer == localPlayer) {
-            finishRoundLogic()
-        } else {
-            updateSpecificState("Protivnik je napustio igru.")
-        }
+        currentGame.onOpponentLeft(localPlayer)
+        updateSpecificState("Protivnik je napustio igru. Imate šansu da sami osvojite bodove.")
     }
 
     private fun isMyTurn(): Boolean {
@@ -184,7 +180,7 @@ class SkockoViewModel(
                 if (currentGame.isSolvedByMain) {
                     finishRoundLogic()
                 } else if (currentGame.isMainPhaseExhausted) {
-                    if (isSinglePlayer || currentGame.isOpponentDisconnected) {
+                    if (isSinglePlayer) {
                         finishRoundLogic()
                     } else {
                         currentPhase = SkockoGamePhase.BONUS_TURN
@@ -220,12 +216,14 @@ class SkockoViewModel(
                 phase = currentPhase,
                 remainingSeconds = remainingSeconds,
                 statusMessage = message,
-                mainPlayer = currentGame.initialPlayer,
+                mainPlayer = currentGame.mainPlayer,
                 mainGuesses = currentGame.mainGuesses,
                 bonusGuess = currentGame.bonusGuess,
                 secret = if (revealSecret) currentGame.secret else null,
                 currentInput = currentInput.toList(),
-                isInputEnabled = isInputActive() && isMyTurn()
+                isInputEnabled = isInputActive() && isMyTurn(),
+                blueScore = totalBlueScore,
+                redScore = totalRedScore
             )
         )
     }

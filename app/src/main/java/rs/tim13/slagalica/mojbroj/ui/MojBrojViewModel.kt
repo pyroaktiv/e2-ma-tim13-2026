@@ -45,6 +45,9 @@ class MojBrojViewModel(
         val round = rounds[index]
 
         game = MojBrojGame(round.target, round.numbers, roundLeader, isSinglePlayer, isOpponentDisconnected)
+        if (isOpponentDisconnected) {
+            game.handleOpponentDisconnect(localPlayer)
+        }
         expression.clear()
         currentPhase = MojBrojGamePhase.SELECT_TARGET
 
@@ -52,8 +55,21 @@ class MojBrojViewModel(
         updateSpecificState()
     }
 
-    /** „Stop" — klikom na dugme ili shake senzorom; otkriva traženi broj pa brojeve. */
+    /**
+     * „Stop" — klikom na dugme ili shake senzorom; otkriva traženi broj pa brojeve.
+     * Stopira samo [MojBrojGame.roundLeader] (igrač na potezu te runde), kako bi oba igrača
+     * dobila isti traženi broj i iste brojeve umesto da svako stopira nezavisno za sebe.
+     */
     fun requestStop() {
+        if (!canLocalPlayerStop()) return
+        if (!advancePhase()) return
+        if (!isSinglePlayer) events.value = GameEvent.MovePlayed("STOP", emptyMap())
+    }
+
+    private fun canLocalPlayerStop(): Boolean =
+        isSinglePlayer || isOpponentDisconnected || localPlayer == game.roundLeader
+
+    private fun advancePhase(): Boolean {
         when (currentPhase) {
             MojBrojGamePhase.SELECT_TARGET -> {
                 currentPhase = MojBrojGamePhase.SELECT_NUMBERS
@@ -65,8 +81,9 @@ class MojBrojViewModel(
                 startTimer(SOLVE_SECONDS)
                 updateSpecificState()
             }
-            else -> Unit
+            else -> return false
         }
+        return true
     }
 
     fun addNumber(numberIndex: Int) = withSolving {
@@ -115,7 +132,10 @@ class MojBrojViewModel(
 
     override fun onTimeUp() {
         when (currentPhase) {
-            MojBrojGamePhase.SELECT_TARGET, MojBrojGamePhase.SELECT_NUMBERS -> requestStop()
+            MojBrojGamePhase.SELECT_TARGET, MojBrojGamePhase.SELECT_NUMBERS -> {
+                // Auto-stop po isteku vremena vrši samo igrač na potezu; protivnik čeka STOP event.
+                if (canLocalPlayerStop()) requestStop()
+            }
             MojBrojGamePhase.SOLVING -> {
                 if (!game.hasSubmitted(localPlayer)) game.submitResult(localPlayer, expression.evaluate())
                 resolveSolving()
@@ -167,6 +187,7 @@ class MojBrojViewModel(
     }
 
     override fun onOpponentDisconnected() {
+        game.handleOpponentDisconnect(localPlayer)
         if (currentPhase == MojBrojGamePhase.SOLVING && game.hasSubmitted(localPlayer)) {
             resolveSolving()
         } else {
@@ -176,6 +197,7 @@ class MojBrojViewModel(
 
     override fun onRemoteMove(action: String, payload: Map<String, Any>) {
         when (action) {
+            "STOP" -> advancePhase()
             "SUBMIT" -> {
                 val present = payload["present"] as? Boolean ?: true
                 val value = if (present) (payload["value"] as Number).toInt() else null
@@ -199,11 +221,14 @@ class MojBrojViewModel(
                 currentPhase == MojBrojGamePhase.ROUND_OVER ||
                 currentPhase == MojBrojGamePhase.GAME_OVER
 
+        val isSelecting = currentPhase == MojBrojGamePhase.SELECT_TARGET ||
+            currentPhase == MojBrojGamePhase.SELECT_NUMBERS
+
         updateState(
             MojBrojUiState(
                 round = currentRoundIndex + 1,
-                activePlayer = localPlayer,
-                isMyTurn = true,
+                activePlayer = game.roundLeader,
+                isMyTurn = canLocalPlayerStop(),
                 phase = currentPhase,
                 remainingSeconds = remainingSeconds,
                 statusMessage = message,
@@ -212,8 +237,7 @@ class MojBrojViewModel(
                 usedNumberIndices = expression.usedNumberIndices,
                 expressionDisplay = expression.display,
                 isExpressionComplete = expression.isComplete,
-                canStop = currentPhase == MojBrojGamePhase.SELECT_TARGET ||
-                        currentPhase == MojBrojGamePhase.SELECT_NUMBERS,
+                canStop = isSelecting && canLocalPlayerStop(),
                 isSolving = currentPhase == MojBrojGamePhase.SOLVING,
                 blueScore = totalBlueScore,
                 redScore = totalRedScore

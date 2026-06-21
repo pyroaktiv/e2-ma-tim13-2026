@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import rs.tim13.slagalica.core.model.Player
 
 abstract class BaseGameViewModel<S : GameUiState>(
-    protected val localPlayer: Player,
+    val localPlayer: Player,
     protected val isSinglePlayer: Boolean,
     protected val maxRounds: Int,
     initialOpponentDisconnected: Boolean = false

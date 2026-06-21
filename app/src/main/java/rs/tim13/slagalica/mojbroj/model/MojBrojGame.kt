@@ -11,13 +11,22 @@ import rs.tim13.slagalica.core.model.Player
 class MojBrojGame(
     val target: Int,
     val numbers: List<Int>,
-    val roundLeader: Player,
+    roundLeader: Player,
     isSinglePlayer: Boolean = false,
     initialOpponentDisconnected: Boolean = false
 ) : BaseGame(isSinglePlayer, initialOpponentDisconnected) {
 
     init {
         require(numbers.size == NUMBER_COUNT)
+    }
+
+    var roundLeader: Player = roundLeader
+        private set
+
+    /** Protivnik je napustio partiju — preostali igrač postaje vodeći igrač runde (i u header prikazu). */
+    fun handleOpponentDisconnect(remainingPlayer: Player) {
+        super.handleOpponentDisconnect()
+        roundLeader = remainingPlayer
     }
 
     private val results = mutableMapOf<Player, Int?>()

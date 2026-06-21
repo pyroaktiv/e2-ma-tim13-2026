@@ -5,12 +5,12 @@ package rs.tim13.slagalica.match
  * [key] je identifikator koji se koristi i na backendu (statistika, sadržaj).
  */
 enum class MatchGame(val key: String, val displayName: String) {
-    KO_ZNA_ZNA("ko_zna_zna", "Ko zna zna"),
     SPOJNICE("spojnice", "Spojnice"),
-    ASOCIJACIJE("asocijacije", "Asocijacije"),
-    SKOCKO("skocko", "Skočko"),
+    MOJ_BROJ("moj_broj", "Moj broj"),
     KORAK_PO_KORAK("korak_po_korak", "Korak po korak"),
-    MOJ_BROJ("moj_broj", "Moj broj");
+    SKOCKO("skocko", "Skočko"),
+    KO_ZNA_ZNA("ko_zna_zna", "Ko zna zna"),
+    ASOCIJACIJE("asocijacije", "Asocijacije");
 
     val isLast: Boolean get() = ordinal == entries.lastIndex
     fun next(): MatchGame? = entries.getOrNull(ordinal + 1)

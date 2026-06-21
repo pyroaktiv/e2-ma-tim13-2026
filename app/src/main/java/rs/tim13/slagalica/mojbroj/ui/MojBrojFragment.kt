@@ -7,11 +7,11 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.view.View
 import android.widget.Button
-import android.widget.TextView
 import androidx.fragment.app.viewModels
 import rs.tim13.slagalica.R
 import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentMojBrojBinding
+import rs.tim13.slagalica.databinding.LayoutGameHeaderBinding
 import rs.tim13.slagalica.match.MatchHost
 import kotlin.math.sqrt
 
@@ -24,7 +24,7 @@ class MojBrojFragment :
         MojBrojViewModelFactory(host.match.mojBrojRepository(), host.match.gameConfig)
     }
 
-    override val tvTimer: TextView get() = binding.gameHeader.tvGameTimer
+    override val gameHeader: LayoutGameHeaderBinding get() = binding.gameHeader
 
     private lateinit var numberButtons: List<Button>
 
@@ -66,7 +66,13 @@ class MojBrojFragment :
 
         binding.tvTargetNumber.text = state.target?.toString() ?: "???"
         binding.tvCurrentExpression.text = state.expressionDisplay
-        binding.tvStatusMessage.text = state.statusMessage
+
+        val isSelecting = state.phase == MojBrojGamePhase.SELECT_TARGET || state.phase == MojBrojGamePhase.SELECT_NUMBERS
+        binding.tvStatusMessage.text = when {
+            state.statusMessage.isNotEmpty() -> state.statusMessage
+            isSelecting && !state.isMyTurn -> "Čeka se da protivnik stopira brojeve..."
+            else -> ""
+        }
 
         numberButtons.forEachIndexed { index, button ->
             button.text = state.numbers?.getOrNull(index)?.toString() ?: "?"
