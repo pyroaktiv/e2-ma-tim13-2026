@@ -6,6 +6,11 @@ import { verifyJWT } from "./src/util/jwt";
 import { registerConnection, removeConnection } from "./src/util/websocket";
 import type { WsData } from "./src/util/websocket";
 import { onSocketMessage, onSocketClose } from "./src/match/manager";
+import {
+  onSocketMessage as onChallengeSocketMessage,
+  onSocketClose as onChallengeSocketClose,
+} from "./src/challenge/manager";
+import { handleListChallenges, handleGetChallenge } from "./src/routes/challenges";
 
 import { handleRegister } from "./src/routes/auth/register";
 import { handleVerifyEmail } from "./src/routes/auth/verify-email";
@@ -79,6 +84,8 @@ Bun.serve<WsData>({
     "/api/friends/invites/:id/accept": { POST: handleAcceptGameInvite },
     "/api/friends/invites/:id/decline": { POST: handleDeclineGameInvite },
     "/api/friends/invites/:id": { DELETE: handleCancelGameInvite },
+    "/api/challenges": { GET: handleListChallenges },
+    "/api/challenges/:id": { GET: handleGetChallenge },
   },
   websocket: {
     open(ws) {
@@ -86,10 +93,12 @@ Bun.serve<WsData>({
     },
     message(ws, msg) {
       onSocketMessage(ws, msg);
+      onChallengeSocketMessage(ws, msg);
     },
     close(ws) {
       if (ws.data.kind === "user") removeConnection(ws.data.userId, ws);
       onSocketClose(ws);
+      onChallengeSocketClose(ws);
     },
   },
   async fetch(req, server) {

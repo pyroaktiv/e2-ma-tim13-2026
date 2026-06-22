@@ -16,4 +16,5 @@ enum class MatchGame(val key: String, val displayName: String) {
     fun next(): MatchGame? = entries.getOrNull(ordinal + 1)
 }
 
-enum class MatchMode { SOLO, ONLINE }
+/** CHALLENGE: izazov (spec 9) — partija se igra samostalno, sadržaj dolazi sa servera. */
+enum class MatchMode { SOLO, ONLINE, CHALLENGE }

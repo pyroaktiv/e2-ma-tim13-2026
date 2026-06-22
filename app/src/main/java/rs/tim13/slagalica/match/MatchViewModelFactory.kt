@@ -6,8 +6,9 @@ import androidx.lifecycle.ViewModelProvider
 
 class MatchViewModelFactory(
     private val appContext: Context,
-    private val mode: MatchMode
+    private val mode: MatchMode,
+    private val challengeId: String? = null
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T = MatchViewModel(appContext, mode) as T
+    override fun <T : ViewModel> create(modelClass: Class<T>): T = MatchViewModel(appContext, mode, challengeId) as T
 }

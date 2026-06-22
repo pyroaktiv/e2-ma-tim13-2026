@@ -126,6 +126,32 @@ export function initDb(): void {
     )
   `);
 
+  // Izazov (spec 9): lobby koji domaćin pokreće, do 4 učesnika igraju samostalno isti sadržaj.
+  db.run(`
+    CREATE TABLE IF NOT EXISTS challenges (
+      id           TEXT    PRIMARY KEY,
+      creator_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      stake_stars  INTEGER NOT NULL,
+      stake_tokens INTEGER NOT NULL,
+      status       TEXT    NOT NULL DEFAULT 'open' CHECK(status IN ('open', 'active', 'finished', 'cancelled')),
+      created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+      started_at   INTEGER,
+      finished_at  INTEGER
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS challenge_participants (
+      challenge_id  TEXT    NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
+      user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      joined_at     INTEGER NOT NULL DEFAULT (unixepoch()),
+      score         INTEGER,
+      reward_stars  INTEGER,
+      reward_tokens INTEGER,
+      PRIMARY KEY (challenge_id, user_id)
+    )
+  `);
+
   try { db.run("ALTER TABLE users ADD COLUMN in_game INTEGER NOT NULL DEFAULT 0"); } catch {}
   // Datum poslednje dnevne dodele tokena (YYYY-MM-DD) i napredak ka tokenu od zvezda (50 -> 1).
   try { db.run("ALTER TABLE users ADD COLUMN last_token_grant TEXT"); } catch {}
@@ -141,6 +167,8 @@ export function initDb(): void {
   db.run("CREATE INDEX IF NOT EXISTS idx_friend_req_to      ON friend_requests(to_user_id)");
   db.run("CREATE INDEX IF NOT EXISTS idx_game_invites_to    ON game_invites(to_user_id)");
   db.run("CREATE INDEX IF NOT EXISTS idx_game_invites_from  ON game_invites(from_user_id)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_challenges_status  ON challenges(status, created_at DESC)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_challenge_part_chal ON challenge_participants(challenge_id)");
 
   const seedLeagues = db.transaction(() => {
     const leagues = [

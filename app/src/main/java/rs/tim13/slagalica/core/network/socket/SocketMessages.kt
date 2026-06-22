@@ -24,6 +24,22 @@ sealed class ClientMessage {
         val perGame: List<PerGameStatsDto>
     ) : ClientMessage()
     data class LeaveMatch(val type: String = "leave_match", val matchId: String) : ClientMessage()
+
+    // Izazov (spec 9)
+    data class CreateChallenge(
+        val type: String = "create_challenge",
+        val stars: Int,
+        val tokens: Int
+    ) : ClientMessage()
+    data class JoinChallenge(val type: String = "join_challenge", val challengeId: String) : ClientMessage()
+    data class LeaveChallenge(val type: String = "leave_challenge", val challengeId: String) : ClientMessage()
+    data class StartChallenge(val type: String = "start_challenge", val challengeId: String) : ClientMessage()
+    data class ReportChallengeResult(
+        val type: String = "report_challenge_result",
+        val challengeId: String,
+        val score: Int,
+        val perGame: List<PerGameStatsDto>
+    ) : ClientMessage()
 }
 
 /** Statistika jedne igre koja se prijavljuje serveru (spec 2.c). */
@@ -45,6 +61,35 @@ data class MatchRewards(
 data class OpponentDto(
     val username: String,
     val guest: Boolean
+)
+
+/** Učesnik izazova (spec 9); `score`/nagrade su null dok izazov traje. */
+data class ChallengeParticipantDto(
+    val userId: Int,
+    val username: String,
+    val score: Int?,
+    val rewardStars: Int?,
+    val rewardTokens: Int?
+)
+
+/** Stanje jednog izazova — isti oblik za REST listu i za `challenge_update` poruku. */
+data class ChallengeDto(
+    val id: String,
+    val creatorId: Int,
+    val creatorUsername: String,
+    val stakeStars: Int,
+    val stakeTokens: Int,
+    val status: String, // "open" | "active" | "finished" | "cancelled"
+    val participants: List<ChallengeParticipantDto>
+)
+
+/** Konačan plasman jednog učesnika nakon završetka izazova. */
+data class ChallengeResultEntryDto(
+    val userId: Int,
+    val username: String,
+    val score: Int,
+    val rewardStars: Int,
+    val rewardTokens: Int
 )
 
 /**
@@ -72,4 +117,11 @@ sealed class ServerMessage {
     data class MatchOver(val rewards: MatchRewards?) : ServerMessage()
 
     data class ServerError(val message: String) : ServerMessage()
+
+    // Izazov (spec 9)
+    data class ChallengeCreated(val challengeId: String) : ServerMessage()
+    data class ChallengeUpdate(val challenge: ChallengeDto) : ServerMessage()
+    data class ChallengeCancelled(val challengeId: String) : ServerMessage()
+    data class ChallengeStarted(val challengeId: String, val content: MatchContentDto) : ServerMessage()
+    data class ChallengeOver(val challengeId: String, val results: List<ChallengeResultEntryDto>) : ServerMessage()
 }

@@ -1,6 +1,7 @@
 package rs.tim13.slagalica.match
 
 import rs.tim13.slagalica.core.model.Player
+import rs.tim13.slagalica.core.network.socket.ChallengeResultEntryDto
 import rs.tim13.slagalica.core.network.socket.MatchRewards
 
 /**
@@ -43,4 +44,10 @@ sealed class MatchUiState {
 
     /** Greška (npr. nema dovoljno tokena za partiju). */
     data class Error(val message: String) : MatchUiState()
+
+    /** Izazov (spec 9): lokalni rezultat je prijavljen, čeka se da i ostali učesnici završe. */
+    data object ChallengeWaitingForOthers : MatchUiState()
+
+    /** Izazov je završen — konačan plasman i nagrade svih učesnika. */
+    data class ChallengeFinished(val results: List<ChallengeResultEntryDto>) : MatchUiState()
 }

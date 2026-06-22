@@ -50,7 +50,8 @@ import rs.tim13.slagalica.spojnice.data.SpojniceGameRepository
  */
 class MatchViewModel(
     private val appContext: Context,
-    private val mode: MatchMode
+    private val mode: MatchMode,
+    private val challengeId: String? = null
 ) : ViewModel(), GameCoordinator {
 
     private val _uiState = MutableLiveData<MatchUiState>()
@@ -80,6 +81,9 @@ class MatchViewModel(
         when (mode) {
             MatchMode.SOLO -> showGame(0)
             MatchMode.ONLINE -> _uiState.value = MatchUiState.Connecting
+            // Sadržaj (challenge_started) je server već poslao iz lobi ekrana; LiveData ponavlja
+            // poslednju vrednost novom observeru, pa je obrađujemo u onServerMessage ispod.
+            MatchMode.CHALLENGE -> _uiState.value = MatchUiState.Connecting
         }
     }
 
@@ -136,6 +140,16 @@ class MatchViewModel(
             is ServerMessage.ServerError -> {
                 _uiState.value = MatchUiState.Error(message.message)
             }
+            is ServerMessage.ChallengeStarted -> {
+                if (mode != MatchMode.CHALLENGE || message.challengeId != challengeId || content != null) return
+                content = message.content
+                showGame(0)
+            }
+            is ServerMessage.ChallengeOver -> {
+                if (mode != MatchMode.CHALLENGE || message.challengeId != challengeId) return
+                _uiState.value = MatchUiState.ChallengeFinished(message.results)
+            }
+            else -> Unit
         }
     }
 
@@ -143,6 +157,11 @@ class MatchViewModel(
     fun leaveMatch() {
         if (mode == MatchMode.ONLINE && matchId.isNotEmpty()) {
             SocketManager.send(ClientMessage.LeaveMatch(matchId = matchId))
+        } else if (mode == MatchMode.CHALLENGE && challengeId != null && content != null) {
+            // Bez prijavljenog rezultata bi izazov ostao zauvek nedovršen za ostale učesnike.
+            SocketManager.send(
+                ClientMessage.ReportChallengeResult(challengeId = challengeId, score = blueTotal, perGame = perGame.toList())
+            )
         }
     }
 
@@ -153,7 +172,7 @@ class MatchViewModel(
     override val gameConfig: GameConfig
         get() = GameConfig(
             localPlayer = localColor,
-            isSinglePlayer = mode == MatchMode.SOLO,
+            isSinglePlayer = mode == MatchMode.SOLO || mode == MatchMode.CHALLENGE,
             initialOpponentDisconnected = opponentLeft,
             tokens = tokens,
             stars = stars
@@ -226,19 +245,33 @@ class MatchViewModel(
     }
 
     private fun finishMatch() {
-        if (mode == MatchMode.ONLINE) {
-            SocketManager.send(
-                ClientMessage.ReportResult(
-                    matchId = matchId,
-                    blueScore = blueTotal,
-                    redScore = redTotal,
-                    perGame = perGame.toList()
+        when (mode) {
+            MatchMode.ONLINE -> {
+                SocketManager.send(
+                    ClientMessage.ReportResult(
+                        matchId = matchId,
+                        blueScore = blueTotal,
+                        redScore = redTotal,
+                        perGame = perGame.toList()
+                    )
                 )
-            )
-            // Čekamo `match_over` sa nagradama; do tada prikaži kraj bez nagrada.
-            _uiState.value = MatchUiState.MatchOver(blueTotal, redTotal, localColor, rewards = null, opponentLeft = opponentLeft)
-        } else {
-            _uiState.value = MatchUiState.MatchOver(blueTotal, redTotal, localColor, rewards = null, opponentLeft = false)
+                // Čekamo `match_over` sa nagradama; do tada prikaži kraj bez nagrada.
+                _uiState.value = MatchUiState.MatchOver(blueTotal, redTotal, localColor, rewards = null, opponentLeft = opponentLeft)
+            }
+            MatchMode.CHALLENGE -> {
+                SocketManager.send(
+                    ClientMessage.ReportChallengeResult(
+                        challengeId = requireNotNull(challengeId),
+                        score = blueTotal,
+                        perGame = perGame.toList()
+                    )
+                )
+                // Čekamo `challenge_over` kad svi učesnici prijave rezultat.
+                _uiState.value = MatchUiState.ChallengeWaitingForOthers
+            }
+            MatchMode.SOLO -> {
+                _uiState.value = MatchUiState.MatchOver(blueTotal, redTotal, localColor, rewards = null, opponentLeft = false)
+            }
         }
     }
 

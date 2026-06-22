@@ -63,6 +63,32 @@
     <string name="home_tokens_guest">Tokeni: nedostupno</string>
     <string name="home_stars_guest">Zvezde: nedostupno</string>
 
+    <!-- Izazov (spec 9) -->
+    <string name="challenge_screen_title">Izazovi</string>
+    <string name="challenge_empty_state">Trenutno nema otvorenih izazova.</string>
+    <string name="challenge_refresh">Osveži</string>
+    <string name="challenge_create_fab">Napravi izazov</string>
+    <string name="challenge_create_title">Novi izazov</string>
+    <string name="challenge_create_stars_label">Ulog u zvezdama: %d</string>
+    <string name="challenge_create_tokens_label">Ulog u tokenima: %d</string>
+    <string name="challenge_create_confirm">Napravi</string>
+    <string name="challenge_cancel">Otkaži</string>
+    <string name="challenge_item_creator">Domaćin: %s</string>
+    <string name="challenge_item_stake">★ %1$d zvezda • %2$d tokena</string>
+    <string name="challenge_item_participants">%1$d/%2$d igrača</string>
+    <string name="challenge_lobby_title">Lobi izazova</string>
+    <string name="challenge_lobby_waiting">Čekanje na učesnike…</string>
+    <string name="challenge_lobby_start">Pokreni izazov</string>
+    <string name="challenge_lobby_leave">Napusti</string>
+    <string name="challenge_lobby_you_suffix"> (ti)</string>
+    <string name="challenge_lobby_host_suffix"> (domaćin)</string>
+    <string name="challenge_lobby_cancelled">Domaćin je otkazao izazov.</string>
+    <string name="challenge_lobby_need_more">Potreban je još bar jedan igrač da bi domaćin mogao da pokrene izazov.</string>
+    <string name="challenge_match_waiting_title">Sačekajte ostale igrače…</string>
+    <string name="challenge_match_waiting_subtitle">Vaš rezultat je prijavljen.</string>
+    <string name="challenge_result_title">Izazov završen!</string>
+    <string name="challenge_result_row">%1$d. %2$s — %3$d bod. (★%4$s • %5$s tok.)</string>
+
     <!-- Zajednički nizovi za igre (Ko zna zna, Spojnice, Moj broj, Korak po korak) -->
     <string name="game_player1_score">Igrač 1\n%d</string>
     <string name="game_player2_score">Igrač 2\n%d</string>

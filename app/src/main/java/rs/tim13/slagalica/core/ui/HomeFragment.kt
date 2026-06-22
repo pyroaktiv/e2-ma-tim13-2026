@@ -28,6 +28,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.btnPlaySolo.setOnClickListener { startMatch(MatchMode.SOLO) }
         binding.btnProfile.setOnClickListener { findNavController().navigate(R.id.action_home_to_profil) }
         binding.btnNotifications.setOnClickListener { findNavController().navigate(R.id.action_home_to_notifications) }
+        binding.btnChallenge.setOnClickListener { findNavController().navigate(R.id.action_home_to_challenges) }
 
         loadProfile()
     }
@@ -65,6 +66,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.tvHomeTokens.text = getString(R.string.home_tokens, profile.tokens)
         binding.tvHomeStars.text = getString(R.string.home_stars, profile.totalStars)
         binding.tvHomeLeague.text = getString(R.string.home_league, profile.league.name)
+        binding.btnChallenge.isEnabled = true
     }
 
     private fun showGuest() {
@@ -72,5 +74,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.tvHomeTokens.text = getString(R.string.home_tokens_guest)
         binding.tvHomeStars.text = getString(R.string.home_stars_guest)
         binding.tvHomeLeague.text = ""
+        binding.btnChallenge.isEnabled = false // izazov uloge zvezde/tokene, nedostupan gostu
     }
 }

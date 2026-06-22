@@ -92,6 +92,11 @@ object SocketManager {
             "opponent_left" -> ServerMessage.OpponentLeft
             "match_over" -> gson.fromJson(text, ServerMessage.MatchOver::class.java)
             "error" -> gson.fromJson(text, ServerMessage.ServerError::class.java)
+            "challenge_created" -> gson.fromJson(text, ServerMessage.ChallengeCreated::class.java)
+            "challenge_update" -> gson.fromJson(text, ServerMessage.ChallengeUpdate::class.java)
+            "challenge_cancelled" -> gson.fromJson(text, ServerMessage.ChallengeCancelled::class.java)
+            "challenge_started" -> gson.fromJson(text, ServerMessage.ChallengeStarted::class.java)
+            "challenge_over" -> gson.fromJson(text, ServerMessage.ChallengeOver::class.java)
             else -> null
         }
     }

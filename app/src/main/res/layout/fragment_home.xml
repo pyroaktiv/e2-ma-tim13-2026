@@ -138,9 +138,8 @@
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:enabled="false"
             android:gravity="start|center_vertical"
-            android:text="Izazov (uskoro)" />
+            android:text="@string/challenge_screen_title" />
 
     </LinearLayout>
 

@@ -7,8 +7,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import rs.tim13.slagalica.R
 import rs.tim13.slagalica.asocijacije.ui.AssociationsFragment
 import rs.tim13.slagalica.core.model.Player
+import rs.tim13.slagalica.core.network.socket.ChallengeResultEntryDto
 import rs.tim13.slagalica.core.network.socket.MatchRewards
 import rs.tim13.slagalica.core.network.socket.SocketManager
 import rs.tim13.slagalica.core.ui.BaseFragment
@@ -37,9 +39,10 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
     private val mode: MatchMode by lazy {
         runCatching { MatchMode.valueOf(arguments?.getString(ARG_MODE) ?: "") }.getOrDefault(MatchMode.SOLO)
     }
+    private val challengeId: String? by lazy { arguments?.getString(ARG_CHALLENGE_ID) }
 
     override val match: MatchViewModel by viewModels {
-        MatchViewModelFactory(requireContext().applicationContext, mode)
+        MatchViewModelFactory(requireContext().applicationContext, mode, challengeId)
     }
     override val gameCoordinator: GameCoordinator get() = match
 
@@ -48,7 +51,7 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (mode == MatchMode.ONLINE) {
+        if (mode == MatchMode.ONLINE || mode == MatchMode.CHALLENGE) {
             SocketManager.connect(requireContext())
             SocketManager.connected.observe(viewLifecycleOwner) { connected ->
                 if (connected) match.onSocketConnected()
@@ -85,8 +88,25 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
             )
             is MatchUiState.MatchOver -> renderMatchOver(state)
             is MatchUiState.Error -> showOverlay("Greška", state.message, progress = false, actionVisible = true)
+            MatchUiState.ChallengeWaitingForOthers -> showOverlay(
+                getString(R.string.challenge_match_waiting_title),
+                getString(R.string.challenge_match_waiting_subtitle),
+                progress = true
+            )
+            is MatchUiState.ChallengeFinished -> renderChallengeFinished(state)
         }
     }
+
+    private fun renderChallengeFinished(state: MatchUiState.ChallengeFinished) {
+        val ranked = state.results.sortedByDescending { it.score }
+        val sb = StringBuilder()
+        ranked.forEachIndexed { index, r -> sb.append(resultRow(index + 1, r)).append('\n') }
+        showOverlay(getString(R.string.challenge_result_title), sb.toString().trim(), progress = false, actionVisible = true)
+    }
+
+    private fun resultRow(rank: Int, r: ChallengeResultEntryDto): String = getString(
+        R.string.challenge_result_row, rank, r.username, r.score, signed(r.rewardStars), signed(r.rewardTokens)
+    )
 
     private fun renderMatchOver(state: MatchUiState.MatchOver) {
         val (mine, theirs) = scoreFor(state.blueTotal, state.redTotal, state.localColor)
@@ -138,7 +158,9 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
 
     private fun confirmLeave() {
         val state = match.uiState.value
-        if (state is MatchUiState.MatchOver || state is MatchUiState.Error) {
+        if (state is MatchUiState.MatchOver || state is MatchUiState.Error ||
+            state is MatchUiState.ChallengeFinished || state == MatchUiState.ChallengeWaitingForOthers
+        ) {
             leaveAndExit()
             return
         }
@@ -152,8 +174,14 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
 
     private fun leaveAndExit() {
         match.leaveMatch()
-        if (mode == MatchMode.ONLINE) SocketManager.disconnect()
-        findNavController().popBackStack()
+        if (mode == MatchMode.ONLINE || mode == MatchMode.CHALLENGE) SocketManager.disconnect()
+        if (mode == MatchMode.CHALLENGE) {
+            // Izazov je u tom trenutku završen/otkazan na serveru — ne vraćati se na lobi/listu
+            // (ponovni join_challenge bi dobio „izazov ne postoji" jer ga server više ne vodi).
+            findNavController().popBackStack(R.id.homeFragment, false)
+        } else {
+            findNavController().popBackStack()
+        }
     }
 
     private fun scoreFor(blue: Int, red: Int, local: Player): Pair<Int, Int> =
@@ -168,5 +196,6 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
 
     companion object {
         const val ARG_MODE = "mode"
+        const val ARG_CHALLENGE_ID = "challengeId"
     }
 }

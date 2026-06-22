@@ -20,6 +20,9 @@
         <action
             android:id="@+id/action_home_to_notifications"
             app:destination="@id/notificationsFragment" />
+        <action
+            android:id="@+id/action_home_to_challenges"
+            app:destination="@id/challengeListFragment" />
     </fragment>
 
     <fragment
@@ -31,6 +34,34 @@
             android:name="mode"
             app:argType="string"
             android:defaultValue="SOLO" />
+        <argument
+            android:name="challengeId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/challengeListFragment"
+        android:name="rs.tim13.slagalica.izazov.ui.ChallengeListFragment"
+        android:label="@string/challenge_screen_title"
+        tools:layout="@layout/fragment_challenge_list">
+        <action
+            android:id="@+id/action_challengeList_to_challengeLobby"
+            app:destination="@id/challengeLobbyFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/challengeLobbyFragment"
+        android:name="rs.tim13.slagalica.izazov.ui.ChallengeLobbyFragment"
+        android:label="@string/challenge_lobby_title"
+        tools:layout="@layout/fragment_challenge_lobby">
+        <argument
+            android:name="challenge_id"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_challengeLobby_to_match"
+            app:destination="@id/matchHostFragment" />
     </fragment>
 
     <fragment
