@@ -11,6 +11,8 @@ import {
   onSocketClose as onChallengeSocketClose,
 } from "./src/challenge/manager";
 import { handleListChallenges, handleGetChallenge } from "./src/routes/challenges";
+import { onSocketMessage as onChatSocketMessage } from "./src/chat/manager";
+import { handleGetConversations, handleGetMessages, handleSearchChatUsers } from "./src/routes/chat";
 
 import { handleRegister } from "./src/routes/auth/register";
 import { handleVerifyEmail } from "./src/routes/auth/verify-email";
@@ -86,6 +88,9 @@ Bun.serve<WsData>({
     "/api/friends/invites/:id": { DELETE: handleCancelGameInvite },
     "/api/challenges": { GET: handleListChallenges },
     "/api/challenges/:id": { GET: handleGetChallenge },
+    "/api/chat/conversations": { GET: handleGetConversations },
+    "/api/chat/messages/:id": { GET: handleGetMessages },
+    "/api/chat/search": { GET: handleSearchChatUsers },
   },
   websocket: {
     open(ws) {
@@ -94,6 +99,7 @@ Bun.serve<WsData>({
     message(ws, msg) {
       onSocketMessage(ws, msg);
       onChallengeSocketMessage(ws, msg);
+      onChatSocketMessage(ws, msg);
     },
     close(ws) {
       if (ws.data.kind === "user") removeConnection(ws.data.userId, ws);

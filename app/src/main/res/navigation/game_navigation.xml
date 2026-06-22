@@ -23,6 +23,9 @@
         <action
             android:id="@+id/action_home_to_challenges"
             app:destination="@id/challengeListFragment" />
+        <action
+            android:id="@+id/action_home_to_chat"
+            app:destination="@id/chatListFragment" />
     </fragment>
 
     <fragment
@@ -62,6 +65,42 @@
         <action
             android:id="@+id/action_challengeLobby_to_match"
             app:destination="@id/matchHostFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/chatListFragment"
+        android:name="rs.tim13.slagalica.chat.ui.ChatListFragment"
+        android:label="@string/chat_screen_title"
+        tools:layout="@layout/fragment_chat_list">
+        <action
+            android:id="@+id/action_chatList_to_chatSearch"
+            app:destination="@id/chatSearchFragment" />
+        <action
+            android:id="@+id/action_chatList_to_chatConversation"
+            app:destination="@id/chatConversationFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/chatSearchFragment"
+        android:name="rs.tim13.slagalica.chat.ui.ChatSearchFragment"
+        android:label="@string/chat_search_title"
+        tools:layout="@layout/fragment_chat_search">
+        <action
+            android:id="@+id/action_chatSearch_to_chatConversation"
+            app:destination="@id/chatConversationFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/chatConversationFragment"
+        android:name="rs.tim13.slagalica.chat.ui.ChatConversationFragment"
+        android:label="@string/chat_conversation_title"
+        tools:layout="@layout/fragment_chat_conversation">
+        <argument
+            android:name="userId"
+            app:argType="integer" />
+        <argument
+            android:name="username"
+            app:argType="string" />
     </fragment>
 
     <fragment

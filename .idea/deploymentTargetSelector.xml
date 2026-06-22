@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-06-22T14:17:02.637171182Z">
+        <DropdownSelection timestamp="2026-06-22T18:44:04.035930934Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/home/zocko/.android/avd/Pixel_7a_3.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/home/zocko/.android/avd/Pixel_7a_2.avd" />
             </handle>
           </Target>
         </DropdownSelection>

@@ -40,6 +40,13 @@ sealed class ClientMessage {
         val score: Int,
         val perGame: List<PerGameStatsDto>
     ) : ClientMessage()
+
+    // Čet (spec 8)
+    data class SendChatMessage(
+        val type: String = "chat_send",
+        val toUserId: Int,
+        val body: String
+    ) : ClientMessage()
 }
 
 /** Statistika jedne igre koja se prijavljuje serveru (spec 2.c). */
@@ -124,4 +131,14 @@ sealed class ServerMessage {
     data class ChallengeCancelled(val challengeId: String) : ServerMessage()
     data class ChallengeStarted(val challengeId: String, val content: MatchContentDto) : ServerMessage()
     data class ChallengeOver(val challengeId: String, val results: List<ChallengeResultEntryDto>) : ServerMessage()
+
+    // Čet (spec 8)
+    data class ChatMessage(
+        val id: Int,
+        val fromUserId: Int,
+        val fromUsername: String,
+        val toUserId: Int,
+        val body: String,
+        val createdAt: String
+    ) : ServerMessage()
 }

@@ -152,6 +152,19 @@ export function initDb(): void {
     )
   `);
 
+  // Čet (spec 8): poruke između dva korisnika istog regiona; konverzacija postaje
+  // vidljiva čim postoji bar jedna poruka u bilo kom smeru.
+  db.run(`
+    CREATE TABLE IF NOT EXISTS chat_messages (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      from_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      to_user_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      body         TEXT    NOT NULL,
+      is_read      INTEGER NOT NULL DEFAULT 0,
+      created_at   INTEGER NOT NULL DEFAULT (unixepoch())
+    )
+  `);
+
   try { db.run("ALTER TABLE users ADD COLUMN in_game INTEGER NOT NULL DEFAULT 0"); } catch {}
   // Datum poslednje dnevne dodele tokena (YYYY-MM-DD) i napredak ka tokenu od zvezda (50 -> 1).
   try { db.run("ALTER TABLE users ADD COLUMN last_token_grant TEXT"); } catch {}
@@ -169,6 +182,8 @@ export function initDb(): void {
   db.run("CREATE INDEX IF NOT EXISTS idx_game_invites_from  ON game_invites(from_user_id)");
   db.run("CREATE INDEX IF NOT EXISTS idx_challenges_status  ON challenges(status, created_at DESC)");
   db.run("CREATE INDEX IF NOT EXISTS idx_challenge_part_chal ON challenge_participants(challenge_id)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_chat_from_to        ON chat_messages(from_user_id, to_user_id, created_at)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_chat_to_from        ON chat_messages(to_user_id, from_user_id, created_at)");
 
   const seedLeagues = db.transaction(() => {
     const leagues = [

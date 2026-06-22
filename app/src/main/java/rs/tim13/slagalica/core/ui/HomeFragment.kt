@@ -29,6 +29,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.btnProfile.setOnClickListener { findNavController().navigate(R.id.action_home_to_profil) }
         binding.btnNotifications.setOnClickListener { findNavController().navigate(R.id.action_home_to_notifications) }
         binding.btnChallenge.setOnClickListener { findNavController().navigate(R.id.action_home_to_challenges) }
+        binding.btnChat.setOnClickListener { findNavController().navigate(R.id.action_home_to_chat) }
 
         loadProfile()
     }
@@ -67,6 +68,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.tvHomeStars.text = getString(R.string.home_stars, profile.totalStars)
         binding.tvHomeLeague.text = getString(R.string.home_league, profile.league.name)
         binding.btnChallenge.isEnabled = true
+        binding.btnChat.isEnabled = true
     }
 
     private fun showGuest() {
@@ -75,5 +77,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.tvHomeStars.text = getString(R.string.home_stars_guest)
         binding.tvHomeLeague.text = ""
         binding.btnChallenge.isEnabled = false // izazov uloge zvezde/tokene, nedostupan gostu
+        binding.btnChat.isEnabled = false // čet je vezan za region, nedostupan gostu
     }
 }

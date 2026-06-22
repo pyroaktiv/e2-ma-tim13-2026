@@ -141,6 +141,14 @@
             android:gravity="start|center_vertical"
             android:text="@string/challenge_screen_title" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnChat"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            android:text="@string/chat_screen_title" />
+
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>

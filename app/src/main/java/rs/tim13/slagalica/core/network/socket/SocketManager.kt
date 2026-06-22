@@ -97,6 +97,7 @@ object SocketManager {
             "challenge_cancelled" -> gson.fromJson(text, ServerMessage.ChallengeCancelled::class.java)
             "challenge_started" -> gson.fromJson(text, ServerMessage.ChallengeStarted::class.java)
             "challenge_over" -> gson.fromJson(text, ServerMessage.ChallengeOver::class.java)
+            "chat_message" -> gson.fromJson(text, ServerMessage.ChatMessage::class.java)
             else -> null
         }
     }
