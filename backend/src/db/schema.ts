@@ -102,7 +102,32 @@ export function initDb(): void {
     )
   `);
 
-  try { db.run("ALTER TABLE users ADD COLUMN in_game INTEGER NOT NULL DEFAULT 0"); } catch {}
+  db.run(`
+    CREATE TABLE IF NOT EXISTS server_config (
+      key   TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS monthly_region_stats (
+      region_name TEXT    NOT NULL,
+      year        INTEGER NOT NULL,
+      month       INTEGER NOT NULL,
+      total_stars INTEGER NOT NULL,
+      rank        INTEGER NOT NULL,
+      PRIMARY KEY (region_name, year, month)
+    )
+  `);
+
+  try { db.run("ALTER TABLE users ADD COLUMN in_game       INTEGER NOT NULL DEFAULT 0"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN weekly_stars  INTEGER NOT NULL DEFAULT 0"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN weekly_games  INTEGER NOT NULL DEFAULT 0"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN monthly_stars INTEGER NOT NULL DEFAULT 0"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN monthly_games INTEGER NOT NULL DEFAULT 0"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN avatar_frame  TEXT    NOT NULL DEFAULT 'none'"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN map_lat       REAL"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN map_lng       REAL"); } catch {}
 
   db.run("CREATE INDEX IF NOT EXISTS idx_users_email        ON users(email)");
   db.run("CREATE INDEX IF NOT EXISTS idx_users_username     ON users(username)");
@@ -114,6 +139,8 @@ export function initDb(): void {
   db.run("CREATE INDEX IF NOT EXISTS idx_friend_req_to      ON friend_requests(to_user_id)");
   db.run("CREATE INDEX IF NOT EXISTS idx_game_invites_to    ON game_invites(to_user_id)");
   db.run("CREATE INDEX IF NOT EXISTS idx_game_invites_from  ON game_invites(from_user_id)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_users_weekly_stars  ON users(weekly_stars  DESC) WHERE weekly_games  > 0");
+  db.run("CREATE INDEX IF NOT EXISTS idx_users_monthly_stars ON users(monthly_stars DESC) WHERE monthly_games > 0");
 
   const seedLeagues = db.transaction(() => {
     const leagues = [
@@ -131,4 +158,16 @@ export function initDb(): void {
   });
 
   seedLeagues();
+
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  const currentWeek = `${d.getUTCFullYear()}-${String(weekNo).padStart(2, "0")}`;
+
+  db.run("INSERT OR IGNORE INTO server_config (key, value) VALUES ('last_weekly_reset',  ?)", [currentWeek]);
+  db.run("INSERT OR IGNORE INTO server_config (key, value) VALUES ('last_monthly_reset', ?)", [currentMonth]);
 }

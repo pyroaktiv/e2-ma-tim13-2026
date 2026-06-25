@@ -2,6 +2,7 @@ import { z } from "zod";
 import { db } from "../../db/database";
 import { sendVerificationEmail } from "../../util/email";
 import { json } from "../../util/response";
+import { REGION_NAMES, generateRandomPoint } from "../../util/regions";
 
 const RegisterSchema = z
   .object({
@@ -10,7 +11,7 @@ const RegisterSchema = z
       .string()
       .min(3, "Username must be at least 3 characters")
       .max(30),
-    region: z.string().min(1, "Region is required"),
+    region: z.enum(REGION_NAMES, { message: "Invalid region" }),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
@@ -54,12 +55,13 @@ export async function handleRegister(req: Request): Promise<Response> {
 
   const passwordHash = await Bun.password.hash(password);
   const qrToken = crypto.randomUUID();
+  const { lat, lng } = generateRandomPoint(region);
 
   const { lastInsertRowid: userId } = db
     .query(
-      "INSERT INTO users (email, username, password_hash, region, qr_token) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO users (email, username, password_hash, region, map_lat, map_lng, qr_token) VALUES (?, ?, ?, ?, ?, ?, ?)",
     )
-    .run(email, username, passwordHash, region, qrToken);
+    .run(email, username, passwordHash, region, lat, lng, qrToken);
 
   db.query("INSERT INTO match_summary (user_id) VALUES (?)").run(userId);
 
