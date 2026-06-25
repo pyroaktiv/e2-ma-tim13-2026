@@ -1,11 +1,14 @@
 package rs.tim13.slagalica.skocko.model
 
-import rs.tim13.slagalica.core.Player
+import rs.tim13.slagalica.core.model.Player
+import rs.tim13.slagalica.core.model.TurnBasedGame
 
 class SkockoGame(
     val secret: List<SkockoSymbol>,
-    val initialPlayer: Player
-) {
+    initialPlayer: Player,
+    isSinglePlayer: Boolean = false,
+    initialOpponentDisconnected: Boolean = false
+) : TurnBasedGame(initialPlayer, isSinglePlayer, initialOpponentDisconnected) {
     init {
         require(secret.size == COMBINATION_SIZE)
     }
@@ -15,6 +18,18 @@ class SkockoGame(
 
     private var _bonusGuess: SkockoGuess? = null
     val bonusGuess: SkockoGuess? get() = _bonusGuess
+
+    var bonusPlayer: Player? = null
+        private set
+
+    var mainPlayer: Player = initialPlayer
+        private set
+
+    /** Protivnik napustio partiju — preostali igrač preuzima i glavni potez radi bodovanja/prikaza. */
+    fun onOpponentLeft(remainingPlayer: Player) {
+        handleOpponentDisconnect(remainingPlayer)
+        mainPlayer = remainingPlayer
+    }
 
     var isSolvedByMain: Boolean = false
         private set
@@ -39,25 +54,41 @@ class SkockoGame(
         if (isMainPhaseExhausted) return null
         val guess = SkockoGuess(symbols, evaluate(symbols))
         _mainGuesses.add(guess)
-        if (guess.hints.all { it == SkockoHint.CORRECT }) isSolvedByMain = true
+        if (guess.hints.all { it == SkockoHint.CORRECT }) {
+            isSolvedByMain = true
+        } else if (isMainPhaseExhausted) {
+            if (!isSinglePlayer && !isOpponentDisconnected) {
+                switchPlayer()
+            }
+        }
         return guess
+    }
+
+    /** Vreme za glavni potez je isteklo bez pogotka — potez prelazi na protivnika za bonus rundu. */
+    fun forfeitMainTurn() {
+        if (isMainPhaseExhausted) return
+        if (!isSinglePlayer && !isOpponentDisconnected) {
+            switchPlayer()
+        }
     }
 
     fun submitBonusGuess(symbols: List<SkockoSymbol>): SkockoGuess? {
         require(symbols.size == COMBINATION_SIZE)
-        if (!isMainPhaseExhausted) return null
         if (hasBonusAttempt) return null
+        if (isSinglePlayer) return null
         val guess = SkockoGuess(symbols, evaluate(symbols))
         _bonusGuess = guess
+        bonusPlayer = activePlayer
         if (guess.hints.all { it == SkockoHint.CORRECT }) isSolvedByBonus = true
         return guess
     }
 
-    fun calculateScore(): Map<Player, Int> = SkockoScoringEngine.roundScore(
-        mainPlayer = initialPlayer,
+    override fun calculateScore(): Map<Player, Int> = SkockoScoringEngine.roundScore(
+        mainPlayer = mainPlayer,
         isSolvedByMain = isSolvedByMain,
         mainAttemptsUsed = mainAttemptsUsed,
-        isSolvedByBonus = isSolvedByBonus
+        isSolvedByBonus = isSolvedByBonus,
+        bonusPlayer = bonusPlayer
     )
 
     private fun evaluate(symbols: List<SkockoSymbol>): List<SkockoHint> {

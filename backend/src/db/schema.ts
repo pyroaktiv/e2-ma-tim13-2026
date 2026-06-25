@@ -109,6 +109,44 @@ export function initDb(): void {
     )
   `);
 
+  // Sadržaj igara (asocijacije, spojnice, korak po korak, ko zna zna) — spec napomena
+  // „podatke ... uneti u bazu". content_json je pool sadržaja za datu igru.
+  db.run(`
+    CREATE TABLE IF NOT EXISTS game_content (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      game         TEXT    NOT NULL UNIQUE,
+      content_json TEXT    NOT NULL
+    )
+  `);
+
+  // Istorija odigranih partija (osnova za rang liste i statistiku).
+  db.run(`
+    CREATE TABLE IF NOT EXISTS matches (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      blue_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      red_user_id  INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      blue_score   INTEGER NOT NULL,
+      red_score    INTEGER NOT NULL,
+      winner       TEXT    NOT NULL CHECK(winner IN ('blue', 'red', 'draw')),
+      is_ranked    INTEGER NOT NULL DEFAULT 1,
+      created_at   INTEGER NOT NULL DEFAULT (unixepoch())
+    )
+  `);
+
+  // Izazov (spec 9): lobby koji domaćin pokreće, do 4 učesnika igraju samostalno isti sadržaj.
+  db.run(`
+    CREATE TABLE IF NOT EXISTS challenges (
+      id           TEXT    PRIMARY KEY,
+      creator_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      stake_stars  INTEGER NOT NULL,
+      stake_tokens INTEGER NOT NULL,
+      status       TEXT    NOT NULL DEFAULT 'open' CHECK(status IN ('open', 'active', 'finished', 'cancelled')),
+      created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+      started_at   INTEGER,
+      finished_at  INTEGER
+    )
+  `);
+
   db.run(`
     CREATE TABLE IF NOT EXISTS monthly_region_stats (
       region_name TEXT    NOT NULL,
@@ -120,27 +158,58 @@ export function initDb(): void {
     )
   `);
 
-  try { db.run("ALTER TABLE users ADD COLUMN in_game       INTEGER NOT NULL DEFAULT 0"); } catch {}
-  try { db.run("ALTER TABLE users ADD COLUMN weekly_stars  INTEGER NOT NULL DEFAULT 0"); } catch {}
-  try { db.run("ALTER TABLE users ADD COLUMN weekly_games  INTEGER NOT NULL DEFAULT 0"); } catch {}
-  try { db.run("ALTER TABLE users ADD COLUMN monthly_stars INTEGER NOT NULL DEFAULT 0"); } catch {}
-  try { db.run("ALTER TABLE users ADD COLUMN monthly_games INTEGER NOT NULL DEFAULT 0"); } catch {}
-  try { db.run("ALTER TABLE users ADD COLUMN avatar_frame  TEXT    NOT NULL DEFAULT 'none'"); } catch {}
-  try { db.run("ALTER TABLE users ADD COLUMN map_lat       REAL"); } catch {}
-  try { db.run("ALTER TABLE users ADD COLUMN map_lng       REAL"); } catch {}
+  db.run(`
+    CREATE TABLE IF NOT EXISTS challenge_participants (
+      challenge_id  TEXT    NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
+      user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      joined_at     INTEGER NOT NULL DEFAULT (unixepoch()),
+      score         INTEGER,
+      reward_stars  INTEGER,
+      reward_tokens INTEGER,
+      PRIMARY KEY (challenge_id, user_id)
+    )
+  `);
 
-  db.run("CREATE INDEX IF NOT EXISTS idx_users_email        ON users(email)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_users_username     ON users(username)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_email_ver_token    ON email_verifications(token)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_game_stats_user    ON game_stats(user_id)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_revoked_exp        ON revoked_tokens(expires_at)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, created_at DESC)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_friend_req_from    ON friend_requests(from_user_id)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_friend_req_to      ON friend_requests(to_user_id)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_game_invites_to    ON game_invites(to_user_id)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_game_invites_from  ON game_invites(from_user_id)");
+  // Čet (spec 8): poruke između dva korisnika istog regiona; konverzacija postaje
+  // vidljiva čim postoji bar jedna poruka u bilo kom smeru.
+  db.run(`
+    CREATE TABLE IF NOT EXISTS chat_messages (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      from_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      to_user_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      body         TEXT    NOT NULL,
+      is_read      INTEGER NOT NULL DEFAULT 0,
+      created_at   INTEGER NOT NULL DEFAULT (unixepoch())
+    )
+  `);
+
+  try { db.run("ALTER TABLE users ADD COLUMN in_game                INTEGER NOT NULL DEFAULT 0"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN weekly_stars           INTEGER NOT NULL DEFAULT 0"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN weekly_games           INTEGER NOT NULL DEFAULT 0"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN monthly_stars          INTEGER NOT NULL DEFAULT 0"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN monthly_games          INTEGER NOT NULL DEFAULT 0"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN avatar_frame           TEXT    NOT NULL DEFAULT 'none'"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN map_lat                REAL"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN map_lng                REAL"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN last_token_grant       TEXT"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN stars_token_progress   INTEGER NOT NULL DEFAULT 0"); } catch {}
+
+  db.run("CREATE INDEX IF NOT EXISTS idx_users_email         ON users(email)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_users_username      ON users(username)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_email_ver_token     ON email_verifications(token)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_game_stats_user     ON game_stats(user_id)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_revoked_exp         ON revoked_tokens(expires_at)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_notifications_user  ON notifications(user_id, created_at DESC)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_friend_req_from     ON friend_requests(from_user_id)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_friend_req_to       ON friend_requests(to_user_id)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_game_invites_to     ON game_invites(to_user_id)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_game_invites_from   ON game_invites(from_user_id)");
   db.run("CREATE INDEX IF NOT EXISTS idx_users_weekly_stars  ON users(weekly_stars  DESC) WHERE weekly_games  > 0");
   db.run("CREATE INDEX IF NOT EXISTS idx_users_monthly_stars ON users(monthly_stars DESC) WHERE monthly_games > 0");
+  db.run("CREATE INDEX IF NOT EXISTS idx_challenges_status   ON challenges(status, created_at DESC)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_challenge_part_chal ON challenge_participants(challenge_id)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_chat_from_to        ON chat_messages(from_user_id, to_user_id, created_at)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_chat_to_from        ON chat_messages(to_user_id, from_user_id, created_at)");
 
   const seedLeagues = db.transaction(() => {
     const leagues = [

@@ -1,35 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="?attr/colorSurface">
 
     <include
         android:id="@+id/gameHeader"
-        layout="@layout/layout_game_header"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        layout="@layout/layout_game_header" />
 
-    <LinearLayout
-        android:id="@+id/llStepsContainer"
+    <TextView
+        android:id="@+id/tvRoundLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:text="Runda 1"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorPrimary" />
+
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:orientation="vertical"
-        android:padding="16dp"
-        app:layout_constraintTop_toBottomOf="@id/gameHeader"
-        app:layout_constraintBottom_toTopOf="@id/llInputArea">
+        android:layout_weight="1">
 
-        <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step1" />
-        <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step2" />
-        <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step3" />
-        <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step4" />
-        <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step5" />
-        <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step6" />
-        <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step7" />
+        <LinearLayout
+            android:id="@+id/llStepsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    </LinearLayout>
+            <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step1" />
+            <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step2" />
+            <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step3" />
+            <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step4" />
+            <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step5" />
+            <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step6" />
+            <include layout="@layout/item_korak_po_korak_field" android:id="@+id/step7" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/tvStatusMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:minHeight="24dp"
+        android:textSize="13sp"
+        android:textColor="?attr/colorPrimary" />
 
     <LinearLayout
         android:id="@+id/llInputArea"
@@ -37,8 +59,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:gravity="center_vertical"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:gravity="center_vertical">
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="0dp"
@@ -51,7 +72,8 @@
                 android:id="@+id/etSolution"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text" />
+                android:inputType="text"
+                android:imeOptions="actionDone" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
@@ -63,4 +85,4 @@
             android:paddingVertical="16dp" />
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

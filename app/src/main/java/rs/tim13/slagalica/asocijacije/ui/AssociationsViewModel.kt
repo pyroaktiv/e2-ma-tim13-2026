@@ -1,115 +1,217 @@
 package rs.tim13.slagalica.asocijacije.ui
 
-import android.os.CountDownTimer
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import rs.tim13.slagalica.asocijacije.data.MockAssociationsGameRepository
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import rs.tim13.slagalica.asocijacije.model.AssociationsGame
-import rs.tim13.slagalica.asocijacije.model.AssociationsGameRepository
-import rs.tim13.slagalica.core.Player
+import rs.tim13.slagalica.asocijacije.model.AssociationsStatistics
+import rs.tim13.slagalica.core.model.GameResult
+import rs.tim13.slagalica.core.model.Player
+import rs.tim13.slagalica.core.ui.BaseGameViewModel
+import rs.tim13.slagalica.core.ui.GameEvent
 
 class AssociationsViewModel(
-    private val repository: AssociationsGameRepository = MockAssociationsGameRepository()
-) : ViewModel() {
+    private val games: List<AssociationsGame>,
+    localPlayer: Player,
+    isSinglePlayer: Boolean = false,
+    initialOpponentDisconnected: Boolean = false
+) : BaseGameViewModel<AssociationsUiState>(localPlayer, isSinglePlayer, maxRounds = if (isSinglePlayer) 1 else 2, initialOpponentDisconnected) {
 
-    private val _uiState = MutableLiveData<AssociationsUiState>()
-    val uiState: LiveData<AssociationsUiState> = _uiState
+    private var blueSolvedCount = 0
+    private var blueUnsolvedCount = 0
+    private var redSolvedCount = 0
+    private var redUnsolvedCount = 0
 
-    private val games: List<AssociationsGame> = repository.getGames()
-    private var game = games[0]
-    private var round = 1
-    private var score = mutableMapOf(Player.BLUE to 0, Player.RED to 0)
-    private var roundScoreAwarded = false
-
-    private var remainingSeconds = ROUND_SECONDS
-    private var timer: CountDownTimer? = null
-
-    companion object {
-        const val ROUND_SECONDS = 120
-    }
+    private lateinit var currentGame: AssociationsGame
 
     init {
-        emit(GamePhase.PLAYING)
-        startTimer()
+        startRound(currentRoundIndex)
+    }
+
+    override fun startRound(index: Int) {
+        val initialPlayer = if (index == 0) Player.BLUE else Player.RED
+
+        currentGame = AssociationsGame(
+            columns = games[index].columns,
+            finalSolution = games[index].finalSolution,
+            initialPlayer = initialPlayer,
+            isSinglePlayer = isSinglePlayer
+        )
+
+        if (isOpponentDisconnected) {
+            currentGame.handleOpponentDisconnect(localPlayer)
+        }
+
+        startTimer(120)
+        updateSpecificState(AssociationsGamePhase.PLAYING)
+    }
+
+    override fun onTimerTick() {
+        updateSpecificState(uiState.value?.phase ?: AssociationsGamePhase.PLAYING)
+    }
+
+    override fun onTimeUp() {
+        calculateRoundScoresAndStats()
+        updateSpecificState(AssociationsGamePhase.ROUND_OVER, "Vreme je isteklo!")
+        scheduleRoundAdvance()
+    }
+
+    override fun calculateRoundScoresAndStats() {
+        val scores = currentGame.calculateScore()
+        totalBlueScore += scores[Player.BLUE] ?: 0
+        totalRedScore += scores[Player.RED] ?: 0
+
+        if (currentGame.isFinalSolved) {
+            if (currentGame.solvedBy == Player.BLUE) {
+                blueSolvedCount++
+                redUnsolvedCount++
+            } else {
+                redSolvedCount++
+                blueUnsolvedCount++
+            }
+        } else {
+            blueUnsolvedCount++
+            redUnsolvedCount++
+        }
+    }
+
+    override fun finishGame() {
+        updateSpecificState(AssociationsGamePhase.GAME_OVER)
+        events.value = GameEvent.GameFinished(
+            GameResult(
+                blueScore = totalBlueScore,
+                redScore = totalRedScore,
+                statistics = AssociationsStatistics(
+                    blueSolvedCount, blueUnsolvedCount, redSolvedCount, redUnsolvedCount
+                )
+            )
+        )
+    }
+
+    override fun onOpponentDisconnected() {
+        currentGame.handleOpponentDisconnect(localPlayer)
+        updateSpecificState(AssociationsGamePhase.PLAYING, "Protivnik je napustio igru. Završite rundu sami.")
     }
 
     fun revealField(columnIndex: Int, fieldIndex: Int) {
-        if (phase() != GamePhase.PLAYING) return
-        if (game.revealField(columnIndex, fieldIndex)) emit(GamePhase.PLAYING)
+        if (!isMyTurn() || uiState.value?.phase != AssociationsGamePhase.PLAYING) return
+        if (currentGame.revealField(columnIndex, fieldIndex)) {
+            events.value = GameEvent.MovePlayed(
+                action = "REVEAL_FIELD",
+                payload = mapOf("column" to columnIndex, "field" to fieldIndex)
+            )
+            updateSpecificState(AssociationsGamePhase.PLAYING)
+        }
     }
 
     fun guessColumn(columnIndex: Int, guess: String): Boolean {
-        if (phase() != GamePhase.PLAYING) return false
-        val correct = game.guessColumn(columnIndex, guess)
-        emit(GamePhase.PLAYING)
-        return correct
+        if (!isMyTurn() || uiState.value?.phase != AssociationsGamePhase.PLAYING) return false
+        val isCorrect = currentGame.guessColumn(columnIndex, guess)
+
+        events.value = GameEvent.MovePlayed(
+            action = "GUESS_COLUMN",
+            payload = mapOf("column" to columnIndex, "guess" to guess)
+        )
+
+        updateSpecificState(AssociationsGamePhase.PLAYING)
+        return isCorrect
+    }
+
+    fun skipGuess() {
+        if (!isMyTurn() || uiState.value?.phase != AssociationsGamePhase.PLAYING) return
+        currentGame.skipGuess()
+
+        events.value = GameEvent.MovePlayed(action = "SKIP_GUESS", payload = emptyMap())
+
+        updateSpecificState(AssociationsGamePhase.PLAYING)
     }
 
     fun guessFinal(guess: String): Boolean {
-        if (phase() != GamePhase.PLAYING) return false
-        val correct = game.guessFinal(guess)
-        if (correct) {
-            timer?.cancel()
-            awardRoundScore()
-            emit(if (round < 2) GamePhase.ROUND_OVER else GamePhase.GAME_OVER)
+        if (!isMyTurn() || uiState.value?.phase != AssociationsGamePhase.PLAYING) return false
+
+        val isCorrect = currentGame.guessFinal(guess)
+
+        events.value = GameEvent.MovePlayed(
+            action = "GUESS_FINAL",
+            payload = mapOf("guess" to guess)
+        )
+
+        if (isCorrect) {
+            stopTimer()
+            calculateRoundScoresAndStats()
+            updateSpecificState(AssociationsGamePhase.ROUND_OVER, "Tačno rešenje!")
+            scheduleRoundAdvance()
         } else {
-            emit(GamePhase.PLAYING)
+            updateSpecificState(AssociationsGamePhase.PLAYING)
         }
-        return correct
+        return isCorrect
     }
 
-    fun advanceToNextRound() {
-        if (phase() != GamePhase.ROUND_OVER) return
-        round = 2
-        game = AssociationsGame(games[1].columns, games[1].finalSolution, Player.RED)
-        remainingSeconds = ROUND_SECONDS
-        roundScoreAwarded = false
-        emit(GamePhase.PLAYING)
-        startTimer()
+    private fun isMyTurn(): Boolean {
+        if (isSinglePlayer) return true
+        return currentGame.activePlayer == localPlayer
     }
 
-    private fun startTimer() {
-        timer?.cancel()
-        timer = object : CountDownTimer(remainingSeconds * 1000L, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                remainingSeconds = (millisUntilFinished / 1000).toInt() + 1
-                emit(GamePhase.PLAYING)
+    override fun onRemoteMove(action: String, payload: Map<String, Any>) {
+        when (action) {
+            "REVEAL_FIELD" -> {
+                val col = (payload["column"] as Number).toInt()
+                val field = (payload["field"] as Number).toInt()
+
+                currentGame.revealField(col, field)
+
+                updateSpecificState(AssociationsGamePhase.PLAYING)
             }
-            override fun onFinish() {
-                remainingSeconds = 0
-                awardRoundScore()
-                emit(if (round < 2) GamePhase.ROUND_OVER else GamePhase.GAME_OVER)
+            "SKIP_GUESS" -> {
+                currentGame.skipGuess()
+                updateSpecificState(AssociationsGamePhase.PLAYING)
             }
-        }.start()
-    }
+            "GUESS_COLUMN" -> {
+                val col = (payload["column"] as Number).toInt()
+                val guess = payload["guess"] as String
 
-    private fun awardRoundScore() {
-        if (roundScoreAwarded) return
-        roundScoreAwarded = true
-        game.calculateScore().entries.forEach {
-            score.compute(it.key) { _, v -> (v ?: 0) + it.value }
+                currentGame.guessColumn(col, guess)
+
+                updateSpecificState(AssociationsGamePhase.PLAYING)
+            }
+            "GUESS_FINAL" -> {
+                val guess = payload["guess"] as String
+
+                val isCorrect = currentGame.guessFinal(guess)
+
+                if (isCorrect) {
+                    stopTimer()
+                    calculateRoundScoresAndStats()
+                    updateSpecificState(AssociationsGamePhase.ROUND_OVER, "Protivnik je pogodio konačno rešenje!")
+                    scheduleRoundAdvance()
+                } else {
+                    updateSpecificState(AssociationsGamePhase.PLAYING)
+                }
+            }
+            else -> super.onRemoteMove(action, payload)
         }
     }
 
-    override fun onCleared() {
-        timer?.cancel()
-    }
-
-    private fun phase(): GamePhase = _uiState.value?.phase ?: GamePhase.PLAYING
-
-    private fun emit(phase: GamePhase) {
-        _uiState.value = AssociationsUiState(
-            columns = game.columns,
-            finalSolution = game.finalSolution,
-            isFinalSolved = game.isFinalSolved,
-            round = round,
-            blueScore = score[Player.BLUE] ?: 0,
-            redScore = score[Player.RED] ?: 0,
-            activePlayer = game.activePlayer,
-            phase = phase,
-            remainingSeconds = remainingSeconds,
-            isNextMoveRevealing = game.isNextMoveRevealing,
+    private fun updateSpecificState(phase: AssociationsGamePhase, message: String = "") {
+        updateState(
+            AssociationsUiState(
+                columns = currentGame.columns,
+                finalSolution = currentGame.finalSolution,
+                isFinalSolved = currentGame.isFinalSolved,
+                round = currentRoundIndex + 1,
+                activePlayer = currentGame.activePlayer,
+                isMyTurn = isMyTurn(),
+                phase = phase,
+                remainingSeconds = remainingSeconds,
+                statusMessage = message,
+                isNextMoveRevealing = currentGame.isNextMoveRevealing,
+                blueScore = totalBlueScore,
+                redScore = totalRedScore
+            )
         )
     }
 }

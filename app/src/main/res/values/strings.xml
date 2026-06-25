@@ -21,6 +21,14 @@
     <string name="have_account_prompt">Već imaš nalog? Prijavi se</string>
     <string name="reset_password_title">Promena lozinke</string>
 
+    <string-array name="regioni_srbije">
+        <item>Banat</item>
+        <item>Bačka</item>
+        <item>Srem</item>
+        <item>Centralna Srbija</item>
+        <item>Kosovo</item>
+    </string-array>
+
     <string name="reset_username_email_hint">Email ili korisničko ime</string>
     <string name="old_password_hint">Stara lozinka</string>
     <string name="new_password_hint">Nova lozinka</string>
@@ -48,6 +56,61 @@
     <string name="notification_channel_ostalo">Ostalo</string>
     <string name="notification_channel_ostalo_desc">Sistemska i ostala obaveštenja</string>
 
+    <string name="home_tokens">Tokeni: %d</string>
+    <string name="home_stars">Zvezde: %d</string>
+    <string name="home_league">Liga: %s</string>
+    <string name="home_guest">Gost</string>
+    <string name="home_tokens_guest">Tokeni: nedostupno</string>
+    <string name="home_stars_guest">Zvezde: nedostupno</string>
+
+    <!-- Izazov (spec 9) -->
+    <string name="challenge_screen_title">Izazovi</string>
+    <string name="challenge_empty_state">Trenutno nema otvorenih izazova.</string>
+    <string name="challenge_refresh">Osveži</string>
+    <string name="challenge_create_fab">Napravi izazov</string>
+    <string name="challenge_create_title">Novi izazov</string>
+    <string name="challenge_create_stars_label">Ulog u zvezdama: %d</string>
+    <string name="challenge_create_tokens_label">Ulog u tokenima: %d</string>
+    <string name="challenge_create_confirm">Napravi</string>
+    <string name="challenge_cancel">Otkaži</string>
+    <string name="challenge_item_creator">Domaćin: %s</string>
+    <string name="challenge_item_stake">★ %1$d zvezda • %2$d tokena</string>
+    <string name="challenge_item_participants">%1$d/%2$d igrača</string>
+    <string name="challenge_lobby_title">Lobi izazova</string>
+    <string name="challenge_lobby_waiting">Čekanje na učesnike…</string>
+    <string name="challenge_lobby_start">Pokreni izazov</string>
+    <string name="challenge_lobby_leave">Napusti</string>
+    <string name="challenge_lobby_you_suffix"> (ti)</string>
+    <string name="challenge_lobby_host_suffix"> (domaćin)</string>
+    <string name="challenge_lobby_cancelled">Domaćin je otkazao izazov.</string>
+    <string name="challenge_lobby_need_more">Potreban je još bar jedan igrač da bi domaćin mogao da pokrene izazov.</string>
+    <string name="challenge_match_waiting_title">Sačekajte ostale igrače…</string>
+    <string name="challenge_match_waiting_subtitle">Vaš rezultat je prijavljen.</string>
+    <string name="challenge_result_title">Izazov završen!</string>
+    <string name="challenge_result_row">%1$d. %2$s — %3$d bod. (★%4$s • %5$s tok.)</string>
+
+    <string name="chat_screen_title">Čet</string>
+    <string name="chat_empty_state">Nemate još nijedan razgovor. Pokrenite novi preko + dugmeta.</string>
+    <string name="chat_new_fab">Novi razgovor</string>
+    <string name="chat_search_title">Pronađi korisnika</string>
+    <string name="chat_search_hint">Regex izraz nad korisničkim imenom</string>
+    <string name="chat_search_helper">Pretraga je ograničena na korisnike iz vašeg regiona.</string>
+    <string name="chat_search_empty_state">Nema korisnika koji se poklapaju sa izrazom.</string>
+    <string name="chat_conversation_title">Razgovor</string>
+    <string name="chat_prefix_me">Vi</string>
+    <string name="chat_last_message_format">%1$s: %2$s</string>
+    <string name="chat_message_hint">Poruka…</string>
+    <string name="chat_send">Pošalji</string>
+
+    <!-- Zajednički nizovi za igre (Ko zna zna, Spojnice, Moj broj, Korak po korak) -->
+    <string name="game_player1_score">Igrač 1\n%d</string>
+    <string name="game_player2_score">Igrač 2\n%d</string>
+    <string name="game_round_label">Runda %d</string>
+    <string name="game_active_player">Na potezu: Igrač %d</string>
+    <string name="game_question_progress">Pitanje %1$d / %2$d</string>
+    <string name="game_next_round">Sledeća runda</string>
+    <string name="game_over">Kraj igre</string>
+
     <string name="asocijacije_round_label">Runda %d / 2</string>
     <string name="asocijacije_active_player">Na potezu: Igrač %s</string>
     <string name="asocijacije_player1_score">Igrač 1\n%d</string>
@@ -69,5 +132,6 @@
     <string name="skocko_status_no_one">Niko nije pogodio.</string>
     <string name="skocko_status_winner">Pobedio Igrač %s!</string>
     <string name="skocko_status_draw">Nerešeno!</string>
+    <string name="change_password">Promeni lozinku</string>
 
 </resources>

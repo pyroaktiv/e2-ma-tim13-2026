@@ -2,7 +2,7 @@ import { db } from "../../db/database";
 import { requireAuth } from "../../middleware/auth";
 import { json } from "../../util/response";
 import { REGIONS } from "../../util/regions";
-import { getOnlineUserIds } from "../../util/websocket";
+import { isOnline } from "../../util/websocket";
 
 export function handleGetRegionList(_req: Request): Response {
   return json(REGIONS.map((r) => ({ name: r.name, icon: r.icon })));
@@ -84,11 +84,10 @@ export async function handleGetRegionStats(req: Request): Promise<Response> {
     )
     .get(regionName) as { total_players: number; current_monthly_stars: number };
 
-  const onlineIds = getOnlineUserIds();
   const regionUserIds = db
     .query("SELECT id FROM users WHERE region = ?")
     .all(regionName) as Array<{ id: number }>;
-  const activePlayers = regionUserIds.filter((u) => onlineIds.has(u.id)).length;
+  const activePlayers = regionUserIds.filter((u) => isOnline(u.id)).length;
 
   return json({
     name: regionName,
