@@ -48,6 +48,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilRegion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/region_hint"
@@ -55,6 +56,7 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
 
             <AutoCompleteTextView
+                android:id="@+id/actvRegion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="none" />
