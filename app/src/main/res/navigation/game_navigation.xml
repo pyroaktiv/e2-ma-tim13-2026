@@ -32,6 +32,9 @@
         <action
             android:id="@+id/action_home_to_leaderboard"
             app:destination="@id/leaderboardFragment" />
+        <action
+            android:id="@+id/action_home_to_dailyMissions"
+            app:destination="@id/dailyMissionsFragment" />
     </fragment>
 
     <fragment
@@ -147,5 +150,11 @@
         android:name="rs.tim13.slagalica.leaderboard.ui.LeaderboardFragment"
         android:label="Rang Lista"
         tools:layout="@layout/fragment_leaderboard" />
+
+    <fragment
+        android:id="@+id/dailyMissionsFragment"
+        android:name="rs.tim13.slagalica.dailymissions.ui.DailyMissionsFragment"
+        android:label="Dnevne misije"
+        tools:layout="@layout/fragment_daily_missions" />
 
 </navigation>

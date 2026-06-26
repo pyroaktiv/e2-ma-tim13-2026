@@ -27,7 +27,8 @@ import { handleGetNotifications, handleMarkAsRead } from "./src/routes/notificat
 import { handleGetRegions, handleGetRegionMap, handleGetRegionStats, handleGetRegionList } from "./src/routes/regions/index";
 import { handleSubmitGameResult } from "./src/routes/game/result";
 import { handleGetWeeklyLeaderboard, handleGetMonthlyLeaderboard } from "./src/routes/leaderboard/index";
-import { handleForceWeeklyReset, handleForceMonthlyReset, handleSetUserStars, handleRestoreTestData } from "./src/routes/test/index";
+import { handleGetDailyMissions } from "./src/routes/missions";
+import { handleForceWeeklyReset, handleForceMonthlyReset, handleSetUserStars, handleRestoreTestData, handleTriggerMission, handleResetDailyMissions } from "./src/routes/test/index";
 import { checkAndRunWeeklyReset } from "./src/util/weekly";
 import { checkAndRunMonthlyReset } from "./src/util/monthly";
 import { handleGetFriends } from "./src/routes/friends/list";
@@ -99,6 +100,8 @@ Bun.serve<WsData>({
     "/api/test/force-monthly-reset": { POST: handleForceMonthlyReset },
     "/api/test/set-user-stars":      { POST: handleSetUserStars },
     "/api/test/restore-test-data":   { POST: handleRestoreTestData },
+    "/api/test/trigger-mission":     { POST: handleTriggerMission },
+    "/api/test/reset-daily-missions": { POST: handleResetDailyMissions },
     "/api/friends": { GET: handleGetFriends },
     "/api/friends/search": { GET: handleSearchUsers },
     "/api/friends/:id": { DELETE: handleRemoveFriend },
@@ -116,6 +119,7 @@ Bun.serve<WsData>({
     "/api/friends/invites/:id/accept": { POST: handleAcceptGameInvite },
     "/api/friends/invites/:id/decline": { POST: handleDeclineGameInvite },
     "/api/friends/invites/:id": { DELETE: handleCancelGameInvite },
+    "/api/missions/daily": { GET: handleGetDailyMissions },
     "/api/challenges": { GET: handleListChallenges },
     "/api/challenges/:id": { GET: handleGetChallenge },
     "/api/chat/conversations": { GET: handleGetConversations },

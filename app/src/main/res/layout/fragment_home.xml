@@ -107,6 +107,14 @@
             android:text="Obaveštenja" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDailyMissions"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            android:text="Dnevne misije" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnFriends"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="match_parent"

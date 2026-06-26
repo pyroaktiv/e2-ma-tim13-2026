@@ -141,4 +141,8 @@ sealed class ServerMessage {
         val body: String,
         val createdAt: String
     ) : ServerMessage()
+
+    // Dnevne misije (spec 12)
+    data class MissionProgress(val missionKey: String, val starsEarned: Int) : ServerMessage()
+    data class MissionBonus(val tokensEarned: Int, val starsEarned: Int) : ServerMessage()
 }

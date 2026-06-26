@@ -2,6 +2,8 @@ import { db } from "../../db/database";
 import { json } from "../../util/response";
 import { checkAndRunWeeklyReset } from "../../util/weekly";
 import { checkAndRunMonthlyReset } from "../../util/monthly";
+import { progressMission } from "../../util/missions";
+import type { MissionKey } from "../../model/mission";
 
 export async function handleForceWeeklyReset(_req: Request): Promise<Response> {
   db.query("UPDATE server_config SET value = '2000-01' WHERE key = 'last_weekly_reset'").run();
@@ -39,6 +41,46 @@ export async function handleRestoreTestData(_req: Request): Promise<Response> {
     updated += result.changes;
   }
   return json({ ok: true, updated });
+}
+
+export async function handleResetDailyMissions(req: Request): Promise<Response> {
+  let user_id: number | undefined;
+  try {
+    const body = await req.json() as { user_id?: number };
+    user_id = body.user_id;
+  } catch {}
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (user_id) {
+    db.query("DELETE FROM user_daily_missions WHERE user_id = ? AND date = ?").run(user_id, today);
+    db.query("DELETE FROM user_daily_bonus WHERE user_id = ? AND date = ?").run(user_id, today);
+  } else {
+    db.query("DELETE FROM user_daily_missions WHERE date = ?").run(today);
+    db.query("DELETE FROM user_daily_bonus WHERE date = ?").run(today);
+  }
+
+  return json({ ok: true, date: today });
+}
+
+const VALID_MISSION_KEYS = new Set<MissionKey>(["win_match", "send_chat", "friendly_match", "win_tournament"]);
+
+export async function handleTriggerMission(req: Request): Promise<Response> {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: "Invalid JSON" }, 400);
+  }
+
+  const { user_id, mission_key } = body as { user_id?: number; mission_key?: string };
+  if (!user_id) return json({ error: "user_id required" }, 400);
+  if (!mission_key || !VALID_MISSION_KEYS.has(mission_key as MissionKey)) {
+    return json({ error: "invalid mission_key" }, 400);
+  }
+
+  progressMission(user_id, mission_key as MissionKey);
+  return json({ ok: true });
 }
 
 export async function handleSetUserStars(req: Request): Promise<Response> {

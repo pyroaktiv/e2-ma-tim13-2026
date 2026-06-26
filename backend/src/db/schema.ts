@@ -194,6 +194,27 @@ export function initDb(): void {
   try { db.run("ALTER TABLE users ADD COLUMN last_token_grant       TEXT"); } catch {}
   try { db.run("ALTER TABLE users ADD COLUMN stars_token_progress   INTEGER NOT NULL DEFAULT 0"); } catch {}
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS user_daily_missions (
+      user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      mission_key TEXT    NOT NULL
+                  CHECK(mission_key IN ('win_match', 'send_chat', 'friendly_match', 'win_tournament')),
+      date        TEXT    NOT NULL,
+      completed   INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (user_id, mission_key, date)
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS user_daily_bonus (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      date    TEXT    NOT NULL,
+      PRIMARY KEY (user_id, date)
+    )
+  `);
+
+  db.run("CREATE INDEX IF NOT EXISTS idx_daily_missions_user ON user_daily_missions(user_id, date)");
+
   db.run("CREATE INDEX IF NOT EXISTS idx_users_email         ON users(email)");
   db.run("CREATE INDEX IF NOT EXISTS idx_users_username      ON users(username)");
   db.run("CREATE INDEX IF NOT EXISTS idx_email_ver_token     ON email_verifications(token)");

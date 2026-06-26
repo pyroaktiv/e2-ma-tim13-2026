@@ -3,6 +3,7 @@ import { db } from "../../db/database";
 import { requireAuth } from "../../middleware/auth";
 import { json } from "../../util/response";
 import { createNotification } from "../notifications";
+import { progressMission } from "../../util/missions";
 
 const ResultSchema = z.object({
   total_score: z.number().int().min(0),
@@ -34,6 +35,7 @@ export async function handleSubmitGameResult(req: Request): Promise<Response> {
         total_games = total_games + 1,
         updated_at  = unixepoch()
     `).run(auth.user_id);
+    progressMission(auth.user_id, "friendly_match");
     return json({ star_delta: 0, tokens_earned: 0, message: "Friendly match recorded." });
   }
 
@@ -139,6 +141,8 @@ export async function handleSubmitGameResult(req: Request): Promise<Response> {
   if (!snapshot || !snapshot.finalUser) {
     return json({ error: "User not found" }, 404);
   }
+
+  if (won) progressMission(auth.user_id, "win_match");
 
   return json({
     star_delta:    snapshot.delta,
