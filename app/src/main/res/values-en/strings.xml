@@ -71,4 +71,18 @@
     <string name="skocko_status_winner">Player %s wins!</string>
     <string name="skocko_status_draw">Draw!</string>
     <string name="change_password">Change password</string>
+    <string name="back">Back</string>
+    <string name="leaderboard_title">Leaderboard</string>
+    <string name="leaderboard_tab_weekly">Weekly</string>
+    <string name="leaderboard_tab_monthly">Monthly</string>
+    <string name="leaderboard_cycle_range">%1$s – %2$s</string>
+    <string name="leaderboard_my_rank">Your rank: #%d</string>
+    <string name="leaderboard_stars">%d ★</string>
+    <string name="leaderboard_empty">No players this cycle</string>
+    <string name="league_icon_desc">League</string>
+    <string name="reward_title">Congratulations!</string>
+    <string name="reward_rank">You placed %1$d. (%2$s)</string>
+    <string name="reward_tokens">Reward: %d tokens</string>
+    <string name="reward_dismiss">Claim reward</string>
+    <string name="btn_leaderboard">Leaderboard</string>
 </resources>

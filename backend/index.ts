@@ -1,5 +1,6 @@
 import { initDb } from "./src/db/schema";
 import { seedGameContent } from "./src/db/seed-content";
+import { seedUsers } from "./src/db/seed-users";
 import { db } from "./src/db/database";
 import { json } from "./src/util/response";
 import { verifyJWT } from "./src/util/jwt";
@@ -24,6 +25,11 @@ import { handleUpdateAvatar } from "./src/routes/user/avatar";
 import { handleGetStats } from "./src/routes/user/stats";
 import { handleGetNotifications, handleMarkAsRead } from "./src/routes/notifications";
 import { handleGetRegions, handleGetRegionMap, handleGetRegionStats, handleGetRegionList } from "./src/routes/regions/index";
+import { handleSubmitGameResult } from "./src/routes/game/result";
+import { handleGetWeeklyLeaderboard, handleGetMonthlyLeaderboard } from "./src/routes/leaderboard/index";
+import { handleForceWeeklyReset, handleForceMonthlyReset, handleSetUserStars, handleRestoreTestData } from "./src/routes/test/index";
+import { checkAndRunWeeklyReset } from "./src/util/weekly";
+import { checkAndRunMonthlyReset } from "./src/util/monthly";
 import { handleGetFriends } from "./src/routes/friends/list";
 import { handleSearchUsers } from "./src/routes/friends/search";
 import { handleRemoveFriend } from "./src/routes/friends/remove";
@@ -44,6 +50,18 @@ import {
 
 initDb();
 seedGameContent();
+await seedUsers();
+
+checkAndRunWeeklyReset();
+checkAndRunMonthlyReset();
+
+setInterval(
+  () => {
+    checkAndRunWeeklyReset();
+    checkAndRunMonthlyReset();
+  },
+  60 * 60 * 1000,
+);
 
 setInterval(
   () => {
@@ -74,6 +92,13 @@ Bun.serve<WsData>({
     "/api/regions": { GET: handleGetRegions },
     "/api/regions/map": { GET: handleGetRegionMap },
     "/api/regions/:name/stats": { GET: handleGetRegionStats },
+    "/api/game/result": { POST: handleSubmitGameResult },
+    "/api/leaderboard/weekly": { GET: handleGetWeeklyLeaderboard },
+    "/api/leaderboard/monthly": { GET: handleGetMonthlyLeaderboard },
+    "/api/test/force-weekly-reset":  { POST: handleForceWeeklyReset },
+    "/api/test/force-monthly-reset": { POST: handleForceMonthlyReset },
+    "/api/test/set-user-stars":      { POST: handleSetUserStars },
+    "/api/test/restore-test-data":   { POST: handleRestoreTestData },
     "/api/friends": { GET: handleGetFriends },
     "/api/friends/search": { GET: handleSearchUsers },
     "/api/friends/:id": { DELETE: handleRemoveFriend },

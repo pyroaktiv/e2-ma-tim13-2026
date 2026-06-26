@@ -45,4 +45,8 @@ object RetrofitClient {
     fun getAuthClient(context: Context): AuthApiService {
         return getClient(context).create(AuthApiService::class.java)
     }
+
+    fun getApiService(context: Context): ApiService {
+        return getClient(context).create(ApiService::class.java)
+    }
 }

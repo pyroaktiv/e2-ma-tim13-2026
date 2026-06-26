@@ -26,6 +26,12 @@
         <action
             android:id="@+id/action_home_to_chat"
             app:destination="@id/chatListFragment" />
+        <action
+            android:id="@+id/action_home_to_skocko"
+            app:destination="@id/skockoFragment" />
+        <action
+            android:id="@+id/action_home_to_leaderboard"
+            app:destination="@id/leaderboardFragment" />
     </fragment>
 
     <fragment
@@ -123,5 +129,23 @@
         android:name="rs.tim13.slagalica.notifications.ui.NotificationsFragment"
         android:label="Obaveštenja"
         tools:layout="@layout/fragment_notifications" />
+
+    <fragment
+        android:id="@+id/asocijacijeFragment"
+        android:name="rs.tim13.slagalica.asocijacije.ui.AsocijacijeFragment"
+        android:label="Asocijacije"
+        tools:layout="@layout/fragment_asocijacije" />
+
+    <fragment
+        android:id="@+id/skockoFragment"
+        android:name="rs.tim13.slagalica.skocko.ui.SkockoFragment"
+        android:label="Skočko"
+        tools:layout="@layout/fragment_skocko" />
+
+    <fragment
+        android:id="@+id/leaderboardFragment"
+        android:name="rs.tim13.slagalica.leaderboard.ui.LeaderboardFragment"
+        android:label="Rang Lista"
+        tools:layout="@layout/fragment_leaderboard" />
 
 </navigation>

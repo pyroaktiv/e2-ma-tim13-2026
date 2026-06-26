@@ -134,4 +134,19 @@
     <string name="skocko_status_draw">Nerešeno!</string>
     <string name="change_password">Promeni lozinku</string>
 
+    <string name="back">Nazad</string>
+    <string name="leaderboard_title">Rang Lista</string>
+    <string name="leaderboard_tab_weekly">Nedeljno</string>
+    <string name="leaderboard_tab_monthly">Mesečno</string>
+    <string name="leaderboard_cycle_range">%1$s – %2$s</string>
+    <string name="leaderboard_my_rank">Vaš rang: #%d</string>
+    <string name="leaderboard_stars">%d ★</string>
+    <string name="leaderboard_empty">Nema igrača u ovom ciklusu</string>
+    <string name="league_icon_desc">Liga</string>
+    <string name="reward_title">Čestitamo!</string>
+    <string name="reward_rank">Zauzeli ste %1$d. mesto (%2$s)</string>
+    <string name="reward_tokens">Nagrada: %d žetona</string>
+    <string name="reward_dismiss">Preuzmi nagradu</string>
+    <string name="btn_leaderboard">Rang lista</string>
+
 </resources>

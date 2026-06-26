@@ -120,9 +120,8 @@
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:enabled="false"
             android:gravity="start|center_vertical"
-            android:text="Rang lista (uskoro)" />
+            android:text="@string/btn_leaderboard" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnTournament"

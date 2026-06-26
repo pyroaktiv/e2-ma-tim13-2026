@@ -10,6 +10,8 @@ import rs.tim13.slagalica.R
 import rs.tim13.slagalica.core.network.RetrofitClient
 import rs.tim13.slagalica.core.util.TokenManager
 import rs.tim13.slagalica.databinding.FragmentHomeBinding
+import rs.tim13.slagalica.leaderboard.ui.RewardChecker
+import rs.tim13.slagalica.leaderboard.ui.RewardDialogFragment
 import rs.tim13.slagalica.match.MatchMode
 import rs.tim13.slagalica.match.ui.MatchHostFragment
 import rs.tim13.slagalica.profil.data.api.ProfileApiService
@@ -30,6 +32,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.btnNotifications.setOnClickListener { findNavController().navigate(R.id.action_home_to_notifications) }
         binding.btnChallenge.setOnClickListener { findNavController().navigate(R.id.action_home_to_challenges) }
         binding.btnChat.setOnClickListener { findNavController().navigate(R.id.action_home_to_chat) }
+        binding.btnRanking.setOnClickListener { findNavController().navigate(R.id.action_home_to_leaderboard) }
 
         loadProfile()
     }
@@ -37,6 +40,22 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     override fun onResume() {
         super.onResume()
         loadProfile() // osveži tokene/zvezde po povratku iz partije
+        checkForRewards()
+    }
+
+    private fun checkForRewards() {
+        if (TokenManager(requireContext()).getToken() == null) return
+        RewardChecker.check(requireContext()) { notification ->
+            val rank   = Regex("""na (\d+)\. mestu""").find(notification.body)
+                             ?.groupValues?.get(1)?.toIntOrNull() ?: return@check
+            val tokens = Regex("""dobili ste (\d+) žeton""").find(notification.body)
+                             ?.groupValues?.get(1)?.toIntOrNull() ?: return@check
+            val cycle  = if (notification.title.contains("Nedeljni", ignoreCase = true)) "weekly" else "monthly"
+            if (isAdded && parentFragmentManager.findFragmentByTag("reward_dialog") == null) {
+                RewardDialogFragment.newInstance(rank, tokens, cycle, notification.id)
+                    .show(parentFragmentManager, "reward_dialog")
+            }
+        }
     }
 
     private fun startMatch(mode: MatchMode) {
