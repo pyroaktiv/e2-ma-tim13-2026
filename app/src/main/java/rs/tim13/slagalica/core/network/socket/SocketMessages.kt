@@ -47,6 +47,10 @@ sealed class ClientMessage {
         val toUserId: Int,
         val body: String
     ) : ClientMessage()
+
+    // Turnir (spec 10)
+    data class FindTournament(val type: String = "find_tournament") : ClientMessage()
+    data class CancelTournament(val type: String = "cancel_tournament") : ClientMessage()
 }
 
 /** Statistika jedne igre koja se prijavljuje serveru (spec 2.c). */
@@ -145,4 +149,70 @@ sealed class ServerMessage {
     // Dnevne misije (spec 12)
     data class MissionProgress(val missionKey: String, val starsEarned: Int) : ServerMessage()
     data class MissionBonus(val tokensEarned: Int, val starsEarned: Int) : ServerMessage()
+
+    // Turnir (spec 10)
+    data object TournamentQueued : ServerMessage()
+    data object TournamentCancelled : ServerMessage()
+    data class TournamentFound(
+        val tournamentId: String,
+        val bracket: List<TurnirBracketEntryDto>,
+        val semiIndex: Int,
+        val matchId: String,
+        val color: String,
+        val content: MatchContentDto,
+        val opponent: OpponentDto
+    ) : ServerMessage()
+    data class TournamentSemiOver(
+        val tournamentId: String,
+        val semiIndex: Int,
+        val won: Boolean,
+        val winner: TurnirPlayerResultDto,
+        val loser: TurnirPlayerResultDto,
+        val rewards: TurnirRewardsDto?
+    ) : ServerMessage()
+    data class TournamentFinalStarted(
+        val tournamentId: String,
+        val matchId: String,
+        val color: String,
+        val content: MatchContentDto,
+        val opponent: OpponentDto
+    ) : ServerMessage()
+    data class TournamentUpdate(
+        val tournamentId: String,
+        val status: String,
+        val finalists: List<TurnirBracketEntryDto>
+    ) : ServerMessage()
+    data class TournamentOver(
+        val tournamentId: String,
+        val winner: TurnirFinalResultDto,
+        val runner_up: TurnirFinalResultDto
+    ) : ServerMessage()
 }
+
+// ── Turnir DTOs ────────────────────────────────────────────────────────────────
+
+data class TurnirBracketEntryDto(
+    val userId: Int,
+    val username: String,
+    val avatar: String,
+    val league: TurnirLeagueDto
+)
+
+data class TurnirLeagueDto(val name: String, val icon: String)
+
+data class TurnirPlayerResultDto(val userId: Int, val username: String, val score: Int)
+
+data class TurnirRewardsDto(
+    val starsDelta: Int,
+    val tokensDelta: Int,
+    val totalStars: Int,
+    val tokens: Int,
+    val league: String
+)
+
+data class TurnirFinalResultDto(
+    val userId: Int,
+    val username: String,
+    val score: Int,
+    val rewards: TurnirRewardsDto
+)

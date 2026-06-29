@@ -138,7 +138,7 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:gravity="start|center_vertical"
-            android:text="Turnir (uskoro)" />
+            android:text="Turnir" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnChallenge"

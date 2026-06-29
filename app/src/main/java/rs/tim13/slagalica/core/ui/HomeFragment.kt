@@ -34,6 +34,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.btnChallenge.setOnClickListener { findNavController().navigate(R.id.action_home_to_challenges) }
         binding.btnChat.setOnClickListener { findNavController().navigate(R.id.action_home_to_chat) }
         binding.btnRanking.setOnClickListener { findNavController().navigate(R.id.action_home_to_leaderboard) }
+        binding.btnTournament.setOnClickListener { findNavController().navigate(R.id.action_home_to_turnirLobby) }
 
         loadProfile()
     }
@@ -90,6 +91,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.btnChallenge.isEnabled = true
         binding.btnChat.isEnabled = true
         binding.btnDailyMissions.isEnabled = true
+        binding.btnTournament.isEnabled = true
     }
 
     private fun showGuest() {

@@ -213,6 +213,30 @@ export function initDb(): void {
     )
   `);
 
+  // Turnir (spec 10): 4 igrača, 2 polufinala → finale.
+  db.run(`
+    CREATE TABLE IF NOT EXISTS tournaments (
+      id           TEXT    PRIMARY KEY,
+      status       TEXT    NOT NULL DEFAULT 'semifinal',
+      semi1_room_id TEXT,
+      semi2_room_id TEXT,
+      final_room_id TEXT,
+      created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+      finished_at  INTEGER
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS tournament_participants (
+      tournament_id TEXT    NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
+      user_id       INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      semi_index    INTEGER NOT NULL,
+      result        TEXT,
+      score         INTEGER,
+      PRIMARY KEY (tournament_id, user_id)
+    )
+  `);
+
   db.run("CREATE INDEX IF NOT EXISTS idx_daily_missions_user ON user_daily_missions(user_id, date)");
 
   db.run("CREATE INDEX IF NOT EXISTS idx_users_email         ON users(email)");

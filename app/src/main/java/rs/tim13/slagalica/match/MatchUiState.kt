@@ -3,6 +3,7 @@ package rs.tim13.slagalica.match
 import rs.tim13.slagalica.core.model.Player
 import rs.tim13.slagalica.core.network.socket.ChallengeResultEntryDto
 import rs.tim13.slagalica.core.network.socket.MatchRewards
+import rs.tim13.slagalica.core.network.socket.TurnirRewardsDto
 
 /**
  * Stanje partije koje host (MatchHostFragment) prikazuje. Igre se prikazuju kao dečji
@@ -50,4 +51,27 @@ sealed class MatchUiState {
 
     /** Izazov je završen — konačan plasman i nagrade svih učesnika. */
     data class ChallengeFinished(val results: List<ChallengeResultEntryDto>) : MatchUiState()
+
+    // Turnir (spec 10)
+
+    /** Turnirska partija završena, čeka se `tournament_semi_over` ili `tournament_over`. */
+    data object TournamentWaiting : MatchUiState()
+
+    /** Polufinale završeno — prikaži rezultat i nagrade. */
+    data class TournamentSemiResult(
+        val won: Boolean,
+        val myScore: Int,
+        val opponentScore: Int,
+        val opponentUsername: String,
+        val rewards: TurnirRewardsDto?
+    ) : MatchUiState()
+
+    /** Finale završeno — prikaži konačan rezultat i nagrade. */
+    data class TournamentFinalResult(
+        val amIWinner: Boolean,
+        val myScore: Int,
+        val opponentScore: Int,
+        val opponentUsername: String,
+        val myRewards: TurnirRewardsDto
+    ) : MatchUiState()
 }

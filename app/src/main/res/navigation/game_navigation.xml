@@ -35,6 +35,9 @@
         <action
             android:id="@+id/action_home_to_dailyMissions"
             app:destination="@id/dailyMissionsFragment" />
+        <action
+            android:id="@+id/action_home_to_turnirLobby"
+            app:destination="@id/turnirLobbyFragment" />
     </fragment>
 
     <fragment
@@ -156,5 +159,25 @@
         android:name="rs.tim13.slagalica.dailymissions.ui.DailyMissionsFragment"
         android:label="Dnevne misije"
         tools:layout="@layout/fragment_daily_missions" />
+
+    <fragment
+        android:id="@+id/turnirLobbyFragment"
+        android:name="rs.tim13.slagalica.turnir.ui.TurnirLobbyFragment"
+        android:label="Turnir"
+        tools:layout="@layout/fragment_turnir_lobby">
+        <action
+            android:id="@+id/action_turnirLobby_to_turnirBracket"
+            app:destination="@id/turnirBracketFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/turnirBracketFragment"
+        android:name="rs.tim13.slagalica.turnir.ui.TurnirBracketFragment"
+        android:label="Turnir - Bracket"
+        tools:layout="@layout/fragment_turnir_bracket">
+        <action
+            android:id="@+id/action_turnirBracket_to_match"
+            app:destination="@id/matchHostFragment" />
+    </fragment>
 
 </navigation>

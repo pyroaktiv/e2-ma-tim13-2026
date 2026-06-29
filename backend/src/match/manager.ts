@@ -11,6 +11,26 @@ interface Room {
   blue: Participant;
   red: Participant;
   finished: boolean;
+  // Tournament support (optional)
+  tournamentId?: string;
+  tournamentPhase?: "semi" | "final";
+  semiIndex?: 0 | 1;
+}
+
+type TournamentRoomHandler = (
+  tournamentId: string,
+  roomId: string,
+  phase: "semi" | "final",
+  blueUserId: number | null,
+  blueScore: number,
+  redUserId: number | null,
+  redScore: number,
+) => void;
+
+let _tournamentRoomHandler: TournamentRoomHandler | null = null;
+
+export function setTournamentRoomHandler(fn: TournamentRoomHandler): void {
+  _tournamentRoomHandler = fn;
 }
 
 const queue: Participant[] = [];
@@ -125,6 +145,31 @@ function createRoom(a: Participant, b: Participant): void {
   });
 }
 
+/**
+ * Creates a room for a tournament match. Skips token deduction (already taken by tournament
+ * manager). Does NOT send match_found — the tournament manager sends tournament_found instead.
+ * Returns roomId, the color assigned to each participant, and the shared match content.
+ */
+export function createTournamentRoom(
+  a: Participant,
+  b: Participant,
+  tournamentId: string,
+  phase: "semi" | "final",
+  semiIndex?: 0 | 1,
+): { roomId: string; blueUserId: number | null; content: ReturnType<typeof buildMatchContent> } {
+  const id = crypto.randomUUID();
+  const [blue, red] = Math.random() < 0.5 ? [a, b] : [b, a];
+  const room: Room = { id, blue, red, finished: false, tournamentId, tournamentPhase: phase, semiIndex };
+  rooms.set(id, room);
+  wsRoom.set(blue.ws, id);
+  wsRoom.set(red.ws, id);
+  setInGame(blue, true);
+  setInGame(red, true);
+
+  const content = buildMatchContent();
+  return { roomId: id, blueUserId: blue.userId, content };
+}
+
 function handleMatchMove(
   ws: ServerWebSocket<WsData>,
   gameIndex: number,
@@ -141,6 +186,21 @@ function handleReport(ws: ServerWebSocket<WsData>, blueScore: number, redScore: 
   const room = roomOf(ws);
   if (!room || room.finished) return;
   room.finished = true;
+
+  // Turnirske partije imaju posebnu logiku nagrada — delegiramo turnir menadžeru.
+  if (room.tournamentId && _tournamentRoomHandler) {
+    _tournamentRoomHandler(
+      room.tournamentId,
+      room.id,
+      room.tournamentPhase!,
+      room.blue.userId,
+      blueScore,
+      room.red.userId,
+      redScore,
+    );
+    cleanupRoom(room);
+    return;
+  }
 
   const winner = blueScore > redScore ? "blue" : blueScore < redScore ? "red" : "draw";
 

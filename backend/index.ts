@@ -11,6 +11,11 @@ import {
   onSocketMessage as onChallengeSocketMessage,
   onSocketClose as onChallengeSocketClose,
 } from "./src/challenge/manager";
+import {
+  onSocketMessage as onTournamentSocketMessage,
+  onSocketClose as onTournamentSocketClose,
+} from "./src/tournament/manager";
+import { handleGetTournament } from "./src/routes/tournaments";
 import { handleListChallenges, handleGetChallenge } from "./src/routes/challenges";
 import { onSocketMessage as onChatSocketMessage } from "./src/chat/manager";
 import { handleGetConversations, handleGetMessages, handleSearchChatUsers } from "./src/routes/chat";
@@ -122,6 +127,7 @@ Bun.serve<WsData>({
     "/api/missions/daily": { GET: handleGetDailyMissions },
     "/api/challenges": { GET: handleListChallenges },
     "/api/challenges/:id": { GET: handleGetChallenge },
+    "/api/tournaments/:id": { GET: handleGetTournament },
     "/api/chat/conversations": { GET: handleGetConversations },
     "/api/chat/messages/:id": { GET: handleGetMessages },
     "/api/chat/search": { GET: handleSearchChatUsers },
@@ -133,12 +139,14 @@ Bun.serve<WsData>({
     message(ws, msg) {
       onSocketMessage(ws, msg);
       onChallengeSocketMessage(ws, msg);
+      onTournamentSocketMessage(ws, msg);
       onChatSocketMessage(ws, msg);
     },
     close(ws) {
       if (ws.data.kind === "user") removeConnection(ws.data.userId, ws);
       onSocketClose(ws);
       onChallengeSocketClose(ws);
+      onTournamentSocketClose(ws);
     },
   },
   async fetch(req, server) {

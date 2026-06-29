@@ -18,26 +18,27 @@ export async function handleForceMonthlyReset(_req: Request): Promise<Response> 
 }
 
 const TEST_USER_STATS = [
-  { username: "alice",  weeklyStars: 100, monthlyStars: 150, weeklyGames: 5, monthlyGames: 8 },
-  { username: "user3",  weeklyStars: 95,  monthlyStars: 140, weeklyGames: 4, monthlyGames: 7 },
-  { username: "user4",  weeklyStars: 85,  monthlyStars: 130, weeklyGames: 4, monthlyGames: 6 },
-  { username: "user5",  weeklyStars: 75,  monthlyStars: 120, weeklyGames: 3, monthlyGames: 5 },
-  { username: "user6",  weeklyStars: 65,  monthlyStars: 110, weeklyGames: 3, monthlyGames: 5 },
-  { username: "user7",  weeklyStars: 55,  monthlyStars: 100, weeklyGames: 2, monthlyGames: 4 },
-  { username: "user8",  weeklyStars: 45,  monthlyStars: 90,  weeklyGames: 2, monthlyGames: 4 },
-  { username: "user9",  weeklyStars: 35,  monthlyStars: 80,  weeklyGames: 2, monthlyGames: 3 },
-  { username: "user10", weeklyStars: 25,  monthlyStars: 70,  weeklyGames: 1, monthlyGames: 3 },
-  { username: "user11", weeklyStars: 15,  monthlyStars: 60,  weeklyGames: 1, monthlyGames: 2 },
-  { username: "user12", weeklyStars: 5,   monthlyStars: 50,  weeklyGames: 1, monthlyGames: 2 },
+  { username: "alice",  tokens: 10, weeklyStars: 100, monthlyStars: 150, weeklyGames: 5, monthlyGames: 8 },
+  { username: "bob",    tokens: 5,  weeklyStars: 0,   monthlyStars: 0,   weeklyGames: 0, monthlyGames: 0 },
+  { username: "user3",  tokens: 5,  weeklyStars: 95,  monthlyStars: 140, weeklyGames: 4, monthlyGames: 7 },
+  { username: "user4",  tokens: 5,  weeklyStars: 85,  monthlyStars: 130, weeklyGames: 4, monthlyGames: 6 },
+  { username: "user5",  tokens: 5,  weeklyStars: 75,  monthlyStars: 120, weeklyGames: 3, monthlyGames: 5 },
+  { username: "user6",  tokens: 5,  weeklyStars: 65,  monthlyStars: 110, weeklyGames: 3, monthlyGames: 5 },
+  { username: "user7",  tokens: 5,  weeklyStars: 55,  monthlyStars: 100, weeklyGames: 2, monthlyGames: 4 },
+  { username: "user8",  tokens: 5,  weeklyStars: 45,  monthlyStars: 90,  weeklyGames: 2, monthlyGames: 4 },
+  { username: "user9",  tokens: 5,  weeklyStars: 35,  monthlyStars: 80,  weeklyGames: 2, monthlyGames: 3 },
+  { username: "user10", tokens: 5,  weeklyStars: 25,  monthlyStars: 70,  weeklyGames: 1, monthlyGames: 3 },
+  { username: "user11", tokens: 5,  weeklyStars: 15,  monthlyStars: 60,  weeklyGames: 1, monthlyGames: 2 },
+  { username: "user12", tokens: 5,  weeklyStars: 5,   monthlyStars: 50,  weeklyGames: 1, monthlyGames: 2 },
 ];
 
 export async function handleRestoreTestData(_req: Request): Promise<Response> {
   const stmt = db.prepare(
-    "UPDATE users SET weekly_stars=?, monthly_stars=?, weekly_games=?, monthly_games=? WHERE username=?",
+    "UPDATE users SET tokens=?, weekly_stars=?, monthly_stars=?, weekly_games=?, monthly_games=? WHERE username=?",
   );
   let updated = 0;
   for (const u of TEST_USER_STATS) {
-    const result = stmt.run(u.weeklyStars, u.monthlyStars, u.weeklyGames, u.monthlyGames, u.username) as { changes: number };
+    const result = stmt.run(u.tokens, u.weeklyStars, u.monthlyStars, u.weeklyGames, u.monthlyGames, u.username) as { changes: number };
     updated += result.changes;
   }
   return json({ ok: true, updated });

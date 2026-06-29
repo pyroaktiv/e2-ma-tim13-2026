@@ -19,6 +19,7 @@ import rs.tim13.slagalica.core.network.socket.MatchContentDto
 import rs.tim13.slagalica.core.network.socket.PerGameStatsDto
 import rs.tim13.slagalica.core.network.socket.ServerMessage
 import rs.tim13.slagalica.core.network.socket.SocketManager
+import rs.tim13.slagalica.core.network.socket.TurnirRewardsDto
 import rs.tim13.slagalica.core.ui.GameCoordinator
 import rs.tim13.slagalica.core.ui.RemoteGame
 import rs.tim13.slagalica.core.util.TokenManager
@@ -51,7 +52,10 @@ import rs.tim13.slagalica.spojnice.data.SpojniceGameRepository
 class MatchViewModel(
     private val appContext: Context,
     private val mode: MatchMode,
-    private val challengeId: String? = null
+    private val challengeId: String? = null,
+    private val tournamentMatchId: String? = null,
+    private val tournamentColor: String? = null,
+    private val tournamentContent: MatchContentDto? = null
 ) : ViewModel(), GameCoordinator {
 
     private val _uiState = MutableLiveData<MatchUiState>()
@@ -81,9 +85,14 @@ class MatchViewModel(
         when (mode) {
             MatchMode.SOLO -> showGame(0)
             MatchMode.ONLINE -> _uiState.value = MatchUiState.Connecting
-            // Sadržaj (challenge_started) je server već poslao iz lobi ekrana; LiveData ponavlja
-            // poslednju vrednost novom observeru, pa je obrađujemo u onServerMessage ispod.
             MatchMode.CHALLENGE -> _uiState.value = MatchUiState.Connecting
+            MatchMode.TOURNAMENT_SEMI, MatchMode.TOURNAMENT_FINAL -> {
+                // Sadržaj dolazi direktno iz TurnirViewModel-a, nema potrebe za čekanjem.
+                matchId = tournamentMatchId ?: ""
+                localColor = runCatching { Player.valueOf(tournamentColor ?: "") }.getOrDefault(Player.BLUE)
+                content = tournamentContent
+                showGame(0)
+            }
         }
     }
 
@@ -110,6 +119,7 @@ class MatchViewModel(
             SocketManager.send(ClientMessage.FindMatch())
             _uiState.value = MatchUiState.Searching
         }
+        // Turnir: konekcija je već uspostavljena iz lobi ekrana, ne šaljemo FindMatch.
     }
 
     fun onServerMessage(message: ServerMessage) {
@@ -149,6 +159,32 @@ class MatchViewModel(
                 if (mode != MatchMode.CHALLENGE || message.challengeId != challengeId) return
                 _uiState.value = MatchUiState.ChallengeFinished(message.results)
             }
+            is ServerMessage.TournamentSemiOver -> {
+                if (mode != MatchMode.TOURNAMENT_SEMI) return
+                val myScore  = if (localColor == Player.BLUE) blueTotal else redTotal
+                val oppScore = if (localColor == Player.BLUE) redTotal  else blueTotal
+                _uiState.postValue(MatchUiState.TournamentSemiResult(
+                    won = message.won,
+                    myScore = myScore,
+                    opponentScore = oppScore,
+                    opponentUsername = if (message.won) message.loser.username else message.winner.username,
+                    rewards = message.rewards
+                ))
+            }
+            is ServerMessage.TournamentOver -> {
+                if (mode != MatchMode.TOURNAMENT_FINAL) return
+                val myUserId = TokenManager(appContext).getUserId()
+                val amIWinner = message.winner.userId == myUserId
+                val me  = if (amIWinner) message.winner else message.runner_up
+                val opp = if (amIWinner) message.runner_up else message.winner
+                _uiState.postValue(MatchUiState.TournamentFinalResult(
+                    amIWinner = amIWinner,
+                    myScore = me.score,
+                    opponentScore = opp.score,
+                    opponentUsername = opp.username,
+                    myRewards = me.rewards
+                ))
+            }
             else -> Unit
         }
     }
@@ -158,9 +194,13 @@ class MatchViewModel(
         if (mode == MatchMode.ONLINE && matchId.isNotEmpty()) {
             SocketManager.send(ClientMessage.LeaveMatch(matchId = matchId))
         } else if (mode == MatchMode.CHALLENGE && challengeId != null && content != null) {
-            // Bez prijavljenog rezultata bi izazov ostao zauvek nedovršen za ostale učesnike.
             SocketManager.send(
                 ClientMessage.ReportChallengeResult(challengeId = challengeId, score = blueTotal, perGame = perGame.toList())
+            )
+        } else if ((mode == MatchMode.TOURNAMENT_SEMI || mode == MatchMode.TOURNAMENT_FINAL) && matchId.isNotEmpty() && content != null) {
+            // Prijavi rezultat sa 0 u korist protivnika (forfeit); server završava sobu.
+            SocketManager.send(
+                ClientMessage.ReportResult(matchId = matchId, blueScore = 0, redScore = 0, perGame = perGame.toList())
             )
         }
     }
@@ -177,13 +217,15 @@ class MatchViewModel(
             tokens = tokens,
             stars = stars
         )
+    // Turnirske partije koriste iste remote poteze kao ONLINE mode.
+    val isRemoteMatch: Boolean get() = mode == MatchMode.ONLINE || mode == MatchMode.TOURNAMENT_SEMI || mode == MatchMode.TOURNAMENT_FINAL
 
     override fun attachGame(game: RemoteGame) {
         attachedGame = game
     }
 
     override fun onLocalMove(action: String, payload: Map<String, Any>) {
-        if (mode == MatchMode.ONLINE) {
+        if (mode == MatchMode.ONLINE || mode == MatchMode.TOURNAMENT_SEMI || mode == MatchMode.TOURNAMENT_FINAL) {
             SocketManager.send(
                 ClientMessage.MatchMove(matchId = matchId, gameIndex = currentIndex, action = action, payload = payload)
             )
@@ -271,6 +313,18 @@ class MatchViewModel(
             }
             MatchMode.SOLO -> {
                 _uiState.value = MatchUiState.MatchOver(blueTotal, redTotal, localColor, rewards = null, opponentLeft = false)
+            }
+            MatchMode.TOURNAMENT_SEMI, MatchMode.TOURNAMENT_FINAL -> {
+                SocketManager.send(
+                    ClientMessage.ReportResult(
+                        matchId = matchId,
+                        blueScore = blueTotal,
+                        redScore = redTotal,
+                        perGame = perGame.toList()
+                    )
+                )
+                // Čekamo `tournament_semi_over` ili `tournament_over` sa nagradama.
+                _uiState.value = MatchUiState.TournamentWaiting
             }
         }
     }
