@@ -26,6 +26,12 @@
         <action
             android:id="@+id/action_home_to_chat"
             app:destination="@id/chatListFragment" />
+        <action
+            android:id="@+id/action_home_to_friends"
+            app:destination="@id/friendsFragment" />
+        <action
+            android:id="@+id/action_home_to_regions"
+            app:destination="@id/regionsFragment" />
     </fragment>
 
     <fragment
@@ -123,5 +129,39 @@
         android:name="rs.tim13.slagalica.notifications.ui.NotificationsFragment"
         android:label="Obaveštenja"
         tools:layout="@layout/fragment_notifications" />
+
+    <fragment
+        android:id="@+id/friendsFragment"
+        android:name="rs.tim13.slagalica.friends.ui.FriendsFragment"
+        android:label="@string/friends_screen_title"
+        tools:layout="@layout/fragment_friends">
+        <action
+            android:id="@+id/action_friends_to_search"
+            app:destination="@id/friendSearchFragment" />
+        <action
+            android:id="@+id/action_friends_to_requests"
+            app:destination="@id/friendRequestsFragment" />
+        <action
+            android:id="@+id/action_friends_to_match"
+            app:destination="@id/matchHostFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/friendSearchFragment"
+        android:name="rs.tim13.slagalica.friends.ui.FriendSearchFragment"
+        android:label="@string/friends_add"
+        tools:layout="@layout/fragment_friend_search" />
+
+    <fragment
+        android:id="@+id/friendRequestsFragment"
+        android:name="rs.tim13.slagalica.friends.ui.FriendRequestsFragment"
+        android:label="@string/friends_requests"
+        tools:layout="@layout/fragment_friend_requests" />
+
+    <fragment
+        android:id="@+id/regionsFragment"
+        android:name="rs.tim13.slagalica.regions.ui.RegionsFragment"
+        android:label="@string/regions_screen_title"
+        tools:layout="@layout/fragment_regions" />
 
 </navigation>

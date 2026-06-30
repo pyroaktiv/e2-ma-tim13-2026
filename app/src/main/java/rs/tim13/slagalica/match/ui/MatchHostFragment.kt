@@ -51,7 +51,7 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (mode == MatchMode.ONLINE || mode == MatchMode.CHALLENGE) {
+        if (mode == MatchMode.ONLINE || mode == MatchMode.CHALLENGE || mode == MatchMode.FRIEND) {
             SocketManager.connect(requireContext())
             SocketManager.connected.observe(viewLifecycleOwner) { connected ->
                 if (connected) match.onSocketConnected()
@@ -174,7 +174,7 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
 
     private fun leaveAndExit() {
         match.leaveMatch()
-        if (mode == MatchMode.ONLINE || mode == MatchMode.CHALLENGE) SocketManager.disconnect()
+        if (mode == MatchMode.ONLINE || mode == MatchMode.CHALLENGE || mode == MatchMode.FRIEND) SocketManager.disconnect()
         if (mode == MatchMode.CHALLENGE) {
             // Izazov je u tom trenutku završen/otkazan na serveru — ne vraćati se na lobi/listu
             // (ponovni join_challenge bi dobio „izazov ne postoji" jer ga server više ne vodi).

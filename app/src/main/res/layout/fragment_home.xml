@@ -111,9 +111,16 @@
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:enabled="false"
             android:gravity="start|center_vertical"
-            android:text="Prijatelji (uskoro)" />
+            android:text="@string/friends_screen_title" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRegions"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            android:text="@string/regions_screen_title" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRanking"

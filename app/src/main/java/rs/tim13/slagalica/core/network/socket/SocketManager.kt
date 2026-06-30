@@ -28,6 +28,14 @@ object SocketManager {
     private val _incoming = MutableLiveData<ServerMessage>()
     val incoming: LiveData<ServerMessage> = _incoming
 
+    private val _friendEvents = MutableLiveData<FriendSocketEvent?>()
+    val friendEvents: LiveData<FriendSocketEvent?> = _friendEvents
+
+    /** Poništava poslednji friend event da ga novi observer (npr. povratak na ekran) ne ponovi. */
+    fun clearFriendEvent() {
+        _friendEvents.postValue(null)
+    }
+
     private val _connected = MutableLiveData(false)
     val connected: LiveData<Boolean> = _connected
 
@@ -71,6 +79,7 @@ object SocketManager {
 
         override fun onMessage(webSocket: WebSocket, text: String) {
             parse(text)?.let { _incoming.postValue(it) }
+            parseFriendEvent(text)?.let { _friendEvents.postValue(it) }
         }
 
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
@@ -98,6 +107,36 @@ object SocketManager {
             "challenge_started" -> gson.fromJson(text, ServerMessage.ChallengeStarted::class.java)
             "challenge_over" -> gson.fromJson(text, ServerMessage.ChallengeOver::class.java)
             "chat_message" -> gson.fromJson(text, ServerMessage.ChatMessage::class.java)
+            else -> null
+        }
+    }
+
+    /** Ručno parsiranje friend push poruka (snake_case ključevi, vidi backend friends rute). */
+    private fun parseFriendEvent(text: String): FriendSocketEvent? {
+        val obj = runCatching { gson.fromJson(text, JsonObject::class.java) }.getOrNull() ?: return null
+        return when (obj.get("type")?.asString) {
+            "game_invite" -> {
+                val invite = obj.getAsJsonObject("invite") ?: return null
+                val from = invite.getAsJsonObject("from") ?: return null
+                FriendSocketEvent.GameInvite(
+                    id = invite.get("id").asInt,
+                    fromId = from.get("id").asInt,
+                    fromUsername = from.get("username").asString,
+                    expiresAt = invite.get("expires_at")?.asString ?: ""
+                )
+            }
+            "invite_accepted" -> FriendSocketEvent.InviteAccepted(obj.get("invite_id").asInt)
+            "invite_declined" -> FriendSocketEvent.InviteDeclined(obj.get("invite_id").asInt)
+            "invite_expired" -> FriendSocketEvent.InviteExpired(obj.get("invite_id").asInt)
+            "invite_cancelled" -> FriendSocketEvent.InviteCancelled(obj.get("invite_id").asInt)
+            "friend_request" -> {
+                val from = obj.getAsJsonObject("from") ?: return null
+                FriendSocketEvent.FriendRequestReceived(from.get("id").asInt, from.get("username").asString)
+            }
+            "friend_request_accepted" -> {
+                val by = obj.getAsJsonObject("by") ?: return null
+                FriendSocketEvent.FriendRequestAccepted(by.get("id").asInt, by.get("username").asString)
+            }
             else -> null
         }
     }

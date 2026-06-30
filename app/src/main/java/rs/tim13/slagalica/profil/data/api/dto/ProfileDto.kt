@@ -13,7 +13,9 @@ data class ProfileDto(
     val totalStars: Int,
     val league: LeagueDto,
     val region: String,
-    val qrToken: String
+    val qrToken: String,
+    /** Mesto regiona u prethodnom mesečnom ciklusu (1/2/3) — boja okvira avatara (spec 5.e); null inače. */
+    val regionMedal: Int? = null
 )
 
 data class LeagueDto(

@@ -1,6 +1,7 @@
 import { initDb } from "./src/db/schema";
 import { seedGameContent } from "./src/db/seed-content";
 import { db } from "./src/db/database";
+import { processMonthlyRolloverIfDue } from "./src/ranking/leagues";
 import { json } from "./src/util/response";
 import { verifyJWT } from "./src/util/jwt";
 import { registerConnection, removeConnection } from "./src/util/websocket";
@@ -23,6 +24,11 @@ import { handleGetProfile } from "./src/routes/user/profile";
 import { handleUpdateAvatar } from "./src/routes/user/avatar";
 import { handleGetStats } from "./src/routes/user/stats";
 import { handleGetNotifications, handleMarkAsRead } from "./src/routes/notifications";
+import {
+  handleGetRegionRanking,
+  handleGetRegionMap,
+  handleGetRegionStats,
+} from "./src/routes/regions";
 import { handleGetFriends } from "./src/routes/friends/list";
 import { handleSearchUsers } from "./src/routes/friends/search";
 import { handleRemoveFriend } from "./src/routes/friends/remove";
@@ -44,11 +50,15 @@ import {
 initDb();
 seedGameContent();
 
+// Penali za neplasiranje na mesečnoj rang listi (spec 6.e) — proveri na startu i periodično.
+processMonthlyRolloverIfDue();
+
 setInterval(
   () => {
     db.run("DELETE FROM revoked_tokens WHERE expires_at < ?", [
       Math.floor(Date.now() / 1000),
     ]);
+    processMonthlyRolloverIfDue();
   },
   60 * 60 * 1000,
 );
@@ -69,6 +79,9 @@ Bun.serve<WsData>({
     "/api/user/stats": { GET: handleGetStats },
     "/api/notifications": { GET: handleGetNotifications },
     "/api/notifications/:id/read": { PATCH: handleMarkAsRead },
+    "/api/regions/ranking": { GET: handleGetRegionRanking },
+    "/api/regions/map": { GET: handleGetRegionMap },
+    "/api/regions/stats": { GET: handleGetRegionStats },
     "/api/friends": { GET: handleGetFriends },
     "/api/friends/search": { GET: handleSearchUsers },
     "/api/friends/:id": { DELETE: handleRemoveFriend },

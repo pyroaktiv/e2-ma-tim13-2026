@@ -1,13 +1,13 @@
 import { db } from "../db/database";
+import { recordCycleResult } from "../ranking/cycles";
+import { applyLeagueForUser } from "../ranking/leagues";
 import type { MatchRewards } from "./types";
 
 /**
  * Primenjuje ishod partije na registrovanog igrača (spec 3.d):
  * pobednik +10★ + 1★ za svakih 40 poena, gubitnik -10★ + 1★/40 (ukupno ne ispod 0),
- * a svakih 50 zarađenih zvezda donosi 1 token.
- *
- * NAPOMENA: namerno NE dira `league_id` (napredovanje kroz lige je tačka 6 — kolega 2),
- * niti per-game statistiku profila (tačka 2.c — kolega 2). Vraća samo trenutni naziv lige za prikaz.
+ * a svakih 50 zarađenih zvezda donosi 1 token. Nakon promene zvezda preračunava ligu (spec 6.d)
+ * i beleži ciklus za rang liste (spec 4/5).
  */
 export function applyMatchOutcome(userId: number, myScore: number, oppScore: number): MatchRewards {
   const user = db
@@ -43,6 +43,9 @@ export function applyMatchOutcome(userId: number, myScore: number, oppScore: num
     "UPDATE users SET total_stars = ?, stars_token_progress = ?, tokens = ?, updated_at = unixepoch() WHERE id = ?",
   ).run(newStars, progress, newTokens, userId);
 
+  // Zvezde i partija ulaze u tekući nedeljni/mesečni rang ciklus (spec 4/5).
+  recordCycleResult(userId, earned);
+
   db.query(
     `INSERT INTO match_summary (user_id, total_games, wins, losses)
      VALUES (?, 1, ?, ?)
@@ -59,9 +62,8 @@ export function applyMatchOutcome(userId: number, myScore: number, oppScore: num
     outcome === "loss" ? 1 : 0,
   );
 
-  const league = db.query("SELECT name FROM leagues WHERE id = ?").get(user.league_id) as
-    | { name: string }
-    | null;
+  // Preračunaj ligu na osnovu novog broja zvezda (spec 6.d) i vrati njen naziv za prikaz.
+  const league = applyLeagueForUser(userId);
 
   return {
     won: outcome === "win",
@@ -69,6 +71,6 @@ export function applyMatchOutcome(userId: number, myScore: number, oppScore: num
     tokensDelta: tokensGranted,
     totalStars: newStars,
     tokens: newTokens,
-    league: league?.name ?? "",
+    league: league.name,
   };
 }

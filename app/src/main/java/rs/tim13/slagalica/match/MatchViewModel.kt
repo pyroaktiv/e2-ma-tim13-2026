@@ -84,6 +84,9 @@ class MatchViewModel(
             // Sadržaj (challenge_started) je server već poslao iz lobi ekrana; LiveData ponavlja
             // poslednju vrednost novom observeru, pa je obrađujemo u onServerMessage ispod.
             MatchMode.CHALLENGE -> _uiState.value = MatchUiState.Connecting
+            // Prijateljska partija: `match_found` je server već poslao kad je poziv prihvaćen;
+            // LiveData ga ponavlja ovom ekranu, pa ga obrađujemo u onServerMessage.
+            MatchMode.FRIEND -> _uiState.value = MatchUiState.Connecting
         }
     }
 
@@ -155,7 +158,7 @@ class MatchViewModel(
 
     /** Igrač napušta partiju (forfeit). */
     fun leaveMatch() {
-        if (mode == MatchMode.ONLINE && matchId.isNotEmpty()) {
+        if ((mode == MatchMode.ONLINE || mode == MatchMode.FRIEND) && matchId.isNotEmpty()) {
             SocketManager.send(ClientMessage.LeaveMatch(matchId = matchId))
         } else if (mode == MatchMode.CHALLENGE && challengeId != null && content != null) {
             // Bez prijavljenog rezultata bi izazov ostao zauvek nedovršen za ostale učesnike.
@@ -246,7 +249,7 @@ class MatchViewModel(
 
     private fun finishMatch() {
         when (mode) {
-            MatchMode.ONLINE -> {
+            MatchMode.ONLINE, MatchMode.FRIEND -> {
                 SocketManager.send(
                     ClientMessage.ReportResult(
                         matchId = matchId,
@@ -255,7 +258,7 @@ class MatchViewModel(
                         perGame = perGame.toList()
                     )
                 )
-                // Čekamo `match_over` sa nagradama; do tada prikaži kraj bez nagrada.
+                // Čekamo `match_over` (prijateljska partija bez nagrada); do tada prikaži kraj.
                 _uiState.value = MatchUiState.MatchOver(blueTotal, redTotal, localColor, rewards = null, opponentLeft = opponentLeft)
             }
             MatchMode.CHALLENGE -> {

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { db } from "../../db/database";
 import { sendVerificationEmail } from "../../util/email";
 import { json } from "../../util/response";
+import { randomPointIn } from "../../regions/config";
 
 const RegisterSchema = z
   .object({
@@ -56,14 +57,24 @@ export async function handleRegister(req: Request): Promise<Response> {
   const qrToken = crypto.randomUUID();
   const today = new Date().toISOString().slice(0, 10);
 
+  // Spec 5.a: nasumična tačka unutar regiona za prikaz na mapi.
+  const point = randomPointIn(region);
+
   // Spec 3.a: igrač dobija 5 tokena pri registraciji (sledećih 5 stiže narednog dana).
   const { lastInsertRowid: userId } = db
     .query(
-      "INSERT INTO users (email, username, password_hash, region, qr_token, tokens, last_token_grant) VALUES (?, ?, ?, ?, ?, 5, ?)",
+      "INSERT INTO users (email, username, password_hash, region, qr_token, tokens, last_token_grant, map_lat, map_lng) VALUES (?, ?, ?, ?, ?, 5, ?, ?, ?)",
     )
-    .run(email, username, passwordHash, region, qrToken, today);
+    .run(email, username, passwordHash, region, qrToken, today, point.lat, point.lng);
 
   db.query("INSERT INTO match_summary (user_id) VALUES (?)").run(userId);
+
+  // Razvoj bez SMTP-a: preskoči slanje mejla i odmah verifikuj nalog da bi se moglo logovati.
+  // U produkciji (kada je SMTP_HOST podešen) ostaje obavezna potvrda mejlom.
+  if (!process.env.SMTP_HOST) {
+    db.query("UPDATE users SET email_verified = 1 WHERE id = ?").run(userId);
+    return json({ message: "Registracija uspešna." }, 201);
+  }
 
   const verifyToken = Buffer.from(
     crypto.getRandomValues(new Uint8Array(32)),

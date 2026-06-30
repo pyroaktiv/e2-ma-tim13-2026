@@ -1,9 +1,10 @@
 import { db } from "../db/database";
 
 /**
- * Mehanizam tokena (spec 3.a): 5 tokena dnevno i 1 token po nasumičnoj partiji.
+ * Mehanizam tokena (spec 3.a): 5 tokena dnevno + ligaški bonus (spec 6.b) i 1 token po partiji.
  *
- * NAPOMENA: ligaški bonus tokena (spec 6.b) NIJE ovde — to je tačka 6 (kolega 2).
+ * Ligaški bonus: svaka liga iznad nulte donosi po dodatni token dnevno (npr. 3. liga -> +3),
+ * pa je dnevna dodela 5 + (league_id - 1).
  */
 export const DAILY_TOKENS = 5;
 
@@ -11,16 +12,17 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-/** Dodaje dnevnih 5 tokena ako danas još nisu dodeljeni. Zove se pri loginu i čitanju profila. */
+/** Dodaje dnevne tokene (5 + ligaški bonus) ako danas još nisu dodeljeni. */
 export function grantDailyTokensIfDue(userId: number): void {
   const row = db
-    .query("SELECT last_token_grant FROM users WHERE id = ?")
-    .get(userId) as { last_token_grant: string | null } | null;
+    .query("SELECT last_token_grant, league_id FROM users WHERE id = ?")
+    .get(userId) as { last_token_grant: string | null; league_id: number } | null;
   if (!row) return;
   if (row.last_token_grant === today()) return;
 
+  const leagueBonus = Math.max(0, row.league_id - 1); // nulta liga (id 1) -> 0 bonusa
   db.query("UPDATE users SET tokens = tokens + ?, last_token_grant = ? WHERE id = ?").run(
-    DAILY_TOKENS,
+    DAILY_TOKENS + leagueBonus,
     today(),
     userId,
   );

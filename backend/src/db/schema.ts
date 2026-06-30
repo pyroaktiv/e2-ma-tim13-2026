@@ -165,7 +165,31 @@ export function initDb(): void {
     )
   `);
 
+  // Rang liste po ciklusima (spec 4/5/6): zvezde i broj partija koje je igrač osvojio u datom
+  // nedeljnom/mesečnom ciklusu. Istorija ciklusa ostaje (za „prethodni ciklus" i statistiku regiona).
+  db.run(`
+    CREATE TABLE IF NOT EXISTS cycle_scores (
+      user_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      period    TEXT    NOT NULL CHECK(period IN ('weekly', 'monthly')),
+      cycle_key TEXT    NOT NULL,
+      stars     INTEGER NOT NULL DEFAULT 0,
+      games     INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (user_id, period, cycle_key)
+    )
+  `);
+
+  // Generički ključ-vrednost meta podaci (npr. poslednji obrađeni mesečni ciklus za penale liga).
+  db.run(`
+    CREATE TABLE IF NOT EXISTS app_meta (
+      key   TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `);
+
   try { db.run("ALTER TABLE users ADD COLUMN in_game INTEGER NOT NULL DEFAULT 0"); } catch {}
+  // Nasumična tačka igrača na mapi regiona (spec 5.a); popunjava se pri registraciji ili lenjo.
+  try { db.run("ALTER TABLE users ADD COLUMN map_lat REAL"); } catch {}
+  try { db.run("ALTER TABLE users ADD COLUMN map_lng REAL"); } catch {}
   // Datum poslednje dnevne dodele tokena (YYYY-MM-DD) i napredak ka tokenu od zvezda (50 -> 1).
   try { db.run("ALTER TABLE users ADD COLUMN last_token_grant TEXT"); } catch {}
   try { db.run("ALTER TABLE users ADD COLUMN stars_token_progress INTEGER NOT NULL DEFAULT 0"); } catch {}
@@ -184,18 +208,22 @@ export function initDb(): void {
   db.run("CREATE INDEX IF NOT EXISTS idx_challenge_part_chal ON challenge_participants(challenge_id)");
   db.run("CREATE INDEX IF NOT EXISTS idx_chat_from_to        ON chat_messages(from_user_id, to_user_id, created_at)");
   db.run("CREATE INDEX IF NOT EXISTS idx_chat_to_from        ON chat_messages(to_user_id, from_user_id, created_at)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_cycle_scores_board   ON cycle_scores(period, cycle_key, stars DESC)");
 
   const seedLeagues = db.transaction(() => {
+    // Spec 6.c: nulta liga (0) + 5 liga; prag se računa po formuli prethodni * 2 (100, 200, 400, 800, 1600).
     const leagues = [
       { id: 1, name: "Bronze",   min_stars: 0,    icon: "league_bronze" },
       { id: 2, name: "Silver",   min_stars: 100,  icon: "league_silver" },
-      { id: 3, name: "Gold",     min_stars: 300,  icon: "league_gold" },
-      { id: 4, name: "Platinum", min_stars: 600,  icon: "league_platinum" },
-      { id: 5, name: "Diamond",  min_stars: 1000, icon: "league_diamond" },
-      { id: 6, name: "Master",   min_stars: 1500, icon: "league_master" },
+      { id: 3, name: "Gold",     min_stars: 200,  icon: "league_gold" },
+      { id: 4, name: "Platinum", min_stars: 400,  icon: "league_platinum" },
+      { id: 5, name: "Diamond",  min_stars: 800,  icon: "league_diamond" },
+      { id: 6, name: "Master",   min_stars: 1600, icon: "league_master" },
     ];
+    // Upsert da bi se i postojeće baze ispravile na tačne pragove iz specifikacije.
     const stmt = db.prepare(
-      "INSERT OR IGNORE INTO leagues (id, name, min_stars, icon) VALUES (?, ?, ?, ?)"
+      `INSERT INTO leagues (id, name, min_stars, icon) VALUES (?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET name = excluded.name, min_stars = excluded.min_stars, icon = excluded.icon`
     );
     for (const l of leagues) stmt.run(l.id, l.name, l.min_stars, l.icon);
   });

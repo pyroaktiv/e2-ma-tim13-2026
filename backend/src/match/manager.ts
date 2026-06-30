@@ -1,16 +1,19 @@
 import type { ServerWebSocket } from "bun";
 import { db } from "../db/database";
-import type { WsData } from "../util/websocket";
+import { getSocket, type WsData } from "../util/websocket";
 import { hasToken, refundMatchToken, spendMatchToken } from "../util/tokens";
 import { buildMatchContent } from "./content";
 import { applyMatchOutcome } from "./rewards";
-import { participantFor, type ClientMsg, type Participant } from "./types";
+import { applyPerGameStats } from "./stats";
+import { participantFor, type ClientMsg, type Participant, type PerGameStats } from "./types";
 
 interface Room {
   id: string;
   blue: Participant;
   red: Participant;
   finished: boolean;
+  /** Rangirana partija troši token i daje zvezde/statistiku; prijateljska (spec 3.e) ne. */
+  ranked: boolean;
 }
 
 const queue: Participant[] = [];
@@ -55,7 +58,7 @@ export function onSocketMessage(ws: ServerWebSocket<WsData>, raw: string | Buffe
       handleMatchMove(ws, msg.gameIndex, msg.action, msg.payload);
       break;
     case "report_result":
-      handleReport(ws, msg.blueScore, msg.redScore);
+      handleReport(ws, msg.blueScore, msg.redScore, msg.perGame);
       break;
     case "leave_match":
       handleLeave(ws);
@@ -85,23 +88,26 @@ function handleFindMatch(ws: ServerWebSocket<WsData>): void {
   }
 }
 
-function createRoom(a: Participant, b: Participant): void {
-  // Naplata tokena za registrovane (spec 3.a). Gost ne troši token.
-  if (a.userId !== null && !spendMatchToken(a.userId)) {
-    sendError(a.ws, "Nemate dovoljno tokena za partiju.");
-    queue.unshift(b);
-    return;
-  }
-  if (b.userId !== null && !spendMatchToken(b.userId)) {
-    sendError(b.ws, "Nemate dovoljno tokena za partiju.");
-    if (a.userId !== null) refundMatchToken(a.userId);
-    queue.unshift(a);
-    return;
+function createRoom(a: Participant, b: Participant, ranked = true): void {
+  // Naplata tokena za registrovane (spec 3.a). Gost ne troši token. Prijateljska partija
+  // (spec 3.e) ne koristi tokene.
+  if (ranked) {
+    if (a.userId !== null && !spendMatchToken(a.userId)) {
+      sendError(a.ws, "Nemate dovoljno tokena za partiju.");
+      queue.unshift(b);
+      return;
+    }
+    if (b.userId !== null && !spendMatchToken(b.userId)) {
+      sendError(b.ws, "Nemate dovoljno tokena za partiju.");
+      if (a.userId !== null) refundMatchToken(a.userId);
+      queue.unshift(a);
+      return;
+    }
   }
 
   const id = crypto.randomUUID();
   const [blue, red] = Math.random() < 0.5 ? [a, b] : [b, a];
-  const room: Room = { id, blue, red, finished: false };
+  const room: Room = { id, blue, red, finished: false, ranked };
   rooms.set(id, room);
   wsRoom.set(blue.ws, id);
   wsRoom.set(red.ws, id);
@@ -125,6 +131,30 @@ function createRoom(a: Participant, b: Participant): void {
   });
 }
 
+/**
+ * Pokreće prijateljsku (nerangiranu) partiju između dva online korisnika (spec 7.d) kada
+ * pozvani prihvati poziv. Vraća false ako neko nije online ili je već u partiji/redu.
+ */
+export function startFriendlyMatch(
+  inviter: { id: number; username: string },
+  invitee: { id: number; username: string },
+): boolean {
+  const wsA = getSocket(inviter.id);
+  const wsB = getSocket(invitee.id);
+  if (!wsA || !wsB) return false;
+  if (wsRoom.has(wsA) || wsRoom.has(wsB)) return false;
+
+  removeFromQueue(wsA);
+  removeFromQueue(wsB);
+
+  createRoom(
+    { ws: wsA, userId: inviter.id, username: inviter.username },
+    { ws: wsB, userId: invitee.id, username: invitee.username },
+    false,
+  );
+  return true;
+}
+
 function handleMatchMove(
   ws: ServerWebSocket<WsData>,
   gameIndex: number,
@@ -137,19 +167,32 @@ function handleMatchMove(
   send(opponent.ws, { type: "match_move", gameIndex, action, payload });
 }
 
-function handleReport(ws: ServerWebSocket<WsData>, blueScore: number, redScore: number): void {
+function handleReport(
+  ws: ServerWebSocket<WsData>,
+  blueScore: number,
+  redScore: number,
+  perGame?: PerGameStats[],
+): void {
   const room = roomOf(ws);
   if (!room || room.finished) return;
   room.finished = true;
 
   const winner = blueScore > redScore ? "blue" : blueScore < redScore ? "red" : "draw";
 
-  const blueRewards = room.blue.userId !== null ? applyMatchOutcome(room.blue.userId, blueScore, redScore) : null;
-  const redRewards = room.red.userId !== null ? applyMatchOutcome(room.red.userId, redScore, blueScore) : null;
+  // Prijateljska partija (spec 3.e): ne daje/uzima zvezde i tokene, ne ulazi u statistiku.
+  const blueRewards =
+    room.ranked && room.blue.userId !== null ? applyMatchOutcome(room.blue.userId, blueScore, redScore) : null;
+  const redRewards =
+    room.ranked && room.red.userId !== null ? applyMatchOutcome(room.red.userId, redScore, blueScore) : null;
+
+  if (room.ranked) {
+    // Per-game statistika profila (spec 2.c) — plavi doprinos plavom, crveni crvenom igraču.
+    applyPerGameStats(room.blue.userId, room.red.userId, perGame);
+  }
 
   db.query(
-    "INSERT INTO matches (blue_user_id, red_user_id, blue_score, red_score, winner) VALUES (?, ?, ?, ?, ?)",
-  ).run(room.blue.userId, room.red.userId, blueScore, redScore, winner);
+    "INSERT INTO matches (blue_user_id, red_user_id, blue_score, red_score, winner, is_ranked) VALUES (?, ?, ?, ?, ?, ?)",
+  ).run(room.blue.userId, room.red.userId, blueScore, redScore, winner, room.ranked ? 1 : 0);
 
   send(room.blue.ws, { type: "match_over", rewards: blueRewards });
   send(room.red.ws, { type: "match_over", rewards: redRewards });
