@@ -210,6 +210,10 @@ class ProfilFragment : BaseFragment<FragmentProfilBinding>(FragmentProfilBinding
 
     private fun logout() {
         viewLifecycleOwner.lifecycleScope.launch {
+            // Odjavi FCM token dok JWT još važi (spec 11) — da ugašen nalog ne prima notifikacije.
+            runCatching {
+                rs.tim13.slagalica.notifications.data.FcmTokenRegistrar.unregisterCurrent(requireContext())
+            }
             runCatching {
                 RetrofitClient.getAuthClient(requireContext()).logout()
             }

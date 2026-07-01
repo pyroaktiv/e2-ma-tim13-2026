@@ -4,6 +4,12 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+// google-services plugin se primenjuje samo ako postoji app/google-services.json.
+// Tako build tima ne puca dok se Firebase ne podesi; FCM tada radi kao no-op (isto kao backend).
+if (rootProject.file("app/google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
@@ -53,6 +59,9 @@ android {
 }
 
 dependencies {
+    // Firebase Cloud Messaging (spec 11) — push notifikacije i kad app nije u prvom planu.
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
     implementation("com.squareup.okhttp3:logging-interceptor:5.4.0")

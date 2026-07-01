@@ -78,6 +78,16 @@ export function initDb(): void {
     )
   `);
 
+  // FCM push tokeni (spec 11): jedan korisnik može imati više uređaja. Notifikacije se
+  // šalju na sve njegove tokene kada nije povezan preko WebSocket-a (tj. nije u aplikaciji).
+  db.run(`
+    CREATE TABLE IF NOT EXISTS fcm_tokens (
+      token      TEXT    PRIMARY KEY,
+      user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+    )
+  `);
+
   db.run(`
     CREATE TABLE IF NOT EXISTS friend_requests (
       id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -245,6 +255,7 @@ export function initDb(): void {
   db.run("CREATE INDEX IF NOT EXISTS idx_game_stats_user     ON game_stats(user_id)");
   db.run("CREATE INDEX IF NOT EXISTS idx_revoked_exp         ON revoked_tokens(expires_at)");
   db.run("CREATE INDEX IF NOT EXISTS idx_notifications_user  ON notifications(user_id, created_at DESC)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_fcm_tokens_user     ON fcm_tokens(user_id)");
   db.run("CREATE INDEX IF NOT EXISTS idx_friend_req_from     ON friend_requests(from_user_id)");
   db.run("CREATE INDEX IF NOT EXISTS idx_friend_req_to       ON friend_requests(to_user_id)");
   db.run("CREATE INDEX IF NOT EXISTS idx_game_invites_to     ON game_invites(to_user_id)");

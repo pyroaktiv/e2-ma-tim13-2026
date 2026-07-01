@@ -36,6 +36,10 @@ object SocketManager {
         _friendEvents.postValue(null)
     }
 
+    /** „Otkucaj" pri svakoj novoj sistemskoj notifikaciji (spec 11) — za uživo osvežavanje liste. */
+    private val _notificationTick = MutableLiveData(0)
+    val notificationTick: LiveData<Int> = _notificationTick
+
     private val _connected = MutableLiveData(false)
     val connected: LiveData<Boolean> = _connected
 
@@ -80,6 +84,9 @@ object SocketManager {
         override fun onMessage(webSocket: WebSocket, text: String) {
             parse(text)?.let { _incoming.postValue(it) }
             parseFriendEvent(text)?.let { _friendEvents.postValue(it) }
+            if (isNotificationEvent(text)) {
+                _notificationTick.postValue((_notificationTick.value ?: 0) + 1)
+            }
         }
 
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
@@ -118,6 +125,12 @@ object SocketManager {
             "tournament_over"           -> gson.fromJson(text, ServerMessage.TournamentOver::class.java)
             else -> null
         }
+    }
+
+    /** `type:"notification"` — nova sistemska notifikacija stigla dok je app povezan (spec 11). */
+    private fun isNotificationEvent(text: String): Boolean {
+        val obj = runCatching { gson.fromJson(text, JsonObject::class.java) }.getOrNull() ?: return false
+        return obj.get("type")?.asString == "notification"
     }
 
     /** Ručno parsiranje friend push poruka (snake_case ključevi, vidi backend friends rute). */

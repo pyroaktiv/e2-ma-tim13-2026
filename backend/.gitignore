@@ -35,3 +35,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 #
 slagalica.db*
+
+# FCM service-account privatni ključ — NIKAD ne comitovati
+fcm-service-account.json

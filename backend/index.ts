@@ -28,7 +28,7 @@ import { handleLogout } from "./src/routes/auth/logout";
 import { handleGetProfile } from "./src/routes/user/profile";
 import { handleUpdateAvatar } from "./src/routes/user/avatar";
 import { handleGetStats } from "./src/routes/user/stats";
-import { handleGetNotifications, handleMarkAsRead } from "./src/routes/notifications";
+import { handleGetNotifications, handleMarkAsRead, handleRegisterFcmToken, handleUnregisterFcmToken } from "./src/routes/notifications";
 import { handleGetRegions, handleGetRegionMap, handleGetRegionStats, handleGetRegionList } from "./src/routes/regions/index";
 import { handleSubmitGameResult } from "./src/routes/game/result";
 import { handleGetWeeklyLeaderboard, handleGetMonthlyLeaderboard } from "./src/routes/leaderboard/index";
@@ -93,6 +93,10 @@ Bun.serve<WsData>({
     "/api/user/avatar": { PUT: handleUpdateAvatar },
     "/api/user/stats": { GET: handleGetStats },
     "/api/notifications": { GET: handleGetNotifications },
+    "/api/notifications/fcm-token": {
+      POST: handleRegisterFcmToken,
+      DELETE: handleUnregisterFcmToken,
+    },
     "/api/notifications/:id/read": { PATCH: handleMarkAsRead },
     "/api/regions/list": { GET: handleGetRegionList },
     "/api/regions": { GET: handleGetRegions },

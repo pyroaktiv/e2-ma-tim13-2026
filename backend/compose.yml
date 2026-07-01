@@ -13,10 +13,12 @@ services:
       SMTP_USER: ${SMTP_USER}
       SMTP_PASS: ${SMTP_PASS}
       BASE_URL: ${BASE_URL:-http://localhost:3000}
+      # FCM ključ je već u imidžu (Dockerfile `COPY . .`), pa samo pokaži na njega (spec 11).
+      FCM_SERVICE_ACCOUNT_PATH: /app/fcm-service-account.json
     volumes:
       # Named volume (Linux ext4 u Docker VM-u) — bind-mount sa Windows diska ne podržava
       # SQLite WAL -shm (mmap), pa baca SQLITE_IOERR_SHMOPEN.
-      - slagalica-db:/data
+      - ./db:/data
     restart: unless-stopped
 
 volumes:
