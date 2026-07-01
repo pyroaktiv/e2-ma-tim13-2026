@@ -12,6 +12,7 @@ import rs.tim13.slagalica.core.util.TokenManager
 import rs.tim13.slagalica.databinding.FragmentHomeBinding
 import rs.tim13.slagalica.leaderboard.ui.RewardChecker
 import rs.tim13.slagalica.leaderboard.ui.RewardDialogFragment
+import rs.tim13.slagalica.notifications.data.NotificationSyncer
 import rs.tim13.slagalica.match.MatchMode
 import rs.tim13.slagalica.match.ui.MatchHostFragment
 import rs.tim13.slagalica.profil.data.api.ProfileApiService
@@ -43,6 +44,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         super.onResume()
         loadProfile() // osveži tokene/zvezde po povratku iz partije
         checkForRewards()
+        NotificationSyncer.sync(requireContext())
     }
 
     private fun checkForRewards() {
