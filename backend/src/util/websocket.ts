@@ -15,6 +15,19 @@ export function isOnline(userId: number): boolean {
   return !!set && set.size > 0;
 }
 
+/** Vraća jedan aktivni socket korisnika (za pokretanje prijateljske partije), ili null. */
+export function getSocket(userId: number): ServerWebSocket<WsData> | null {
+  const set = connections.get(userId);
+  if (!set) return null;
+  for (const ws of set) return ws;
+  return null;
+}
+
+/** Id-jevi svih trenutno povezanih (online) registrovanih korisnika — za statistiku regiona. */
+export function onlineUserIds(): number[] {
+  return [...connections.keys()];
+}
+
 export function pushToUser(userId: number, payload: object): void {
   const set = connections.get(userId);
   if (!set) return;

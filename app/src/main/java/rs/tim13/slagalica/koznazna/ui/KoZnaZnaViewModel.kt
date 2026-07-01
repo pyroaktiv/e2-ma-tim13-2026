@@ -27,6 +27,9 @@ class KoZnaZnaViewModel(
     private var redCorrect = 0
     private var redWrong = 0
 
+    private var questionStartMs = 0L
+    private var revealMessage = ""
+
     init {
         startRound(currentRoundIndex)
     }
@@ -37,16 +40,19 @@ class KoZnaZnaViewModel(
     }
 
     private fun startQuestion() {
+        questionStartMs = System.currentTimeMillis()
+        revealMessage = ""
         startTimer(QUESTION_SECONDS)
         updateSpecificState(KoZnaZnaGamePhase.PLAYING)
     }
 
     fun submitAnswer(optionIndex: Int) {
         if (uiState.value?.phase != KoZnaZnaGamePhase.PLAYING) return
-        if (!game.submitAnswer(localPlayer, optionIndex)) return
+        val elapsed = System.currentTimeMillis() - questionStartMs
+        if (!game.submitAnswer(localPlayer, optionIndex, elapsed)) return
 
         if (!isSinglePlayer) {
-            events.value = GameEvent.MovePlayed("ANSWER", mapOf("index" to optionIndex))
+            events.value = GameEvent.MovePlayed("ANSWER", mapOf("index" to optionIndex, "elapsed" to elapsed))
         }
 
         // Bez čekanja: u single-player, ako je protivnik otišao, ili kad su oba odgovorila.
@@ -60,12 +66,33 @@ class KoZnaZnaViewModel(
     private fun revealCurrentQuestion() {
         stopTimer()
         game.resolveCurrentQuestion()
+        revealMessage = buildRevealMessage()
         startTimer(REVEAL_SECONDS)
-        updateSpecificState(KoZnaZnaGamePhase.REVEAL)
+        updateSpecificState(KoZnaZnaGamePhase.REVEAL, revealMessage)
+    }
+
+    /** Indikator ko je tačno odgovorio i ko je bio brži (spec 1.c/1.d). */
+    private fun buildRevealMessage(): String {
+        val blue = game.answerOf(Player.BLUE)
+        val red = game.answerOf(Player.RED)
+        val correct = game.correctIndex
+        val blueOk = blue != null && blue.optionIndex == correct
+        val redOk = red != null && red.optionIndex == correct
+        return when {
+            blueOk && redOk -> {
+                val faster = if (blue!!.elapsedMs <= red!!.elapsedMs) 1 else 2
+                "Oba tačna — brži: Igrač $faster"
+            }
+            blueOk -> "Tačno: Igrač 1"
+            redOk -> "Tačno: Igrač 2"
+            blue == null && red == null -> "Niko nije odgovorio"
+            else -> "Netačan odgovor"
+        }
     }
 
     override fun onTimerTick() {
-        updateSpecificState(uiState.value?.phase ?: KoZnaZnaGamePhase.PLAYING)
+        val phase = uiState.value?.phase ?: KoZnaZnaGamePhase.PLAYING
+        updateSpecificState(phase, if (phase == KoZnaZnaGamePhase.REVEAL) revealMessage else "")
     }
 
     override fun onTimeUp() {
@@ -122,8 +149,9 @@ class KoZnaZnaViewModel(
         when (action) {
             "ANSWER" -> {
                 val index = (payload["index"] as Number).toInt()
+                val elapsed = (payload["elapsed"] as? Number)?.toLong() ?: 0L
                 val opponent = Player.entries.first { it != localPlayer }
-                game.submitAnswer(opponent, index)
+                game.submitAnswer(opponent, index, elapsed)
                 if (game.bothAnswered) revealCurrentQuestion()
                 else updateSpecificState(KoZnaZnaGamePhase.PLAYING)
             }

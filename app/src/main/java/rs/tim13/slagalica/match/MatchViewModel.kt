@@ -86,6 +86,9 @@ class MatchViewModel(
             MatchMode.SOLO -> showGame(0)
             MatchMode.ONLINE -> _uiState.value = MatchUiState.Connecting
             MatchMode.CHALLENGE -> _uiState.value = MatchUiState.Connecting
+            // Prijateljska partija: `match_found` je server već poslao kad je poziv prihvaćen;
+            // LiveData ga ponavlja ovom ekranu, pa ga obrađujemo u onServerMessage.
+            MatchMode.FRIEND -> _uiState.value = MatchUiState.Connecting
             MatchMode.TOURNAMENT_SEMI, MatchMode.TOURNAMENT_FINAL -> {
                 // Sadržaj dolazi direktno iz TurnirViewModel-a, nema potrebe za čekanjem.
                 matchId = tournamentMatchId ?: ""
@@ -191,7 +194,7 @@ class MatchViewModel(
 
     /** Igrač napušta partiju (forfeit). */
     fun leaveMatch() {
-        if (mode == MatchMode.ONLINE && matchId.isNotEmpty()) {
+        if ((mode == MatchMode.ONLINE || mode == MatchMode.FRIEND) && matchId.isNotEmpty()) {
             SocketManager.send(ClientMessage.LeaveMatch(matchId = matchId))
         } else if (mode == MatchMode.CHALLENGE && challengeId != null && content != null) {
             SocketManager.send(
@@ -217,15 +220,16 @@ class MatchViewModel(
             tokens = tokens,
             stars = stars
         )
-    // Turnirske partije koriste iste remote poteze kao ONLINE mode.
-    val isRemoteMatch: Boolean get() = mode == MatchMode.ONLINE || mode == MatchMode.TOURNAMENT_SEMI || mode == MatchMode.TOURNAMENT_FINAL
+    // Turnirske i prijateljske partije koriste iste remote poteze kao ONLINE mode.
+    val isRemoteMatch: Boolean get() = mode == MatchMode.ONLINE || mode == MatchMode.FRIEND ||
+            mode == MatchMode.TOURNAMENT_SEMI || mode == MatchMode.TOURNAMENT_FINAL
 
     override fun attachGame(game: RemoteGame) {
         attachedGame = game
     }
 
     override fun onLocalMove(action: String, payload: Map<String, Any>) {
-        if (mode == MatchMode.ONLINE || mode == MatchMode.TOURNAMENT_SEMI || mode == MatchMode.TOURNAMENT_FINAL) {
+        if (isRemoteMatch) {
             SocketManager.send(
                 ClientMessage.MatchMove(matchId = matchId, gameIndex = currentIndex, action = action, payload = payload)
             )
@@ -288,7 +292,7 @@ class MatchViewModel(
 
     private fun finishMatch() {
         when (mode) {
-            MatchMode.ONLINE -> {
+            MatchMode.ONLINE, MatchMode.FRIEND -> {
                 SocketManager.send(
                     ClientMessage.ReportResult(
                         matchId = matchId,
@@ -297,7 +301,7 @@ class MatchViewModel(
                         perGame = perGame.toList()
                     )
                 )
-                // Čekamo `match_over` sa nagradama; do tada prikaži kraj bez nagrada.
+                // Čekamo `match_over` (prijateljska partija bez nagrada); do tada prikaži kraj.
                 _uiState.value = MatchUiState.MatchOver(blueTotal, redTotal, localColor, rewards = null, opponentLeft = opponentLeft)
             }
             MatchMode.CHALLENGE -> {

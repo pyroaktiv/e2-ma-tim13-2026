@@ -55,6 +55,7 @@ export async function handleRegister(req: Request): Promise<Response> {
 
   const passwordHash = await Bun.password.hash(password);
   const qrToken = crypto.randomUUID();
+  // Spec 5.a: nasumična tačka unutar regiona za prikaz na mapi.
   const { lat, lng } = generateRandomPoint(region);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -66,6 +67,13 @@ export async function handleRegister(req: Request): Promise<Response> {
     .run(email, username, passwordHash, region, lat, lng, qrToken, today);
 
   db.query("INSERT INTO match_summary (user_id) VALUES (?)").run(userId);
+
+  // Razvoj bez SMTP-a: preskoči slanje mejla i odmah verifikuj nalog da bi se moglo logovati.
+  // U produkciji (kada je SMTP_HOST podešen) ostaje obavezna potvrda mejlom.
+  if (!process.env.SMTP_HOST) {
+    db.query("UPDATE users SET email_verified = 1 WHERE id = ?").run(userId);
+    return json({ message: "Registracija uspešna." }, 201);
+  }
 
   const verifyToken = Buffer.from(
     crypto.getRandomValues(new Uint8Array(32)),

@@ -22,8 +22,8 @@ object KoZnaZnaScoringEngine {
         val redCorrect = red != null && red.optionIndex == correctIndex
 
         if (blueCorrect && redCorrect) {
-            // Oba tačna -> poene dobija brži (manji order).
-            val faster = if (blue!!.order <= red!!.order) Player.BLUE else Player.RED
+            // Oba tačna -> poene dobija brži (kraće vreme reakcije); pri jednakosti deterministički plavi.
+            val faster = if (blue!!.elapsedMs <= red!!.elapsedMs) Player.BLUE else Player.RED
             delta[faster] = CORRECT_POINTS
         } else {
             if (blue != null) delta[Player.BLUE] = if (blueCorrect) CORRECT_POINTS else WRONG_POINTS

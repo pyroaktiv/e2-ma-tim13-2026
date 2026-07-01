@@ -2,7 +2,8 @@ import type { ServerWebSocket } from "bun";
 import { db } from "../db/database";
 import type { WsData } from "../util/websocket";
 import { buildMatchContent } from "../match/content";
-import { participantFor, type Participant } from "../match/types";
+import { applyPerGameStats } from "../match/stats";
+import { participantFor, type Participant, type PerGameStats } from "../match/types";
 import { creditReward, hasStake, refundStake, spendStake } from "./stakes";
 import {
   MAX_CHALLENGE_PARTICIPANTS,
@@ -89,7 +90,7 @@ export function onSocketMessage(ws: ServerWebSocket<WsData>, raw: string | Buffe
       handleStart(ws, msg.challengeId);
       break;
     case "report_challenge_result":
-      handleReport(ws, msg.challengeId, msg.score);
+      handleReport(ws, msg.challengeId, msg.score, msg.perGame);
       break;
   }
 }
@@ -244,7 +245,12 @@ function startChallenge(c: ActiveChallenge): void {
   broadcast(c, { type: "challenge_started", challengeId: c.id, content });
 }
 
-function handleReport(ws: ServerWebSocket<WsData>, challengeId: string, score: number): void {
+function handleReport(
+  ws: ServerWebSocket<WsData>,
+  challengeId: string,
+  score: number,
+  perGame?: PerGameStats[],
+): void {
   const c = active.get(challengeId);
   if (!c || c.status !== "active") return;
   const participant = participantFor(ws);
@@ -253,6 +259,9 @@ function handleReport(ws: ServerWebSocket<WsData>, challengeId: string, score: n
 
   const safeScore = Math.max(0, Math.trunc(score));
   c.results.set(participant.userId, safeScore);
+
+  // Izazov se igra samostalno (jedan igrač = „plavi") — upiši njegovu per-game statistiku (spec 2.c).
+  applyPerGameStats(participant.userId, null, perGame);
   db.query("UPDATE challenge_participants SET score = ? WHERE challenge_id = ? AND user_id = ?").run(
     safeScore,
     c.id,

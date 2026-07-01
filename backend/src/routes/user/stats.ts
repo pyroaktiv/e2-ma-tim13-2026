@@ -15,7 +15,7 @@ import type {
 const DEFAULT_STATS = {
   ko_zna_zna: { correct: 0, missed: 0 } as KoZnaZnaStats,
   moj_broj: { total_attempts: 0, exact_hits: 0 } as MojBrojStats,
-  korak_po_korak: { guessed_at_step: [0, 0, 0, 0, 0, 0, 0] } as KorakPoKorakStats,
+  korak_po_korak: { guessed_at_step: [0, 0, 0, 0, 0, 0, 0], failed: 0 } as KorakPoKorakStats,
   asocijacije: { solved: 0, unsolved: 0 } as AsocijacijeStats,
   skocko: { correct_at_attempt: [0, 0, 0, 0, 0, 0], failed: 0 } as SkockoStats,
   spojnice: { total: 0, successful: 0 } as SpojniceStats,

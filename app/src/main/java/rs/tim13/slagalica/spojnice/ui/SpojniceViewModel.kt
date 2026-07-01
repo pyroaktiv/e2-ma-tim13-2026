@@ -60,7 +60,7 @@ class SpojniceViewModel(
 
     fun selectLeft(leftIndex: Int) {
         if (!canPlay()) return
-        if (currentGame.isLeftConnected(leftIndex)) return
+        if (currentGame.isLeftConnected(leftIndex) || currentGame.isLeftFailed(leftIndex)) return
         selectedLeftIndex = leftIndex
         updateSpecificState(SpojniceGamePhase.PLAYING)
     }
@@ -175,7 +175,11 @@ class SpojniceViewModel(
     }
 
     private fun updateSpecificState(phase: SpojniceGamePhase, message: String = "") {
-        val scores = currentGame.calculateScore()
+        val roundScores = currentGame.calculateScore()
+        // Skor u header-u je kumulativan kroz runde: dok runda traje (PLAYING) prikazuje se
+        // zbir prethodnih rundi + tekuća; po završetku runde tekuća je već uračunata u total.
+        val roundBlue = if (phase == SpojniceGamePhase.PLAYING) roundScores[Player.BLUE] ?: 0 else 0
+        val roundRed = if (phase == SpojniceGamePhase.PLAYING) roundScores[Player.RED] ?: 0 else 0
         updateState(
             SpojniceUiState(
                 round = currentRoundIndex + 1,
@@ -188,10 +192,11 @@ class SpojniceViewModel(
                 rightItems = currentGame.rightItems,
                 connectionsByLeft = currentGame.connectionsByLeft(),
                 connectedRightIndices = currentGame.connectedRightIndices(),
+                failedLeftIndices = currentGame.failedLeftIndices(),
                 selectedLeftIndex = selectedLeftIndex,
                 isRecoveryPhase = currentGame.isRecoveryPhase,
-                blueScore = scores[Player.BLUE] ?: 0,
-                redScore = scores[Player.RED] ?: 0
+                blueScore = totalBlueScore + roundBlue,
+                redScore = totalRedScore + roundRed
             )
         )
     }

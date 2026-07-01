@@ -14,6 +14,7 @@ data class SpojniceUiState(
     val rightItems: List<String>,
     val connectionsByLeft: List<Player?>,   // ko je povezao svaki levi pojam (null = nije)
     val connectedRightIndices: Set<Int>,    // zauzeti desni pojmovi
+    val failedLeftIndices: Set<Int>,        // levi pojmovi na kojima je pogrešeno (crveni, zaključani)
     val selectedLeftIndex: Int?,
     val isRecoveryPhase: Boolean,
     val blueScore: Int,

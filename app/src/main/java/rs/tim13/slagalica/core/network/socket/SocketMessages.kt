@@ -189,6 +189,27 @@ sealed class ServerMessage {
     ) : ServerMessage()
 }
 
+/**
+ * Push poruke vezane za prijatelje (spec 7) koje backend šalje preko socketa sa snake_case
+ * ključevima. Drže se odvojeno od [ServerMessage] da ne bi uticale na postojeće `when` grane
+ * (čet/izazov/partija) i parsiraju se ručno u [SocketManager].
+ */
+sealed class FriendSocketEvent {
+    data class GameInvite(
+        val id: Int,
+        val fromId: Int,
+        val fromUsername: String,
+        val expiresAt: String
+    ) : FriendSocketEvent()
+
+    data class InviteAccepted(val inviteId: Int) : FriendSocketEvent()
+    data class InviteDeclined(val inviteId: Int) : FriendSocketEvent()
+    data class InviteExpired(val inviteId: Int) : FriendSocketEvent()
+    data class InviteCancelled(val inviteId: Int) : FriendSocketEvent()
+    data class FriendRequestReceived(val fromId: Int, val fromUsername: String) : FriendSocketEvent()
+    data class FriendRequestAccepted(val byId: Int, val byUsername: String) : FriendSocketEvent()
+}
+
 // ── Turnir DTOs ────────────────────────────────────────────────────────────────
 
 data class TurnirBracketEntryDto(

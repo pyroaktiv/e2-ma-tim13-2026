@@ -257,16 +257,19 @@ export function initDb(): void {
   db.run("CREATE INDEX IF NOT EXISTS idx_chat_to_from        ON chat_messages(to_user_id, from_user_id, created_at)");
 
   const seedLeagues = db.transaction(() => {
+    // Spec 6.c: nulta liga (0) + 5 liga; prag = prethodni * 2 (100, 200, 400, 800, 1600).
     const leagues = [
       { id: 1, name: "Bronze",   min_stars: 0,    icon: "league_bronze" },
       { id: 2, name: "Silver",   min_stars: 100,  icon: "league_silver" },
-      { id: 3, name: "Gold",     min_stars: 300,  icon: "league_gold" },
-      { id: 4, name: "Platinum", min_stars: 600,  icon: "league_platinum" },
-      { id: 5, name: "Diamond",  min_stars: 1000, icon: "league_diamond" },
-      { id: 6, name: "Master",   min_stars: 1500, icon: "league_master" },
+      { id: 3, name: "Gold",     min_stars: 200,  icon: "league_gold" },
+      { id: 4, name: "Platinum", min_stars: 400,  icon: "league_platinum" },
+      { id: 5, name: "Diamond",  min_stars: 800,  icon: "league_diamond" },
+      { id: 6, name: "Master",   min_stars: 1600, icon: "league_master" },
     ];
+    // Upsert da bi se i postojeće baze ispravile na tačne pragove.
     const stmt = db.prepare(
-      "INSERT OR IGNORE INTO leagues (id, name, min_stars, icon) VALUES (?, ?, ?, ?)"
+      `INSERT INTO leagues (id, name, min_stars, icon) VALUES (?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET name = excluded.name, min_stars = excluded.min_stars, icon = excluded.icon`
     );
     for (const l of leagues) stmt.run(l.id, l.name, l.min_stars, l.icon);
   });

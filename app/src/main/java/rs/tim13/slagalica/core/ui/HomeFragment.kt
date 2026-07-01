@@ -34,6 +34,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.btnDailyMissions.setOnClickListener { findNavController().navigate(R.id.action_home_to_dailyMissions) }
         binding.btnChallenge.setOnClickListener { findNavController().navigate(R.id.action_home_to_challenges) }
         binding.btnChat.setOnClickListener { findNavController().navigate(R.id.action_home_to_chat) }
+        binding.btnFriends.setOnClickListener { findNavController().navigate(R.id.action_home_to_friends) }
+        binding.btnRegions.setOnClickListener { findNavController().navigate(R.id.action_home_to_regions) }
         binding.btnRanking.setOnClickListener { findNavController().navigate(R.id.action_home_to_leaderboard) }
         binding.btnTournament.setOnClickListener { findNavController().navigate(R.id.action_home_to_turnirLobby) }
 
@@ -92,6 +94,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.tvHomeLeague.text = getString(R.string.home_league, profile.league.name)
         binding.btnChallenge.isEnabled = true
         binding.btnChat.isEnabled = true
+        binding.btnFriends.isEnabled = true
+        binding.btnRegions.isEnabled = true
         binding.btnDailyMissions.isEnabled = true
         binding.btnTournament.isEnabled = true
     }
@@ -103,6 +107,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.tvHomeLeague.text = ""
         binding.btnChallenge.isEnabled = false // izazov uloge zvezde/tokene, nedostupan gostu
         binding.btnChat.isEnabled = false // čet je vezan za region, nedostupan gostu
+        binding.btnFriends.isEnabled = false // prijatelji zahtevaju nalog
+        binding.btnRegions.isEnabled = false // region/rang zahteva nalog
         binding.btnDailyMissions.isEnabled = false
     }
 }

@@ -13,7 +13,9 @@ data class ProfileDto(
     val totalStars: Int,
     val league: LeagueDto,
     val region: String,
-    val qrToken: String
+    val qrToken: String,
+    /** "gold"/"silver"/"bronze" za top-3 region prethodnog ciklusa (spec 5.e), "none" inače. */
+    val avatarFrame: String? = null
 )
 
 data class LeagueDto(

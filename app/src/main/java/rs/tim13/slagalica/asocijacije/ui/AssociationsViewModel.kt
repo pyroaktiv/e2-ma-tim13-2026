@@ -197,6 +197,11 @@ class AssociationsViewModel(
     }
 
     private fun updateSpecificState(phase: AssociationsGamePhase, message: String = "") {
+        // Real-time poeni: dok runda traje prikazuje se zbir prethodnih rundi + tekuća (rešene kolone
+        // se odmah vide u skoru). Po završetku runde tekuća je već uračunata u total.
+        val roundScores = currentGame.calculateScore()
+        val roundBlue = if (phase == AssociationsGamePhase.PLAYING) roundScores[Player.BLUE] ?: 0 else 0
+        val roundRed = if (phase == AssociationsGamePhase.PLAYING) roundScores[Player.RED] ?: 0 else 0
         updateState(
             AssociationsUiState(
                 columns = currentGame.columns,
@@ -209,8 +214,8 @@ class AssociationsViewModel(
                 remainingSeconds = remainingSeconds,
                 statusMessage = message,
                 isNextMoveRevealing = currentGame.isNextMoveRevealing,
-                blueScore = totalBlueScore,
-                redScore = totalRedScore
+                blueScore = totalBlueScore + roundBlue,
+                redScore = totalRedScore + roundRed
             )
         )
     }

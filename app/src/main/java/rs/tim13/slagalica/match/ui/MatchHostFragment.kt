@@ -64,10 +64,10 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val needsSocket = mode == MatchMode.ONLINE || mode == MatchMode.CHALLENGE ||
+        val needsSocket = mode == MatchMode.ONLINE || mode == MatchMode.CHALLENGE || mode == MatchMode.FRIEND ||
                 mode == MatchMode.TOURNAMENT_SEMI || mode == MatchMode.TOURNAMENT_FINAL
         if (needsSocket) {
-            // Turnir: konekcija je već otvorena iz TurnirLobbyFragment-a; connect() je idempotentno.
+            // Turnir/prijateljska: konekcija je možda već otvorena; connect() je idempotentno.
             SocketManager.connect(requireContext())
             SocketManager.connected.observe(viewLifecycleOwner) { connected ->
                 if (connected) match.onSocketConnected()
@@ -217,7 +217,7 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
     private fun leaveAndExit() {
         match.leaveMatch()
         when (mode) {
-            MatchMode.ONLINE -> {
+            MatchMode.ONLINE, MatchMode.FRIEND -> {
                 SocketManager.disconnect()
                 findNavController().popBackStack()
             }

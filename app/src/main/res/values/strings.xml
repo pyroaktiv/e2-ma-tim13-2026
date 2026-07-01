@@ -22,11 +22,10 @@
     <string name="reset_password_title">Promena lozinke</string>
 
     <string-array name="regioni_srbije">
-        <item>Banat</item>
-        <item>Bačka</item>
-        <item>Srem</item>
-        <item>Centralna Srbija</item>
-        <item>Kosovo</item>
+        <item>Vojvodina</item>
+        <item>Beograd</item>
+        <item>Šumadija i Zapadna Srbija</item>
+        <item>Južna i Istočna Srbija</item>
     </string-array>
 
     <string name="reset_username_email_hint">Email ili korisničko ime</string>
@@ -134,6 +133,60 @@
     <string name="skocko_status_draw">Nerešeno!</string>
     <string name="change_password">Promeni lozinku</string>
 
+    <!-- Profil (spec 2) -->
+    <string name="profile_region">Region: %s</string>
+    <string name="profile_choose_avatar">Izaberi avatar</string>
+    <string name="profile_avatar_error">Greška pri izmeni avatara.</string>
+    <string name="profile_load_error">Ne mogu da učitam podatke profila.</string>
+    <string name="profile_guest_only">Profil je dostupan samo prijavljenim igračima.</string>
+    <string name="profile_breakdown_step">Po koraku:</string>
+    <string name="profile_breakdown_attempt">Po pokušaju:</string>
+    <string name="common_cancel">Otkaži</string>
+
+    <!-- Prijatelji (spec 7) -->
+    <string name="friends_screen_title">Prijatelji</string>
+    <string name="friends_empty_state">Još uvek nemate prijatelje.</string>
+    <string name="friends_add">Dodaj</string>
+    <string name="friends_requests">Zahtevi</string>
+    <string name="friends_requests_count">Zahtevi (%d)</string>
+    <string name="friends_requests_empty">Nema novih zahteva.</string>
+    <string name="friends_avatar_desc">Avatar</string>
+    <string name="friends_league_desc">Liga</string>
+    <string name="friends_invite">Pozovi</string>
+    <string name="friends_invite_failed">Slanje poziva nije uspelo.</string>
+    <string name="friends_invite_declined">Poziv je odbijen.</string>
+    <string name="friends_invite_expired">Poziv je istekao.</string>
+    <string name="friends_waiting_title">Poziv poslat</string>
+    <string name="friends_waiting_message">Čeka se da %s prihvati…</string>
+    <string name="friends_incoming_title">Poziv na partiju</string>
+    <string name="friends_incoming_message">%s vas poziva na partiju.</string>
+    <string name="friends_incoming_message_countdown">%1$s vas poziva na partiju. (%2$d s)</string>
+    <string name="friends_accept">Prihvati</string>
+    <string name="friends_decline">Odbij</string>
+    <string name="friends_new_request">%s vam je poslao zahtev za prijateljstvo.</string>
+    <string name="friends_remove_title">Ukloni prijatelja</string>
+    <string name="friends_remove_message">Ukloniti %s iz liste prijatelja?</string>
+    <string name="friends_remove_confirm">Ukloni</string>
+    <string name="friends_search_hint">Korisničko ime</string>
+    <string name="friends_search_empty">Nema rezultata.</string>
+    <string name="friends_scan_qr">QR</string>
+    <string name="friends_scan_prompt">Skenirajte QR kod prijatelja</string>
+    <string name="friends_request_sent">Zahtev poslat.</string>
+    <string name="friends_request_failed">Slanje zahteva nije uspelo.</string>
+
+    <!-- Regioni (spec 5) -->
+    <string name="regions_screen_title">Regioni</string>
+    <string name="regions_ranking_title">Mesečni rang regiona</string>
+    <string name="regions_cycle_range">Ciklus: %1$s – %2$s</string>
+    <string name="regions_mine_suffix">%s (vaš region)</string>
+    <string name="regions_icon_desc">Ikona regiona</string>
+    <string name="regions_stats_error">Ne mogu da učitam statistiku regiona.</string>
+    <string name="regions_stat_first">Prva mesta: %d</string>
+    <string name="regions_stat_second">Druga mesta: %d</string>
+    <string name="regions_stat_third">Treća mesta: %d</string>
+    <string name="regions_stat_active">Aktivnih igrača: %d</string>
+    <string name="regions_stat_registered">Registrovanih igrača: %d</string>
+
     <string name="back">Nazad</string>
     <string name="leaderboard_title">Rang Lista</string>
     <string name="leaderboard_tab_weekly">Nedeljno</string>
@@ -145,7 +198,7 @@
     <string name="league_icon_desc">Liga</string>
     <string name="reward_title">Čestitamo!</string>
     <string name="reward_rank">Zauzeli ste %1$d. mesto (%2$s)</string>
-    <string name="reward_tokens">Nagrada: %d žetona</string>
+    <string name="reward_tokens">Nagrada: %d tokena</string>
     <string name="reward_dismiss">Preuzmi nagradu</string>
     <string name="btn_leaderboard">Rang lista</string>
 

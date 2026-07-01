@@ -1,13 +1,10 @@
 package rs.tim13.slagalica.auth.ui
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import rs.tim13.slagalica.core.ui.GameActivity
-import rs.tim13.slagalica.core.util.TokenManager
 import rs.tim13.slagalica.databinding.ActivityAuthBinding
 
 class AuthActivity : AppCompatActivity() {
@@ -17,12 +14,7 @@ class AuthActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (TokenManager(this).getToken() != null) {
-            startActivity(Intent(this, GameActivity::class.java))
-            finish()
-            return
-        }
-
+        // Aplikacija se uvek otvara na login ekranu (bez auto-preskoka na osnovu sačuvanog tokena).
         enableEdgeToEdge()
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)

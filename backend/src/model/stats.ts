@@ -18,6 +18,7 @@ export interface MojBrojStats {
 
 export interface KorakPoKorakStats {
   guessed_at_step: [number, number, number, number, number, number, number];
+  failed: number;
 }
 
 export interface AsocijacijeStats {

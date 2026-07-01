@@ -54,19 +54,21 @@ class SpojniceFragment :
         leftButtons.forEachIndexed { index, button ->
             button.text = state.leftItems.getOrNull(index) ?: ""
             val connected = state.connectionsByLeft.getOrNull(index) != null
+            val failed = index in state.failedLeftIndices
             val selected = index == state.selectedLeftIndex
-            renderConnectableButton(button, connected, selected, state.isMyTurn, state.phase)
+            renderConnectableButton(button, connected, failed, selected, state.isMyTurn, state.phase)
         }
         rightButtons.forEachIndexed { index, button ->
             button.text = state.rightItems.getOrNull(index) ?: ""
             val connected = index in state.connectedRightIndices
-            renderConnectableButton(button, connected, selected = false, state.isMyTurn, state.phase)
+            renderConnectableButton(button, connected, failed = false, selected = false, state.isMyTurn, state.phase)
         }
     }
 
     private fun renderConnectableButton(
         button: MaterialButton,
         connected: Boolean,
+        failed: Boolean,
         selected: Boolean,
         isMyTurn: Boolean,
         phase: SpojniceGamePhase
@@ -75,6 +77,11 @@ class SpojniceFragment :
             connected -> {
                 button.isEnabled = false
                 button.backgroundTintList = colorTint(android.R.color.holo_green_light)
+            }
+            failed -> {
+                // Pogrešeno spajanje: levi pojam je crven i ne može se ponovo izabrati.
+                button.isEnabled = false
+                button.backgroundTintList = colorTint(android.R.color.holo_red_light)
             }
             selected -> {
                 button.isEnabled = phase == SpojniceGamePhase.PLAYING && isMyTurn

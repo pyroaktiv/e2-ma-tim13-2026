@@ -34,7 +34,7 @@ const KO_ZNA_ZNA = [
 
 const SPOJNICE = [
   {
-    leftItems: ["Pop", "Mare", "Gojko Šiša", "Kata", "Policajac"],
+    leftItems: ["Pop", "Mare", "Gojko Sisa", "Kata", "Policajac"],
     rightItems: ["Sergej Trifunović", "Nebojša Glogovac", "Nikola Đuričko", "Maja Mandžuka", "Boris Milivojević"],
     solution: [0, 4, 2, 3, 1],
   },
@@ -112,7 +112,7 @@ const KORAK_PO_KORAK = [
   },
   {
     clues: [
-      "Ima ih osam",
+      "Ima osam nogu",
       "Pravi mrežu",
       "Nije insekt",
       "Neki su otrovni",
