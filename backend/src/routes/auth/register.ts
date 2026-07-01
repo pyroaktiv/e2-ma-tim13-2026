@@ -2,7 +2,7 @@ import { z } from "zod";
 import { db } from "../../db/database";
 import { sendVerificationEmail } from "../../util/email";
 import { json } from "../../util/response";
-import { randomPointIn } from "../../regions/config";
+import { REGION_NAMES, generateRandomPoint } from "../../util/regions";
 
 const RegisterSchema = z
   .object({
@@ -11,7 +11,7 @@ const RegisterSchema = z
       .string()
       .min(3, "Username must be at least 3 characters")
       .max(30),
-    region: z.string().min(1, "Region is required"),
+    region: z.enum(REGION_NAMES, { message: "Invalid region" }),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
@@ -55,17 +55,16 @@ export async function handleRegister(req: Request): Promise<Response> {
 
   const passwordHash = await Bun.password.hash(password);
   const qrToken = crypto.randomUUID();
-  const today = new Date().toISOString().slice(0, 10);
-
   // Spec 5.a: nasumična tačka unutar regiona za prikaz na mapi.
-  const point = randomPointIn(region);
+  const { lat, lng } = generateRandomPoint(region);
+  const today = new Date().toISOString().slice(0, 10);
 
   // Spec 3.a: igrač dobija 5 tokena pri registraciji (sledećih 5 stiže narednog dana).
   const { lastInsertRowid: userId } = db
     .query(
-      "INSERT INTO users (email, username, password_hash, region, qr_token, tokens, last_token_grant, map_lat, map_lng) VALUES (?, ?, ?, ?, ?, 5, ?, ?, ?)",
+      "INSERT INTO users (email, username, password_hash, region, map_lat, map_lng, qr_token, tokens, last_token_grant) VALUES (?, ?, ?, ?, ?, ?, ?, 5, ?)",
     )
-    .run(email, username, passwordHash, region, qrToken, today, point.lat, point.lng);
+    .run(email, username, passwordHash, region, lat, lng, qrToken, today);
 
   db.query("INSERT INTO match_summary (user_id) VALUES (?)").run(userId);
 

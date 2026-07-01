@@ -6,6 +6,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import rs.tim13.slagalica.R
 import rs.tim13.slagalica.asocijacije.ui.AssociationsFragment
@@ -17,6 +18,7 @@ import rs.tim13.slagalica.core.ui.BaseFragment
 import rs.tim13.slagalica.core.ui.GameCoordinator
 import rs.tim13.slagalica.core.ui.GameCoordinatorHost
 import rs.tim13.slagalica.databinding.FragmentMatchHostBinding
+import rs.tim13.slagalica.turnir.ui.TurnirViewModel
 import rs.tim13.slagalica.korakpokorak.ui.KorakPoKorakFragment
 import rs.tim13.slagalica.koznazna.ui.KoZnaZnaFragment
 import rs.tim13.slagalica.match.MatchGame
@@ -41,8 +43,19 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
     }
     private val challengeId: String? by lazy { arguments?.getString(ARG_CHALLENGE_ID) }
 
+    private val tvm: TurnirViewModel by activityViewModels()
+
     override val match: MatchViewModel by viewModels {
-        MatchViewModelFactory(requireContext().applicationContext, mode, challengeId)
+        val ctx = requireContext().applicationContext
+        when (mode) {
+            MatchMode.TOURNAMENT_SEMI -> tvm.foundMessage!!.let {
+                MatchViewModelFactory(ctx, mode, tournamentMatchId = it.matchId, tournamentColor = it.color, tournamentContent = it.content)
+            }
+            MatchMode.TOURNAMENT_FINAL -> tvm.finalStartedMessage!!.let {
+                MatchViewModelFactory(ctx, mode, tournamentMatchId = it.matchId, tournamentColor = it.color, tournamentContent = it.content)
+            }
+            else -> MatchViewModelFactory(ctx, mode, challengeId)
+        }
     }
     override val gameCoordinator: GameCoordinator get() = match
 
@@ -51,7 +64,10 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (mode == MatchMode.ONLINE || mode == MatchMode.CHALLENGE || mode == MatchMode.FRIEND) {
+        val needsSocket = mode == MatchMode.ONLINE || mode == MatchMode.CHALLENGE || mode == MatchMode.FRIEND ||
+                mode == MatchMode.TOURNAMENT_SEMI || mode == MatchMode.TOURNAMENT_FINAL
+        if (needsSocket) {
+            // Turnir/prijateljska: konekcija je možda već otvorena; connect() je idempotentno.
             SocketManager.connect(requireContext())
             SocketManager.connected.observe(viewLifecycleOwner) { connected ->
                 if (connected) match.onSocketConnected()
@@ -94,7 +110,31 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
                 progress = true
             )
             is MatchUiState.ChallengeFinished -> renderChallengeFinished(state)
+            MatchUiState.TournamentWaiting -> showOverlay("Čekam turnirski rezultat...", "", progress = true)
+            is MatchUiState.TournamentSemiResult -> renderTournamentSemi(state)
+            is MatchUiState.TournamentFinalResult -> renderTournamentFinal(state)
         }
+    }
+
+    private fun renderTournamentSemi(state: MatchUiState.TournamentSemiResult) {
+        val title = if (state.won) "Pobeda u polufinalu!" else "Poraz u polufinalu"
+        val body = buildString {
+            append("Rezultat: ${state.myScore} : ${state.opponentScore}\n")
+            state.rewards?.let { append("Zvezde: ${signed(it.starsDelta)}   Tokeni: ${signed(it.tokensDelta)}") }
+                ?: append("Bez nagrada.")
+        }
+        showOverlay(title, body, progress = false, actionVisible = true)
+    }
+
+    private fun renderTournamentFinal(state: MatchUiState.TournamentFinalResult) {
+        val title = if (state.amIWinner) "Pobeda u finalu!" else "Poraz u finalu"
+        val r = state.myRewards
+        val body = buildString {
+            append("Rezultat: ${state.myScore} : ${state.opponentScore}\n")
+            append("Zvezde: ${signed(r.starsDelta)}   Tokeni: ${signed(r.tokensDelta)}\n")
+            append("Ukupno: ${r.totalStars}★ • ${r.tokens} tokena • liga ${r.league}")
+        }
+        showOverlay(title, body, progress = false, actionVisible = true)
     }
 
     private fun renderChallengeFinished(state: MatchUiState.ChallengeFinished) {
@@ -159,7 +199,9 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
     private fun confirmLeave() {
         val state = match.uiState.value
         if (state is MatchUiState.MatchOver || state is MatchUiState.Error ||
-            state is MatchUiState.ChallengeFinished || state == MatchUiState.ChallengeWaitingForOthers
+            state is MatchUiState.ChallengeFinished || state == MatchUiState.ChallengeWaitingForOthers ||
+            state is MatchUiState.TournamentSemiResult || state is MatchUiState.TournamentFinalResult ||
+            state == MatchUiState.TournamentWaiting
         ) {
             leaveAndExit()
             return
@@ -174,13 +216,20 @@ class MatchHostFragment : BaseFragment<FragmentMatchHostBinding>(FragmentMatchHo
 
     private fun leaveAndExit() {
         match.leaveMatch()
-        if (mode == MatchMode.ONLINE || mode == MatchMode.CHALLENGE || mode == MatchMode.FRIEND) SocketManager.disconnect()
-        if (mode == MatchMode.CHALLENGE) {
-            // Izazov je u tom trenutku završen/otkazan na serveru — ne vraćati se na lobi/listu
-            // (ponovni join_challenge bi dobio „izazov ne postoji" jer ga server više ne vodi).
-            findNavController().popBackStack(R.id.homeFragment, false)
-        } else {
-            findNavController().popBackStack()
+        when (mode) {
+            MatchMode.ONLINE, MatchMode.FRIEND -> {
+                SocketManager.disconnect()
+                findNavController().popBackStack()
+            }
+            MatchMode.CHALLENGE -> {
+                SocketManager.disconnect()
+                findNavController().popBackStack(R.id.homeFragment, false)
+            }
+            MatchMode.TOURNAMENT_SEMI, MatchMode.TOURNAMENT_FINAL -> {
+                // Ne prekidamo socket — turnir još traje za ostale igrače.
+                findNavController().popBackStack(R.id.homeFragment, false)
+            }
+            else -> findNavController().popBackStack()
         }
     }
 

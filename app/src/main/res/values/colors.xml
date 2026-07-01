@@ -10,4 +10,5 @@
     <color name="match_bg_player_blue">#D2D6FF</color>
     <color name="match_bg_player_red">#FFD3D2</color>
     <color name="header_bg_gray">#E0E0E0</color>
+    <color name="leaderboard_highlight">#33448AFF</color>
 </resources>

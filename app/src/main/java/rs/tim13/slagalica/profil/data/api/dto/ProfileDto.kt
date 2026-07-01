@@ -14,8 +14,8 @@ data class ProfileDto(
     val league: LeagueDto,
     val region: String,
     val qrToken: String,
-    /** Mesto regiona u prethodnom mesečnom ciklusu (1/2/3) — boja okvira avatara (spec 5.e); null inače. */
-    val regionMedal: Int? = null
+    /** "gold"/"silver"/"bronze" za top-3 region prethodnog ciklusa (spec 5.e), "none" inače. */
+    val avatarFrame: String? = null
 )
 
 data class LeagueDto(

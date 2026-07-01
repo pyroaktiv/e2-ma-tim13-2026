@@ -1,42 +1,35 @@
 package rs.tim13.slagalica.regions.data.api.dto
 
 /**
- * DTO-i za prikaz regiona (spec 5). Retrofit Gson koristi LOWER_CASE_WITH_UNDERSCORES,
- * pa se npr. [myRegion] mapira na `my_region`, [isMine] na `is_mine` itd.
+ * DTO-i za prikaz regiona (spec 5) — usklađeni sa backend rutama Studenta 3.
+ * Retrofit Gson koristi LOWER_CASE_WITH_UNDERSCORES (npr. [monthlyStars] -> `monthly_stars`).
  */
 
-data class RegionRankingDto(
-    val cycle: String,
-    val start: String,
-    val end: String,
-    val myRegion: String?,
-    val previousTop3: List<String>,
-    val regions: List<RegionRankEntryDto>
-)
-
-data class RegionRankEntryDto(
-    val region: String,
+/** Stavka mesečne rang liste regiona — `GET /api/regions`. */
+data class RegionDto(
+    val name: String,
     val icon: String,
-    val stars: Int,
+    val monthlyStars: Int,
     val rank: Int,
-    val isMine: Boolean
+    val totalPlayers: Int,
+    val isOwnRegion: Boolean
 )
 
+/** Tačka igrača na mapi — `GET /api/regions/map`. */
 data class RegionMapPointDto(
-    val id: Int,
-    val username: String,
-    val avatar: String,
     val region: String,
     val lat: Double,
     val lng: Double
 )
 
+/** Statistika regiona — `GET /api/regions/{name}/stats`. */
 data class RegionStatsDto(
-    val region: String,
+    val name: String,
     val icon: String,
-    val firstPlaces: Int,
-    val secondPlaces: Int,
-    val thirdPlaces: Int,
+    val firstPlaceCount: Int,
+    val secondPlaceCount: Int,
+    val thirdPlaceCount: Int,
     val activePlayers: Int,
-    val registeredPlayers: Int
+    val totalPlayers: Int,
+    val currentMonthlyStars: Int
 )

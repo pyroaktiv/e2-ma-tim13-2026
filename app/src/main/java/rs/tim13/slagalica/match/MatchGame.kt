@@ -20,5 +20,6 @@ enum class MatchGame(val key: String, val displayName: String) {
  * CHALLENGE: izazov (spec 9) — partija se igra samostalno, sadržaj dolazi sa servera.
  * FRIEND: prijateljska partija (spec 7.d) — server je već spojio dva prijatelja i poslao
  * `match_found`; klijent ne traži protivnika, samo uđe u partiju (nerangirana).
+ * TOURNAMENT_SEMI/FINAL: turnir (spec 10).
  */
-enum class MatchMode { SOLO, ONLINE, CHALLENGE, FRIEND }
+enum class MatchMode { SOLO, ONLINE, CHALLENGE, FRIEND, TOURNAMENT_SEMI, TOURNAMENT_FINAL }

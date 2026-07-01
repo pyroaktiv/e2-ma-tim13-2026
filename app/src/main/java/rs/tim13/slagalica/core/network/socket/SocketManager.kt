@@ -106,7 +106,16 @@ object SocketManager {
             "challenge_cancelled" -> gson.fromJson(text, ServerMessage.ChallengeCancelled::class.java)
             "challenge_started" -> gson.fromJson(text, ServerMessage.ChallengeStarted::class.java)
             "challenge_over" -> gson.fromJson(text, ServerMessage.ChallengeOver::class.java)
-            "chat_message" -> gson.fromJson(text, ServerMessage.ChatMessage::class.java)
+            "chat_message"      -> gson.fromJson(text, ServerMessage.ChatMessage::class.java)
+            "mission_progress"  -> gson.fromJson(text, ServerMessage.MissionProgress::class.java)
+            "mission_bonus"     -> gson.fromJson(text, ServerMessage.MissionBonus::class.java)
+            "tournament_queued"         -> ServerMessage.TournamentQueued
+            "tournament_cancelled"      -> ServerMessage.TournamentCancelled
+            "tournament_found"          -> gson.fromJson(text, ServerMessage.TournamentFound::class.java)
+            "tournament_semi_over"      -> gson.fromJson(text, ServerMessage.TournamentSemiOver::class.java)
+            "tournament_final_started"  -> gson.fromJson(text, ServerMessage.TournamentFinalStarted::class.java)
+            "tournament_update"         -> gson.fromJson(text, ServerMessage.TournamentUpdate::class.java)
+            "tournament_over"           -> gson.fromJson(text, ServerMessage.TournamentOver::class.java)
             else -> null
         }
     }

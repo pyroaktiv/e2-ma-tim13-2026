@@ -23,7 +23,6 @@ export interface UserProfile {
   total_stars: number;
   league: { name: string; icon: string };
   region: string;
+  avatar_frame: string;
   qr_token: string;
-  /** Mesto regiona u prethodnom mesečnom ciklusu (1/2/3) — boja okvira avatara (spec 5.e); null inače. */
-  region_medal: number | null;
 }

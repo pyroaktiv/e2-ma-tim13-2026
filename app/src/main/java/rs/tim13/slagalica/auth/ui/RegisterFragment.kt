@@ -15,14 +15,21 @@ import rs.tim13.slagalica.auth.data.api.dto.RegisterRequest
 import rs.tim13.slagalica.core.network.RetrofitClient
 import rs.tim13.slagalica.core.ui.BaseFragment
 import rs.tim13.slagalica.databinding.FragmentAuthRegisterBinding
-import kotlin.getValue
 
 class RegisterFragment : BaseFragment<FragmentAuthRegisterBinding>(FragmentAuthRegisterBinding::inflate) {
+
+    private val regions = listOf(
+        "Vojvodina",
+        "Beograd",
+        "Šumadija i Zapadna Srbija",
+        "Južna i Istočna Srbija",
+    )
 
     private val viewModel: AuthViewModel by viewModels {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val api = RetrofitClient.getAuthClient(requireContext())
+                @Suppress("UNCHECKED_CAST")
                 return AuthViewModel(api) as T
             }
         }
@@ -31,13 +38,8 @@ class RegisterFragment : BaseFragment<FragmentAuthRegisterBinding>(FragmentAuthR
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val regions = resources.getStringArray(R.array.regioni_srbije)
-
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, regions)
-
         binding.actvRegion.setAdapter(adapter)
-
-        val api = RetrofitClient.getAuthClient(requireContext())
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.authState.collect { state ->
@@ -54,7 +56,7 @@ class RegisterFragment : BaseFragment<FragmentAuthRegisterBinding>(FragmentAuthR
                         showError(state.message)
                         viewModel.resetState()
                     }
-                    else -> { binding.btnRegister.isEnabled = true }
+                    else -> binding.btnRegister.isEnabled = true
                 }
             }
         }
@@ -66,7 +68,7 @@ class RegisterFragment : BaseFragment<FragmentAuthRegisterBinding>(FragmentAuthR
             val password = binding.tilPassword.editText?.text.toString()
             val repeatedPassword = binding.tilRepeatPassword.editText?.text.toString()
 
-            if (email.isBlank() || username.isBlank() || password.isBlank()) {
+            if (email.isBlank() || username.isBlank() || region.isBlank() || password.isBlank()) {
                 showError(getString(R.string.all_fields_are_mandatory))
                 return@setOnClickListener
             }
@@ -74,20 +76,11 @@ class RegisterFragment : BaseFragment<FragmentAuthRegisterBinding>(FragmentAuthR
             if (password != repeatedPassword) {
                 showError(getString(R.string.passwords_do_not_match_error))
             } else {
-                viewModel.register(
-                    RegisterRequest(
-                        email,
-                        username,
-                        region,
-                        password,
-                        repeatedPassword
-                    )
-                )
+                viewModel.register(RegisterRequest(email, username, region, password, repeatedPassword))
             }
         }
 
         binding.tvGoToLogin.setOnClickListener {
-            // Umesto popBackStack(), možemo koristiti akciju koja čisti istoriju
             findNavController().navigate(R.id.action_register_to_login)
         }
     }

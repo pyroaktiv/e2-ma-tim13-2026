@@ -32,6 +32,18 @@
         <action
             android:id="@+id/action_home_to_regions"
             app:destination="@id/regionsFragment" />
+        <action
+            android:id="@+id/action_home_to_skocko"
+            app:destination="@id/skockoFragment" />
+        <action
+            android:id="@+id/action_home_to_leaderboard"
+            app:destination="@id/leaderboardFragment" />
+        <action
+            android:id="@+id/action_home_to_dailyMissions"
+            app:destination="@id/dailyMissionsFragment" />
+        <action
+            android:id="@+id/action_home_to_turnirLobby"
+            app:destination="@id/turnirLobbyFragment" />
     </fragment>
 
     <fragment
@@ -163,5 +175,49 @@
         android:name="rs.tim13.slagalica.regions.ui.RegionsFragment"
         android:label="@string/regions_screen_title"
         tools:layout="@layout/fragment_regions" />
+
+    <fragment
+        android:id="@+id/asocijacijeFragment"
+        android:name="rs.tim13.slagalica.asocijacije.ui.AsocijacijeFragment"
+        android:label="Asocijacije"
+        tools:layout="@layout/fragment_asocijacije" />
+
+    <fragment
+        android:id="@+id/skockoFragment"
+        android:name="rs.tim13.slagalica.skocko.ui.SkockoFragment"
+        android:label="Skočko"
+        tools:layout="@layout/fragment_skocko" />
+
+    <fragment
+        android:id="@+id/leaderboardFragment"
+        android:name="rs.tim13.slagalica.leaderboard.ui.LeaderboardFragment"
+        android:label="Rang Lista"
+        tools:layout="@layout/fragment_leaderboard" />
+
+    <fragment
+        android:id="@+id/dailyMissionsFragment"
+        android:name="rs.tim13.slagalica.dailymissions.ui.DailyMissionsFragment"
+        android:label="Dnevne misije"
+        tools:layout="@layout/fragment_daily_missions" />
+
+    <fragment
+        android:id="@+id/turnirLobbyFragment"
+        android:name="rs.tim13.slagalica.turnir.ui.TurnirLobbyFragment"
+        android:label="Turnir"
+        tools:layout="@layout/fragment_turnir_lobby">
+        <action
+            android:id="@+id/action_turnirLobby_to_turnirBracket"
+            app:destination="@id/turnirBracketFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/turnirBracketFragment"
+        android:name="rs.tim13.slagalica.turnir.ui.TurnirBracketFragment"
+        android:label="Turnir - Bracket"
+        tools:layout="@layout/fragment_turnir_bracket">
+        <action
+            android:id="@+id/action_turnirBracket_to_match"
+            app:destination="@id/matchHostFragment" />
+    </fragment>
 
 </navigation>

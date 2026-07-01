@@ -78,7 +78,7 @@ class ProfilFragment : BaseFragment<FragmentProfilBinding>(FragmentProfilBinding
         binding.ivLeagueIcon.setImageResource(ProfileResources.leagueIcon(p.league.icon))
         binding.ivAvatar.setImageResource(ProfileResources.avatarDrawable(p.avatar))
         // Okvir: zlato/srebro/bronza ako je region bio top-3 prošlog ciklusa (spec 5.e), inače boja lige.
-        val frameColor = ProfileResources.regionMedalColor(p.regionMedal)
+        val frameColor = ProfileResources.avatarFrameColor(p.avatarFrame)
             ?: ProfileResources.leagueColor(p.league.icon)
         binding.avatarFrame.backgroundTintList = ColorStateList.valueOf(frameColor)
         QrCodes.encode(p.qrToken)?.let { binding.ivQrCode.setImageBitmap(it) }

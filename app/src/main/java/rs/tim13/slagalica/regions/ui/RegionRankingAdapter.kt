@@ -9,38 +9,36 @@ import androidx.recyclerview.widget.RecyclerView
 import rs.tim13.slagalica.R
 import rs.tim13.slagalica.core.util.ProfileResources
 import rs.tim13.slagalica.databinding.ItemRegionBinding
-import rs.tim13.slagalica.regions.data.api.dto.RegionRankEntryDto
+import rs.tim13.slagalica.regions.data.api.dto.RegionDto
 
 /** Mesečna rang lista regiona (spec 5.b). Region igrača je posebno označen. */
 class RegionRankingAdapter(
-    private val onClick: (RegionRankEntryDto) -> Unit
-) : ListAdapter<RegionRankEntryDto, RegionRankingAdapter.RegionViewHolder>(DIFF) {
+    private val onClick: (RegionDto) -> Unit
+) : ListAdapter<RegionDto, RegionRankingAdapter.RegionViewHolder>(DIFF) {
 
     companion object {
-        private val DIFF = object : DiffUtil.ItemCallback<RegionRankEntryDto>() {
-            override fun areItemsTheSame(oldItem: RegionRankEntryDto, newItem: RegionRankEntryDto) =
-                oldItem.region == newItem.region
-            override fun areContentsTheSame(oldItem: RegionRankEntryDto, newItem: RegionRankEntryDto) =
-                oldItem == newItem
+        private val DIFF = object : DiffUtil.ItemCallback<RegionDto>() {
+            override fun areItemsTheSame(oldItem: RegionDto, newItem: RegionDto) = oldItem.name == newItem.name
+            override fun areContentsTheSame(oldItem: RegionDto, newItem: RegionDto) = oldItem == newItem
         }
     }
 
     inner class RegionViewHolder(private val binding: ItemRegionBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: RegionRankEntryDto) {
+        fun bind(item: RegionDto) {
             val ctx = binding.root.context
             binding.tvRegionRank.text = "${item.rank}."
             binding.ivRegionIcon.setImageResource(R.drawable.ic_region_pin)
-            binding.ivRegionIcon.setColorFilter(ProfileResources.regionColor(item.region))
-            binding.tvRegionStars.text = "★ ${item.stars}"
+            binding.ivRegionIcon.setColorFilter(ProfileResources.regionColor(item.name))
+            binding.tvRegionStars.text = "★ ${item.monthlyStars}"
 
             // Spec 5.b: posebno označiti region kom igrač pripada.
-            if (item.isMine) {
-                binding.tvRegionName.text = ctx.getString(R.string.regions_mine_suffix, item.region)
+            if (item.isOwnRegion) {
+                binding.tvRegionName.text = ctx.getString(R.string.regions_mine_suffix, item.name)
                 binding.tvRegionName.setTypeface(null, Typeface.BOLD)
             } else {
-                binding.tvRegionName.text = item.region
+                binding.tvRegionName.text = item.name
                 binding.tvRegionName.setTypeface(null, Typeface.NORMAL)
             }
 

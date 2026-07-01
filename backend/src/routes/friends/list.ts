@@ -2,8 +2,19 @@ import { db } from "../../db/database";
 import { requireAuth } from "../../middleware/auth";
 import { json } from "../../util/response";
 import { isOnline } from "../../util/websocket";
-import { getRank } from "../../ranking/cycles";
 import type { FriendProfile } from "../../model/friend";
+
+/** Mesečni plasman igrača (spec 7.c) na osnovu mesečnih zvezda; null ako nije igrao ovaj ciklus. */
+function monthlyRank(userId: number): number | null {
+  const me = db
+    .query("SELECT monthly_stars, monthly_games FROM users WHERE id = ?")
+    .get(userId) as { monthly_stars: number; monthly_games: number } | null;
+  if (!me || me.monthly_games <= 0) return null;
+  const higher = db
+    .query("SELECT COUNT(*) AS c FROM users WHERE monthly_games > 0 AND monthly_stars > ?")
+    .get(me.monthly_stars) as { c: number };
+  return higher.c + 1;
+}
 
 export async function handleGetFriends(req: Request): Promise<Response> {
   const auth = await requireAuth(req);
@@ -44,7 +55,7 @@ export async function handleGetFriends(req: Request): Promise<Response> {
     avatar: row.avatar,
     total_stars: row.total_stars,
     league: { name: row.league_name, icon: row.league_icon },
-    monthly_rank: getRank(row.friend_id, "monthly"),
+    monthly_rank: monthlyRank(row.friend_id),
     is_online: isOnline(row.friend_id),
     in_game: row.in_game === 1,
     friendship_id: row.friendship_id,

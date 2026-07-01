@@ -22,20 +22,10 @@
     <string name="reset_password_title">Promena lozinke</string>
 
     <string-array name="regioni_srbije">
-        <item>Bačka</item>
-        <item>Banat</item>
-        <item>Srem</item>
+        <item>Vojvodina</item>
         <item>Beograd</item>
-        <item>Mačva</item>
-        <item>Šumadija</item>
-        <item>Pomoravlje</item>
-        <item>Braničevo</item>
-        <item>Zlatibor</item>
-        <item>Raška</item>
-        <item>Nišava</item>
-        <item>Toplica</item>
-        <item>Pčinja</item>
-        <item>Kosovo i Metohija</item>
+        <item>Šumadija i Zapadna Srbija</item>
+        <item>Južna i Istočna Srbija</item>
     </string-array>
 
     <string name="reset_username_email_hint">Email ili korisničko ime</string>
@@ -196,5 +186,20 @@
     <string name="regions_stat_third">Treća mesta: %d</string>
     <string name="regions_stat_active">Aktivnih igrača: %d</string>
     <string name="regions_stat_registered">Registrovanih igrača: %d</string>
+
+    <string name="back">Nazad</string>
+    <string name="leaderboard_title">Rang Lista</string>
+    <string name="leaderboard_tab_weekly">Nedeljno</string>
+    <string name="leaderboard_tab_monthly">Mesečno</string>
+    <string name="leaderboard_cycle_range">%1$s – %2$s</string>
+    <string name="leaderboard_my_rank">Vaš rang: #%d</string>
+    <string name="leaderboard_stars">%d ★</string>
+    <string name="leaderboard_empty">Nema igrača u ovom ciklusu</string>
+    <string name="league_icon_desc">Liga</string>
+    <string name="reward_title">Čestitamo!</string>
+    <string name="reward_rank">Zauzeli ste %1$d. mesto (%2$s)</string>
+    <string name="reward_tokens">Nagrada: %d žetona</string>
+    <string name="reward_dismiss">Preuzmi nagradu</string>
+    <string name="btn_leaderboard">Rang lista</string>
 
 </resources>

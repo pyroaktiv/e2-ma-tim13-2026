@@ -18,12 +18,12 @@ import rs.tim13.slagalica.core.ui.BaseFragment
 import rs.tim13.slagalica.core.util.ProfileResources
 import rs.tim13.slagalica.databinding.FragmentRegionsBinding
 import rs.tim13.slagalica.regions.data.api.RegionApiService
-import rs.tim13.slagalica.regions.data.api.dto.RegionRankEntryDto
+import rs.tim13.slagalica.regions.data.api.dto.RegionDto
 import rs.tim13.slagalica.regions.data.api.dto.RegionStatsDto
 
 /**
- * Prikaz regiona (spec 5): mapa Srbije sa nasumičnom tačkom svakog igrača, mesečna rang lista
- * regiona (sa istaknutim regionom igrača i opsegom ciklusa) i statistika regiona na klik.
+ * Prikaz regiona (spec 5): mapa Srbije sa tačkom svakog igrača, mesečna rang lista regiona
+ * (sa istaknutim regionom igrača) i statistika regiona na klik. Gađa backend rute Studenta 3.
  */
 class RegionsFragment : BaseFragment<FragmentRegionsBinding>(FragmentRegionsBinding::inflate) {
 
@@ -47,6 +47,7 @@ class RegionsFragment : BaseFragment<FragmentRegionsBinding>(FragmentRegionsBind
         binding.map.setMultiTouchControls(true)
         binding.map.controller.setZoom(7.0)
         binding.map.controller.setCenter(GeoPoint(44.0, 20.9)) // centar Srbije
+        binding.tvCycleRange.text = ""
 
         adapter = RegionRankingAdapter(onClick = ::showRegionStats)
         binding.rvRegions.layoutManager = LinearLayoutManager(requireContext())
@@ -58,13 +59,11 @@ class RegionsFragment : BaseFragment<FragmentRegionsBinding>(FragmentRegionsBind
 
     private fun loadRanking() {
         viewLifecycleOwner.lifecycleScope.launch {
-            val ranking = runCatching {
-                val r = api().getRanking()
+            val regions = runCatching {
+                val r = api().getRegions()
                 if (r.isSuccessful) r.body() else null
-            }.getOrNull() ?: return@launch
-
-            adapter.submitList(ranking.regions)
-            binding.tvCycleRange.text = getString(R.string.regions_cycle_range, ranking.start, ranking.end)
+            }.getOrNull().orEmpty()
+            adapter.submitList(regions)
         }
     }
 
@@ -82,7 +81,7 @@ class RegionsFragment : BaseFragment<FragmentRegionsBinding>(FragmentRegionsBind
                 }
                 val marker = Marker(binding.map).apply {
                     position = GeoPoint(p.lat, p.lng)
-                    title = "${p.username} — ${p.region}"
+                    title = p.region
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                     icon = pin
                 }
@@ -92,17 +91,17 @@ class RegionsFragment : BaseFragment<FragmentRegionsBinding>(FragmentRegionsBind
         }
     }
 
-    private fun showRegionStats(region: RegionRankEntryDto) {
+    private fun showRegionStats(region: RegionDto) {
         viewLifecycleOwner.lifecycleScope.launch {
             val stats = runCatching {
-                val r = api().getStats(region.region)
+                val r = api().getStats(region.name)
                 if (r.isSuccessful) r.body() else null
             }.getOrNull() ?: run {
                 showError(getString(R.string.regions_stats_error))
                 return@launch
             }
             MaterialAlertDialogBuilder(requireContext())
-                .setTitle(region.region)
+                .setTitle(region.name)
                 .setMessage(statsText(stats))
                 .setPositiveButton(android.R.string.ok, null)
                 .show()
@@ -110,11 +109,11 @@ class RegionsFragment : BaseFragment<FragmentRegionsBinding>(FragmentRegionsBind
     }
 
     private fun statsText(s: RegionStatsDto): String = buildString {
-        appendLine(getString(R.string.regions_stat_first, s.firstPlaces))
-        appendLine(getString(R.string.regions_stat_second, s.secondPlaces))
-        appendLine(getString(R.string.regions_stat_third, s.thirdPlaces))
+        appendLine(getString(R.string.regions_stat_first, s.firstPlaceCount))
+        appendLine(getString(R.string.regions_stat_second, s.secondPlaceCount))
+        appendLine(getString(R.string.regions_stat_third, s.thirdPlaceCount))
         appendLine(getString(R.string.regions_stat_active, s.activePlayers))
-        append(getString(R.string.regions_stat_registered, s.registeredPlayers))
+        append(getString(R.string.regions_stat_registered, s.totalPlayers))
     }
 
     override fun onResume() {

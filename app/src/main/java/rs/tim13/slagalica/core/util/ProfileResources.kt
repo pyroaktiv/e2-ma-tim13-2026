@@ -70,11 +70,14 @@ object ProfileResources {
         else -> R.drawable.region_centralna
     }
 
-    /** Zlatna/srebrna/bronzana boja okvira za top-3 region prethodnog ciklusa (spec 5.e); null inače. */
-    fun regionMedalColor(medal: Int?): Int? = when (medal) {
-        1 -> Color.parseColor("#FFD700")
-        2 -> Color.parseColor("#C0C0C0")
-        3 -> Color.parseColor("#CD7F32")
+    /**
+     * Zlatna/srebrna/bronzana boja okvira avatara za top-3 region prethodnog ciklusa (spec 5.e),
+     * na osnovu `avatar_frame` sa servera ("gold"/"silver"/"bronze"); null za "none"/ostalo.
+     */
+    fun avatarFrameColor(frame: String?): Int? = when (frame) {
+        "gold" -> Color.parseColor("#FFD700")
+        "silver" -> Color.parseColor("#C0C0C0")
+        "bronze" -> Color.parseColor("#CD7F32")
         else -> null
     }
 

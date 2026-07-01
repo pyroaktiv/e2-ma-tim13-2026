@@ -2,6 +2,7 @@ import type { ServerWebSocket } from "bun";
 import { db } from "../db/database";
 import { isOnline, pushToUser, type WsData } from "../util/websocket";
 import { createNotification } from "../routes/notifications";
+import { progressMission } from "../util/missions";
 
 const MAX_BODY_LENGTH = 1000;
 
@@ -76,4 +77,6 @@ export function onSocketMessage(ws: ServerWebSocket<WsData>, raw: string | Buffe
   } else {
     createNotification(toUserId, "CET", from.username, body.slice(0, 120));
   }
+
+  progressMission(fromUserId, "send_chat");
 }

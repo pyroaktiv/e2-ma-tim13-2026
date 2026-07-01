@@ -1,7 +1,7 @@
 import { initDb } from "./src/db/schema";
 import { seedGameContent } from "./src/db/seed-content";
+import { seedUsers } from "./src/db/seed-users";
 import { db } from "./src/db/database";
-import { processMonthlyRolloverIfDue } from "./src/ranking/leagues";
 import { json } from "./src/util/response";
 import { verifyJWT } from "./src/util/jwt";
 import { registerConnection, removeConnection } from "./src/util/websocket";
@@ -11,6 +11,11 @@ import {
   onSocketMessage as onChallengeSocketMessage,
   onSocketClose as onChallengeSocketClose,
 } from "./src/challenge/manager";
+import {
+  onSocketMessage as onTournamentSocketMessage,
+  onSocketClose as onTournamentSocketClose,
+} from "./src/tournament/manager";
+import { handleGetTournament } from "./src/routes/tournaments";
 import { handleListChallenges, handleGetChallenge } from "./src/routes/challenges";
 import { onSocketMessage as onChatSocketMessage } from "./src/chat/manager";
 import { handleGetConversations, handleGetMessages, handleSearchChatUsers } from "./src/routes/chat";
@@ -24,11 +29,13 @@ import { handleGetProfile } from "./src/routes/user/profile";
 import { handleUpdateAvatar } from "./src/routes/user/avatar";
 import { handleGetStats } from "./src/routes/user/stats";
 import { handleGetNotifications, handleMarkAsRead } from "./src/routes/notifications";
-import {
-  handleGetRegionRanking,
-  handleGetRegionMap,
-  handleGetRegionStats,
-} from "./src/routes/regions";
+import { handleGetRegions, handleGetRegionMap, handleGetRegionStats, handleGetRegionList } from "./src/routes/regions/index";
+import { handleSubmitGameResult } from "./src/routes/game/result";
+import { handleGetWeeklyLeaderboard, handleGetMonthlyLeaderboard } from "./src/routes/leaderboard/index";
+import { handleGetDailyMissions } from "./src/routes/missions";
+import { handleForceWeeklyReset, handleForceMonthlyReset, handleSetUserStars, handleRestoreTestData, handleTriggerMission, handleResetDailyMissions } from "./src/routes/test/index";
+import { checkAndRunWeeklyReset } from "./src/util/weekly";
+import { checkAndRunMonthlyReset } from "./src/util/monthly";
 import { handleGetFriends } from "./src/routes/friends/list";
 import { handleSearchUsers } from "./src/routes/friends/search";
 import { handleRemoveFriend } from "./src/routes/friends/remove";
@@ -49,16 +56,24 @@ import {
 
 initDb();
 seedGameContent();
+await seedUsers();
 
-// Penali za neplasiranje na mesečnoj rang listi (spec 6.e) — proveri na startu i periodično.
-processMonthlyRolloverIfDue();
+checkAndRunWeeklyReset();
+checkAndRunMonthlyReset();
+
+setInterval(
+  () => {
+    checkAndRunWeeklyReset();
+    checkAndRunMonthlyReset();
+  },
+  60 * 60 * 1000,
+);
 
 setInterval(
   () => {
     db.run("DELETE FROM revoked_tokens WHERE expires_at < ?", [
       Math.floor(Date.now() / 1000),
     ]);
-    processMonthlyRolloverIfDue();
   },
   60 * 60 * 1000,
 );
@@ -79,9 +94,19 @@ Bun.serve<WsData>({
     "/api/user/stats": { GET: handleGetStats },
     "/api/notifications": { GET: handleGetNotifications },
     "/api/notifications/:id/read": { PATCH: handleMarkAsRead },
-    "/api/regions/ranking": { GET: handleGetRegionRanking },
+    "/api/regions/list": { GET: handleGetRegionList },
+    "/api/regions": { GET: handleGetRegions },
     "/api/regions/map": { GET: handleGetRegionMap },
-    "/api/regions/stats": { GET: handleGetRegionStats },
+    "/api/regions/:name/stats": { GET: handleGetRegionStats },
+    "/api/game/result": { POST: handleSubmitGameResult },
+    "/api/leaderboard/weekly": { GET: handleGetWeeklyLeaderboard },
+    "/api/leaderboard/monthly": { GET: handleGetMonthlyLeaderboard },
+    "/api/test/force-weekly-reset":  { POST: handleForceWeeklyReset },
+    "/api/test/force-monthly-reset": { POST: handleForceMonthlyReset },
+    "/api/test/set-user-stars":      { POST: handleSetUserStars },
+    "/api/test/restore-test-data":   { POST: handleRestoreTestData },
+    "/api/test/trigger-mission":     { POST: handleTriggerMission },
+    "/api/test/reset-daily-missions": { POST: handleResetDailyMissions },
     "/api/friends": { GET: handleGetFriends },
     "/api/friends/search": { GET: handleSearchUsers },
     "/api/friends/:id": { DELETE: handleRemoveFriend },
@@ -99,8 +124,10 @@ Bun.serve<WsData>({
     "/api/friends/invites/:id/accept": { POST: handleAcceptGameInvite },
     "/api/friends/invites/:id/decline": { POST: handleDeclineGameInvite },
     "/api/friends/invites/:id": { DELETE: handleCancelGameInvite },
+    "/api/missions/daily": { GET: handleGetDailyMissions },
     "/api/challenges": { GET: handleListChallenges },
     "/api/challenges/:id": { GET: handleGetChallenge },
+    "/api/tournaments/:id": { GET: handleGetTournament },
     "/api/chat/conversations": { GET: handleGetConversations },
     "/api/chat/messages/:id": { GET: handleGetMessages },
     "/api/chat/search": { GET: handleSearchChatUsers },
@@ -112,12 +139,14 @@ Bun.serve<WsData>({
     message(ws, msg) {
       onSocketMessage(ws, msg);
       onChallengeSocketMessage(ws, msg);
+      onTournamentSocketMessage(ws, msg);
       onChatSocketMessage(ws, msg);
     },
     close(ws) {
       if (ws.data.kind === "user") removeConnection(ws.data.userId, ws);
       onSocketClose(ws);
       onChallengeSocketClose(ws);
+      onTournamentSocketClose(ws);
     },
   },
   async fetch(req, server) {
