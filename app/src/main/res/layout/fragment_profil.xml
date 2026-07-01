@@ -24,15 +24,23 @@
                 android:layout_height="wrap_content"
                 android:padding="16dp">
 
-                <ImageView
-                    android:id="@+id/ivAvatar"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:background="@drawable/bg_outlined_box"
-                    android:src="@android:drawable/ic_menu_camera"
-                    android:contentDescription="Avatar korisnika"
+                <FrameLayout
+                    android:id="@+id/avatarFrame"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:background="@drawable/bg_avatar_circle"
+                    android:backgroundTint="#CD7F32"
+                    android:padding="4dp"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"/>
+                    app:layout_constraintStart_toStartOf="parent">
+
+                    <ImageView
+                        android:id="@+id/ivAvatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/avatar_default"
+                        android:contentDescription="Avatar korisnika" />
+                </FrameLayout>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/fabEditAvatar"
@@ -40,8 +48,9 @@
                     android:layout_height="wrap_content"
                     app:fabSize="mini"
                     android:src="@android:drawable/ic_menu_edit"
-                    app:layout_constraintBottom_toBottomOf="@id/ivAvatar"
-                    app:layout_constraintEnd_toEndOf="@id/ivAvatar"
+                    android:contentDescription="Izmeni avatar"
+                    app:layout_constraintBottom_toBottomOf="@id/avatarFrame"
+                    app:layout_constraintEnd_toEndOf="@id/avatarFrame"
                     android:layout_marginEnd="-12dp"
                     android:layout_marginBottom="-12dp"/>
 
@@ -50,16 +59,16 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:layout_marginStart="16dp"
-                    app:layout_constraintTop_toTopOf="@id/ivAvatar"
-                    app:layout_constraintBottom_toBottomOf="@id/ivAvatar"
-                    app:layout_constraintStart_toEndOf="@id/ivAvatar"
+                    app:layout_constraintTop_toTopOf="@id/avatarFrame"
+                    app:layout_constraintBottom_toBottomOf="@id/avatarFrame"
+                    app:layout_constraintStart_toEndOf="@id/avatarFrame"
                     app:layout_constraintEnd_toEndOf="parent">
 
                     <TextView
                         android:id="@+id/tvUsername"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Korisnik123"
+                        android:text="—"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -67,14 +76,14 @@
                         android:id="@+id/tvEmail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="korisnik@email.com"
+                        android:text="—"
                         android:textColor="?android:attr/textColorSecondary" />
 
                     <TextView
                         android:id="@+id/tvRegion"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Region: Vojvodina"
+                        android:text="—"
                         android:textStyle="italic"
                         android:layout_marginTop="4dp" />
                 </LinearLayout>
@@ -83,61 +92,68 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="104dp"
             android:orientation="horizontal"
             android:baselineAligned="false"
             android:layout_marginBottom="16dp">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 app:cardCornerRadius="12dp"
                 android:layout_marginEnd="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:orientation="vertical"
                     android:gravity="center"
                     android:padding="12dp">
                     <TextView android:text="Liga" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                    <TextView android:id="@+id/tvLeague" android:text="Zlatna Liga" android:textColor="?attr/colorPrimary" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                    <ImageView
+                        android:id="@+id/ivLeagueIcon"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginTop="2dp"
+                        android:src="@drawable/league_bronze"
+                        android:contentDescription="Ikona lige"/>
+                    <TextView android:id="@+id/tvLeague" android:text="—" android:textColor="?attr/colorPrimary" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 app:cardCornerRadius="12dp"
                 android:layout_marginEnd="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:orientation="vertical"
                     android:gravity="center"
                     android:padding="12dp">
                     <TextView android:text="Zvezde" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                    <TextView android:id="@+id/tvStars" android:text="340" android:textColor="?attr/colorPrimary" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                    <TextView android:id="@+id/tvStars" android:text="—" android:textColor="?attr/colorPrimary" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 app:cardCornerRadius="12dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:orientation="vertical"
                     android:gravity="center"
                     android:padding="12dp">
                     <TextView android:text="Tokeni" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                    <TextView android:id="@+id/tvTokens" android:text="12" android:textColor="?attr/colorPrimary" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                    <TextView android:id="@+id/tvTokens" android:text="—" android:textColor="?attr/colorPrimary" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
@@ -165,9 +181,9 @@
 
                 <ImageView
                     android:id="@+id/ivQrCode"
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
-                    android:src="@android:drawable/ic_menu_gallery"
+                    android:layout_width="160dp"
+                    android:layout_height="160dp"
+                    android:contentDescription="QR kod za dodavanje prijatelja"
                     android:background="?attr/colorSurfaceVariant"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -193,48 +209,80 @@
                     android:textStyle="bold"
                     android:layout_marginBottom="12dp"/>
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Odigrane partije:" />
-                    <TextView android:id="@+id/tvTotalGames" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="150" android:textStyle="bold"/>
+                    <TextView android:id="@+id/tvTotalGames" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textStyle="bold"/>
                 </LinearLayout>
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Pobede / Porazi:" />
-                    <TextView android:id="@+id/tvWinLossRatio" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="65% / 35%" android:textStyle="bold"/>
+                    <TextView android:id="@+id/tvWinLossRatio" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textStyle="bold"/>
                 </LinearLayout>
+                <ProgressBar android:id="@+id/pbWinLoss" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="100" android:progress="0" android:progressTint="?attr/colorPrimary" android:layout_marginBottom="12dp"/>
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Moj broj (Tačan broj):" />
-                    <TextView android:id="@+id/tvMojBrojStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="55%" android:textStyle="bold"/>
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Ko zna zna (Tačno / Netačno):" />
+                    <TextView android:id="@+id/tvKoZnaZnaStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textStyle="bold"/>
                 </LinearLayout>
+                <ProgressBar android:id="@+id/pbKoZnaZna" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="100" android:progress="0" android:progressTint="?attr/colorPrimary" android:layout_marginBottom="12dp"/>
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Korak po korak (Pogođeni pojmovi):" />
-                    <TextView android:id="@+id/tvKorakPoKorakStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="70%" android:textStyle="bold"/>
-                </LinearLayout>
-
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Ko zna zna (Tačno/Netačno):" />
-                    <TextView android:id="@+id/tvKoZnaZnaStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="75% / 25%" android:textStyle="bold"/>
-                </LinearLayout>
-
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Spojnice (Uspešnost):" />
-                    <TextView android:id="@+id/tvSpojniceStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="82%" android:textStyle="bold"/>
+                    <TextView android:id="@+id/tvSpojniceStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textStyle="bold"/>
                 </LinearLayout>
+                <ProgressBar android:id="@+id/pbSpojnice" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="100" android:progress="0" android:progressTint="?attr/colorPrimary" android:layout_marginBottom="12dp"/>
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Asocijacije (Rešene/Nerešene):" />
-                    <TextView android:id="@+id/tvAsocijacijeStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="60% / 40%" android:textStyle="bold"/>
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Moj broj (Tačan broj):" />
+                    <TextView android:id="@+id/tvMojBrojStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textStyle="bold"/>
                 </LinearLayout>
+                <ProgressBar android:id="@+id/pbMojBroj" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="100" android:progress="0" android:progressTint="?attr/colorPrimary" android:layout_marginBottom="12dp"/>
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Korak po korak (Pogođeno):" />
+                    <TextView android:id="@+id/tvKorakPoKorakStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textStyle="bold"/>
+                </LinearLayout>
+                <ProgressBar android:id="@+id/pbKorakPoKorak" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="100" android:progress="0" android:progressTint="?attr/colorPrimary"/>
+                <TextView
+                    android:id="@+id/tvKorakPoKorakBreakdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="12sp"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:layout_marginBottom="12dp"/>
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Asocijacije (Rešene / Nerešene):" />
+                    <TextView android:id="@+id/tvAsocijacijeStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textStyle="bold"/>
+                </LinearLayout>
+                <ProgressBar android:id="@+id/pbAsocijacije" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="100" android:progress="0" android:progressTint="?attr/colorPrimary" android:layout_marginBottom="12dp"/>
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Skočko (Pogođene kombinacije):" />
-                    <TextView android:id="@+id/tvSkockoStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="45%" android:textStyle="bold"/>
+                    <TextView android:id="@+id/tvSkockoStats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textStyle="bold"/>
                 </LinearLayout>
+                <ProgressBar android:id="@+id/pbSkocko" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="100" android:progress="0" android:progressTint="?attr/colorPrimary"/>
+                <TextView
+                    android:id="@+id/tvSkockoBreakdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="12sp"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:layout_marginTop="2dp"/>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnChangePassword"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="@string/change_password"
+            android:textSize="16sp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_marginBottom="12dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogout"

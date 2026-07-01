@@ -5,8 +5,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.fragment.app.Fragment
-import rs.tim13.slagalica.R
 import rs.tim13.slagalica.databinding.ActivityAuthBinding
 
 class AuthActivity : AppCompatActivity() {
@@ -15,6 +13,8 @@ class AuthActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Aplikacija se uvek otvara na login ekranu (bez auto-preskoka na osnovu sačuvanog tokena).
         enableEdgeToEdge()
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)

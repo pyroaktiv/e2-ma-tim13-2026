@@ -1,6 +1,6 @@
 package rs.tim13.slagalica.asocijacije.model
 
-import rs.tim13.slagalica.core.Player
+import rs.tim13.slagalica.core.model.Player
 
 data class AssociationsColumn(
     val index: Int,

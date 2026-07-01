@@ -23,5 +23,6 @@ export interface UserProfile {
   total_stars: number;
   league: { name: string; icon: string };
   region: string;
+  avatar_frame: string;
   qr_token: string;
 }

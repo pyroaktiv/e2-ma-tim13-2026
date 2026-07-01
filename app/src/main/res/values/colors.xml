@@ -5,4 +5,10 @@
     <color name="skocko_correct">#80D32F2F</color>
     <color name="skocko_present">#80F9A825</color>
     <color name="skocko_solution">#8EFF8F00</color>
+    <color name="player_blue">#1565C0</color>
+    <color name="player_red">#C62828</color>
+    <color name="match_bg_player_blue">#D2D6FF</color>
+    <color name="match_bg_player_red">#FFD3D2</color>
+    <color name="header_bg_gray">#E0E0E0</color>
+    <color name="leaderboard_highlight">#33448AFF</color>
 </resources>

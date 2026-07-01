@@ -3,80 +3,178 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/game_navigation"
-    app:startDestination="@id/demoGameListFragment">
+    app:startDestination="@id/homeFragment">
 
     <fragment
-        android:id="@+id/demoGameListFragment"
-        android:name="rs.tim13.slagalica.core.ui.DemoGameListFragment"
-        android:label="Game List"
-        tools:layout="@layout/fragment_demo_game_list">
+        android:id="@+id/homeFragment"
+        android:name="rs.tim13.slagalica.core.ui.HomeFragment"
+        android:label="Slagalica"
+        tools:layout="@layout/fragment_home">
 
         <action
-            android:id="@+id/action_list_to_profil"
+            android:id="@+id/action_home_to_match"
+            app:destination="@id/matchHostFragment" />
+        <action
+            android:id="@+id/action_home_to_profil"
             app:destination="@id/profilFragment" />
-
         <action
-            android:id="@+id/action_list_to_mojBroj"
-            app:destination="@id/mojBrojFragment" />
-
-        <action
-            android:id="@+id/action_list_to_korakPoKorak"
-            app:destination="@id/korakPoKorakFragment" />
-
-        <action
-            android:id="@+id/action_list_to_koZnaZna"
-            app:destination="@id/koZnaZnaFragment" />
-
-        <action
-            android:id="@+id/action_list_to_spojnice"
-            app:destination="@id/spojniceFragment" />
-
-
-        <action
-            android:id="@+id/action_list_to_notifications"
+            android:id="@+id/action_home_to_notifications"
             app:destination="@id/notificationsFragment" />
-
         <action
-            android:id="@+id/action_list_to_asocijacije"
-            app:destination="@id/asocijacijeFragment" />
-
+            android:id="@+id/action_home_to_challenges"
+            app:destination="@id/challengeListFragment" />
         <action
-            android:id="@+id/action_list_to_skocko"
+            android:id="@+id/action_home_to_chat"
+            app:destination="@id/chatListFragment" />
+        <action
+            android:id="@+id/action_home_to_friends"
+            app:destination="@id/friendsFragment" />
+        <action
+            android:id="@+id/action_home_to_regions"
+            app:destination="@id/regionsFragment" />
+        <action
+            android:id="@+id/action_home_to_skocko"
             app:destination="@id/skockoFragment" />
+        <action
+            android:id="@+id/action_home_to_leaderboard"
+            app:destination="@id/leaderboardFragment" />
+        <action
+            android:id="@+id/action_home_to_dailyMissions"
+            app:destination="@id/dailyMissionsFragment" />
+        <action
+            android:id="@+id/action_home_to_turnirLobby"
+            app:destination="@id/turnirLobbyFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/mojBrojFragment"
-        android:name="rs.tim13.slagalica.mojbroj.ui.MojBrojFragment"
-        android:label="Moj Broj"
-        tools:layout="@layout/fragment_moj_broj" />
+        android:id="@+id/matchHostFragment"
+        android:name="rs.tim13.slagalica.match.ui.MatchHostFragment"
+        android:label="Partija"
+        tools:layout="@layout/fragment_match_host">
+        <argument
+            android:name="mode"
+            app:argType="string"
+            android:defaultValue="SOLO" />
+        <argument
+            android:name="challengeId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
 
     <fragment
-        android:id="@+id/korakPoKorakFragment"
-        android:name="rs.tim13.slagalica.korakpokorak.ui.KorakPoKorakFragment"
-        android:label="Korak po korak"
-        tools:layout="@layout/fragment_korak_po_korak" />
+        android:id="@+id/challengeListFragment"
+        android:name="rs.tim13.slagalica.izazov.ui.ChallengeListFragment"
+        android:label="@string/challenge_screen_title"
+        tools:layout="@layout/fragment_challenge_list">
+        <action
+            android:id="@+id/action_challengeList_to_challengeLobby"
+            app:destination="@id/challengeLobbyFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/challengeLobbyFragment"
+        android:name="rs.tim13.slagalica.izazov.ui.ChallengeLobbyFragment"
+        android:label="@string/challenge_lobby_title"
+        tools:layout="@layout/fragment_challenge_lobby">
+        <argument
+            android:name="challenge_id"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_challengeLobby_to_match"
+            app:destination="@id/matchHostFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/chatListFragment"
+        android:name="rs.tim13.slagalica.chat.ui.ChatListFragment"
+        android:label="@string/chat_screen_title"
+        tools:layout="@layout/fragment_chat_list">
+        <action
+            android:id="@+id/action_chatList_to_chatSearch"
+            app:destination="@id/chatSearchFragment" />
+        <action
+            android:id="@+id/action_chatList_to_chatConversation"
+            app:destination="@id/chatConversationFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/chatSearchFragment"
+        android:name="rs.tim13.slagalica.chat.ui.ChatSearchFragment"
+        android:label="@string/chat_search_title"
+        tools:layout="@layout/fragment_chat_search">
+        <action
+            android:id="@+id/action_chatSearch_to_chatConversation"
+            app:destination="@id/chatConversationFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/chatConversationFragment"
+        android:name="rs.tim13.slagalica.chat.ui.ChatConversationFragment"
+        android:label="@string/chat_conversation_title"
+        tools:layout="@layout/fragment_chat_conversation">
+        <argument
+            android:name="userId"
+            app:argType="integer" />
+        <argument
+            android:name="username"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/profilFragment"
         android:name="rs.tim13.slagalica.profil.ui.ProfilFragment"
-        tools:layout="@layout/fragment_profil" />
+        tools:layout="@layout/fragment_profil">
+        <action
+            android:id="@+id/action_profil_to_resetPassword"
+            app:destination="@id/resetPasswordFragment" />
+    </fragment>
 
     <fragment
-        android:id="@+id/koZnaZnaFragment"
-        android:name="rs.tim13.slagalica.koznazna.ui.KoZnaZnaFragment"
-        tools:layout="@layout/fragment_ko_zna_zna" />
-
-    <fragment
-        android:id="@+id/spojniceFragment"
-        android:name="rs.tim13.slagalica.spojnice.ui.SpojniceFragment"
-        tools:layout="@layout/fragment_spojnice" />
+        android:id="@+id/resetPasswordFragment"
+        android:name="rs.tim13.slagalica.auth.ui.ResetPasswordFragment"
+        android:label="@string/reset_password_title"
+        tools:layout="@layout/fragment_auth_reset_password" />
 
     <fragment
         android:id="@+id/notificationsFragment"
         android:name="rs.tim13.slagalica.notifications.ui.NotificationsFragment"
         android:label="Obaveštenja"
         tools:layout="@layout/fragment_notifications" />
+
+    <fragment
+        android:id="@+id/friendsFragment"
+        android:name="rs.tim13.slagalica.friends.ui.FriendsFragment"
+        android:label="@string/friends_screen_title"
+        tools:layout="@layout/fragment_friends">
+        <action
+            android:id="@+id/action_friends_to_search"
+            app:destination="@id/friendSearchFragment" />
+        <action
+            android:id="@+id/action_friends_to_requests"
+            app:destination="@id/friendRequestsFragment" />
+        <action
+            android:id="@+id/action_friends_to_match"
+            app:destination="@id/matchHostFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/friendSearchFragment"
+        android:name="rs.tim13.slagalica.friends.ui.FriendSearchFragment"
+        android:label="@string/friends_add"
+        tools:layout="@layout/fragment_friend_search" />
+
+    <fragment
+        android:id="@+id/friendRequestsFragment"
+        android:name="rs.tim13.slagalica.friends.ui.FriendRequestsFragment"
+        android:label="@string/friends_requests"
+        tools:layout="@layout/fragment_friend_requests" />
+
+    <fragment
+        android:id="@+id/regionsFragment"
+        android:name="rs.tim13.slagalica.regions.ui.RegionsFragment"
+        android:label="@string/regions_screen_title"
+        tools:layout="@layout/fragment_regions" />
 
     <fragment
         android:id="@+id/asocijacijeFragment"
@@ -89,5 +187,37 @@
         android:name="rs.tim13.slagalica.skocko.ui.SkockoFragment"
         android:label="Skočko"
         tools:layout="@layout/fragment_skocko" />
+
+    <fragment
+        android:id="@+id/leaderboardFragment"
+        android:name="rs.tim13.slagalica.leaderboard.ui.LeaderboardFragment"
+        android:label="Rang Lista"
+        tools:layout="@layout/fragment_leaderboard" />
+
+    <fragment
+        android:id="@+id/dailyMissionsFragment"
+        android:name="rs.tim13.slagalica.dailymissions.ui.DailyMissionsFragment"
+        android:label="Dnevne misije"
+        tools:layout="@layout/fragment_daily_missions" />
+
+    <fragment
+        android:id="@+id/turnirLobbyFragment"
+        android:name="rs.tim13.slagalica.turnir.ui.TurnirLobbyFragment"
+        android:label="Turnir"
+        tools:layout="@layout/fragment_turnir_lobby">
+        <action
+            android:id="@+id/action_turnirLobby_to_turnirBracket"
+            app:destination="@id/turnirBracketFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/turnirBracketFragment"
+        android:name="rs.tim13.slagalica.turnir.ui.TurnirBracketFragment"
+        android:label="Turnir - Bracket"
+        tools:layout="@layout/fragment_turnir_bracket">
+        <action
+            android:id="@+id/action_turnirBracket_to_match"
+            app:destination="@id/matchHostFragment" />
+    </fragment>
 
 </navigation>
