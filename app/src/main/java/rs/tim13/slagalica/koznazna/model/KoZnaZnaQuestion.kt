@@ -19,10 +19,11 @@ data class KoZnaZnaQuestion(
 }
 
 /**
- * Odgovor jednog igrača na pitanje. [order] je redni broj prijema odgovora i služi
- * za pravilo „bodove dobija brži igrač" kada oba igrača odgovore tačno.
+ * Odgovor jednog igrača na pitanje. [elapsedMs] je vreme (ms) od prikaza pitanja do odgovora,
+ * mereno na igračevom telefonu i preneseno protivniku — tako oba telefona porede iste vrednosti
+ * i deterministički određuju bržeg igrača (pravilo „bodove dobija brži" kad su oba tačna).
  */
 data class KoZnaZnaAnswer(
     val optionIndex: Int,
-    val order: Int
+    val elapsedMs: Long
 )

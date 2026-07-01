@@ -81,9 +81,15 @@ object ProfileResources {
         else -> null
     }
 
-    /** Deterministička boja čiode/ikone regiona iz naziva (podržava proizvoljan broj regiona). */
-    fun regionColor(name: String?): Int {
-        val hue = (((name ?: "").hashCode() % 360) + 360) % 360
-        return Color.HSVToColor(floatArrayOf(hue.toFloat(), 0.65f, 0.85f))
+    /** Distinktna boja čiode/ikone po regionu (4 zvanična regiona); za ostale — hash iz naziva. */
+    fun regionColor(name: String?): Int = when (name) {
+        "Vojvodina" -> Color.parseColor("#1E88E5")                 // plava
+        "Beograd" -> Color.parseColor("#E53935")                   // crvena
+        "Šumadija i Zapadna Srbija" -> Color.parseColor("#FB8C00") // narandžasta
+        "Južna i Istočna Srbija" -> Color.parseColor("#8E24AA")    // ljubičasta
+        else -> {
+            val hue = (((name ?: "").hashCode() % 360) + 360) % 360
+            Color.HSVToColor(floatArrayOf(hue.toFloat(), 0.65f, 0.85f))
+        }
     }
 }

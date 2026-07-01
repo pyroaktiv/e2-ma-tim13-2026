@@ -69,7 +69,7 @@
                     android:id="@+id/ivMissionCheck0"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
-                    android:src="@android:drawable/checkbox_on_background"
+                    android:src="@drawable/ic_check"
                     android:tint="?attr/colorPrimary"
                     android:visibility="gone"
                     android:contentDescription="Završeno" />
@@ -118,7 +118,7 @@
                     android:id="@+id/ivMissionCheck1"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
-                    android:src="@android:drawable/checkbox_on_background"
+                    android:src="@drawable/ic_check"
                     android:tint="?attr/colorPrimary"
                     android:visibility="gone"
                     android:contentDescription="Završeno" />
@@ -167,7 +167,7 @@
                     android:id="@+id/ivMissionCheck2"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
-                    android:src="@android:drawable/checkbox_on_background"
+                    android:src="@drawable/ic_check"
                     android:tint="?attr/colorPrimary"
                     android:visibility="gone"
                     android:contentDescription="Završeno" />
@@ -216,7 +216,7 @@
                     android:id="@+id/ivMissionCheck3"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
-                    android:src="@android:drawable/checkbox_on_background"
+                    android:src="@drawable/ic_check"
                     android:tint="?attr/colorPrimary"
                     android:visibility="gone"
                     android:contentDescription="Završeno" />
@@ -258,7 +258,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Nagrada: +2 žetona i 3 ★"
+                    android:text="Nagrada: +2 tokena i 3 ★"
                     android:textAppearance="?attr/textAppearanceBodySmall"
                     android:textColor="?attr/colorOnSurfaceVariant" />
 

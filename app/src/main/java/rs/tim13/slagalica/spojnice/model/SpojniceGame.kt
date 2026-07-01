@@ -29,6 +29,9 @@ class SpojniceGame(
     val leadPlayer: Player = initialPlayer
 
     private val connectedBy = arrayOfNulls<Player>(PAIR_COUNT)
+    // Levi pojmovi na kojima je pogrešeno spajanje — postaju crveni i ne mogu se ponovo birati
+    // u tekućoj fazi (resetuje se pri prelasku u fazu popravka, da protivnik može da ih proba).
+    private val failedLeft = BooleanArray(PAIR_COUNT)
     private val scores = mutableMapOf(Player.BLUE to 0, Player.RED to 0)
     private val attempts = mutableMapOf(Player.BLUE to 0, Player.RED to 0)
 
@@ -42,6 +45,11 @@ class SpojniceGame(
     val allSolved: Boolean get() = solvedCount == PAIR_COUNT
 
     fun isLeftConnected(leftIndex: Int): Boolean = connectedBy[leftIndex] != null
+
+    /** Levi pojam na kom je pogrešeno u tekućoj fazi — crven i nedostupan za biranje. */
+    fun isLeftFailed(leftIndex: Int): Boolean = failedLeft[leftIndex]
+
+    fun failedLeftIndices(): Set<Int> = failedLeft.indices.filter { failedLeft[it] }.toSet()
 
     /** Indeks desnog pojma povezan sa datim levim (ili null ako levi nije povezan). */
     fun connectedRightIndex(leftIndex: Int): Int? =
@@ -74,6 +82,8 @@ class SpojniceGame(
         if (correct) {
             connectedBy[leftIndex] = activePlayer
             scores[activePlayer] = scores.getValue(activePlayer) + POINTS_PER_PAIR
+        } else {
+            failedLeft[leftIndex] = true // pogrešeno spajanje -> levi pojam postaje crven i zaključan
         }
         return correct
     }
@@ -85,6 +95,7 @@ class SpojniceGame(
         isRecoveryPhase = true
         recoveryAllowed = PAIR_COUNT - solvedCount
         recoveryAttempts = 0
+        failedLeft.fill(false) // protivnik u popravci sme da proba i pojmove na kojima je vođa pogrešio
         if (activePlayer == leadPlayer) switchPlayer()
     }
 

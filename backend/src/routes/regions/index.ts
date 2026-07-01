@@ -1,7 +1,7 @@
 import { db } from "../../db/database";
 import { requireAuth } from "../../middleware/auth";
 import { json } from "../../util/response";
-import { REGIONS } from "../../util/regions";
+import { REGIONS, REGION_NAMES, generateRandomPoint, pointInSerbia } from "../../util/regions";
 import { isOnline } from "../../util/websocket";
 
 export function handleGetRegionList(_req: Request): Response {
@@ -42,6 +42,23 @@ export async function handleGetRegions(req: Request): Promise<Response> {
 export async function handleGetRegionMap(req: Request): Promise<Response> {
   const auth = await requireAuth(req);
   if (auth instanceof Response) return auth;
+
+  // Popuni/ispravi tačke van Srbije (spec 5.a: čiode isključivo na teritoriji Srbije).
+  const all = db
+    .query("SELECT id, region, map_lat, map_lng FROM users")
+    .all() as Array<{ id: number; region: string; map_lat: number | null; map_lng: number | null }>;
+
+  const upd = db.prepare("UPDATE users SET map_lat = ?, map_lng = ? WHERE id = ?");
+  const heal = db.transaction(() => {
+    for (const u of all) {
+      if (!REGION_NAMES.includes(u.region)) continue; // nepoznat region -> preskoči
+      if (u.map_lat == null || u.map_lng == null || !pointInSerbia(u.map_lat, u.map_lng)) {
+        const p = generateRandomPoint(u.region);
+        upd.run(p.lat, p.lng, u.id);
+      }
+    }
+  });
+  heal();
 
   const rows = db
     .query(

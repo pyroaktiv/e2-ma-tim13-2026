@@ -7,7 +7,7 @@ import rs.tim13.slagalica.core.model.Player
  * Logika igre „Ko zna zna": niz pitanja koja oba igrača rešavaju istovremeno.
  *
  * Igra nije turn-based — oba igrača mogu da odgovore na isto pitanje, a redosled
- * odgovora ([KoZnaZnaAnswer.order]) odlučuje ko je brži kada su oba tačna. Bodovi i
+ * odgovora ([KoZnaZnaAnswer.elapsedMs]) odlučuje ko je brži kada su oba tačna. Bodovi i
  * statistika se akumuliraju kroz [calculateScore], [blueCorrect] itd.
  */
 class KoZnaZnaGame(
@@ -32,7 +32,6 @@ class KoZnaZnaGame(
         private set
 
     private val answers = mutableMapOf<Player, KoZnaZnaAnswer>()
-    private var answerOrder = 0
 
     private val totals = mutableMapOf(Player.BLUE to 0, Player.RED to 0)
 
@@ -45,11 +44,11 @@ class KoZnaZnaGame(
     fun hasAnswered(player: Player): Boolean = answers.containsKey(player)
     val bothAnswered: Boolean get() = hasAnswered(Player.BLUE) && hasAnswered(Player.RED)
 
-    /** Beleži odgovor igrača za tekuće pitanje (najviše jednom po pitanju). */
-    fun submitAnswer(player: Player, optionIndex: Int): Boolean {
+    /** Beleži odgovor igrača za tekuće pitanje (najviše jednom po pitanju); [elapsedMs] = vreme reakcije. */
+    fun submitAnswer(player: Player, optionIndex: Int, elapsedMs: Long): Boolean {
         if (isCurrentResolved || hasAnswered(player)) return false
         require(optionIndex in 0 until KoZnaZnaQuestion.OPTION_COUNT)
-        answers[player] = KoZnaZnaAnswer(optionIndex, answerOrder++)
+        answers[player] = KoZnaZnaAnswer(optionIndex, elapsedMs)
         return true
     }
 

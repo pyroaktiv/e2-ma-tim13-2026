@@ -140,7 +140,9 @@ class AssociationsFragment :
     private fun updateCustomHeaderInfo(state: AssociationsUiState) {
         binding.tvRoundLabel.visibility = View.VISIBLE
         binding.tvRoundLabel.text = getString(R.string.asocijacije_round_label, state.round)
-        binding.tvActivePlayer.text = getString(R.string.asocijacije_active_player, state.activePlayer.name)
+        // Prikaži „Igrač 1/2" umesto naziva enum-a (BLUE/RED).
+        binding.tvActivePlayer.text =
+            getString(R.string.asocijacije_active_player, "${state.activePlayer.ordinal + 1}")
         binding.gameHeader.tvPlayer1Score.text = getString(R.string.game_player1_score, state.blueScore)
         binding.gameHeader.tvPlayer2Score.text = getString(R.string.game_player2_score, state.redScore)
     }

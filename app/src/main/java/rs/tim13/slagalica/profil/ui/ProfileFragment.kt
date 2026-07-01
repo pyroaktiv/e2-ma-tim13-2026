@@ -4,8 +4,9 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
-import android.widget.GridLayout
+import android.widget.HorizontalScrollView
 import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -159,12 +160,13 @@ class ProfilFragment : BaseFragment<FragmentProfilBinding>(FragmentProfilBinding
         if (TokenManager(requireContext()).getToken() == null) return
         val ctx = requireContext()
         val density = resources.displayMetrics.density
-        val cell = (56 * density).toInt()
+        val cell = (64 * density).toInt()
         val gap = (6 * density).toInt()
         val pad = (16 * density).toInt()
 
-        val grid = GridLayout(ctx).apply {
-            columnCount = 5
+        // Jedan horizontalni red avatara koji se skroluje udesno.
+        val row = LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
             setPadding(pad, pad, pad, pad)
         }
 
@@ -172,9 +174,7 @@ class ProfilFragment : BaseFragment<FragmentProfilBinding>(FragmentProfilBinding
         ProfileResources.selectableAvatars.forEach { name ->
             val image = ImageView(ctx).apply {
                 setImageResource(ProfileResources.avatarDrawable(name))
-                layoutParams = GridLayout.LayoutParams().apply {
-                    width = cell
-                    height = cell
+                layoutParams = LinearLayout.LayoutParams(cell, cell).apply {
                     setMargins(gap, gap, gap, gap)
                 }
                 isClickable = true
@@ -183,12 +183,14 @@ class ProfilFragment : BaseFragment<FragmentProfilBinding>(FragmentProfilBinding
                     changeAvatar(name)
                 }
             }
-            grid.addView(image)
+            row.addView(image)
         }
+
+        val scroll = HorizontalScrollView(ctx).apply { addView(row) }
 
         dialog = MaterialAlertDialogBuilder(ctx)
             .setTitle(R.string.profile_choose_avatar)
-            .setView(grid)
+            .setView(scroll)
             .setNegativeButton(R.string.common_cancel, null)
             .create()
         dialog.show()
