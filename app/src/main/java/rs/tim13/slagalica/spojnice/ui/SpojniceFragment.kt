@@ -1,235 +1,101 @@
 package rs.tim13.slagalica.spojnice.ui
 
 import android.content.res.ColorStateList
-import android.os.Bundle
-import android.os.CountDownTimer
-import android.util.TypedValue
 import android.view.View
-import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.navigation.fragment.findNavController
+import androidx.fragment.app.viewModels
 import com.google.android.material.button.MaterialButton
-import rs.tim13.slagalica.core.ui.BaseFragment
+import rs.tim13.slagalica.R
+import rs.tim13.slagalica.core.model.Player
+import rs.tim13.slagalica.core.ui.BaseGameFragment
 import rs.tim13.slagalica.databinding.FragmentSpojniceBinding
+import rs.tim13.slagalica.databinding.LayoutGameHeaderBinding
+import rs.tim13.slagalica.match.MatchHost
 
-class SpojniceFragment : BaseFragment<FragmentSpojniceBinding>(FragmentSpojniceBinding::inflate) {
+class SpojniceFragment :
+    BaseGameFragment<FragmentSpojniceBinding, SpojniceUiState, SpojniceViewModel>(FragmentSpojniceBinding::inflate) {
 
-    private val likoviRunda1 = listOf("Pop", "Mare", "Gojko Sisa", "Kata", "Policajac")
-    private val glumciRunda1 = listOf("Sergej Trifunović", "Nebojša Glogovac", "Nikola Đuričko", "Maja Mandžuka", "Boris Milivojević")
-    private val resenjaRunda1 = mapOf(0 to 0, 1 to 4, 2 to 2, 3 to 3, 4 to 1)
+    private val host get() = requireParentFragment() as MatchHost
 
-    private val likoviRunda2 = listOf("Kengur", "Braca", "Šomi", "Iris", "Živac")
-    private val glumciRunda2 = listOf("Marija Karan", "Nebojša Glogovac", "Boris Milivojević", "Nikola Đuričko", "Sergej Trifunović")
-    private val resenjaRunda2 = mapOf(0 to 3, 1 to 4, 2 to 2, 3 to 0, 4 to 1)
-
-    private var trenutnaRunda = 1
-    private var leadPlayer = 1
-    private var activePlayer = 1
-    private var timer: CountDownTimer? = null
-
-    private var rezultatIgrac1 = 0
-    private var rezultatIgrac2 = 0
-
-    private var selektovanoLevo: MaterialButton? = null
-    private var indeksSelektovanogLevog: Int? = null
-
-    private var pokusajiVodeceg = 0
-    private var ukupnoSredjeno = 0
-    private var pokusajiPopravnog = 0
-    private var dozvoljenoPopravki = 0
-    private val spojenoLevo = BooleanArray(5)
-
-    private var defaultTextColors: ColorStateList? = null
-    private var defaultBackgroundTint: ColorStateList? = null
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        defaultTextColors = binding.btnLeft1.textColors
-        defaultBackgroundTint = binding.btnLeft1.backgroundTintList
-
-        binding.gameHeader.tvPlayer1Score.text = "Igrač 1\n0"
-        binding.gameHeader.tvPlayer2Score.text = "Igrač 2\n0"
-
-        setupUI()
+    override val viewModel: SpojniceViewModel by viewModels {
+        SpojniceViewModelFactory(host.match.spojniceRepository(), host.match.gameConfig)
     }
 
-    private fun setupUI() {
-        popuniRundu()
-    }
+    override val gameHeader: LayoutGameHeaderBinding get() = binding.gameHeader
 
-    private fun popuniRundu() {
-        selektovanoLevo = null
-        indeksSelektovanogLevog = null
-        pokusajiVodeceg = 0
-        ukupnoSredjeno = 0
-        pokusajiPopravnog = 0
-        dozvoljenoPopravki = 0
-        spojenoLevo.fill(false)
+    private lateinit var leftButtons: List<MaterialButton>
+    private lateinit var rightButtons: List<MaterialButton>
+    private var defaultTint: ColorStateList? = null
 
-        activePlayer = if (trenutnaRunda == 1) 1 else 2
-        leadPlayer = activePlayer
+    override fun setupUI() {
+        leftButtons = listOf(
+            binding.btnLeft1, binding.btnLeft2, binding.btnLeft3, binding.btnLeft4, binding.btnLeft5
+        )
+        rightButtons = listOf(
+            binding.btnRight1, binding.btnRight2, binding.btnRight3, binding.btnRight4, binding.btnRight5
+        )
+        defaultTint = binding.btnLeft1.backgroundTintList
 
-        val likovi = if (trenutnaRunda == 1) likoviRunda1 else likoviRunda2
-        val glumci = if (trenutnaRunda == 1) glumciRunda1 else glumciRunda2
-
-        osveziListuDugmica(likovi, glumci)
-        zapocniTajmer()
-    }
-
-    private fun osveziListuDugmica(likovi: List<String>, glumci: List<String>) {
-        val leftButtons = listOf(binding.btnLeft1, binding.btnLeft2, binding.btnLeft3, binding.btnLeft4, binding.btnLeft5)
         leftButtons.forEachIndexed { index, button ->
-            button.text = likovi[index]
-            resetButton(button)
-            button.setOnClickListener {
-                selektovanoLevo?.let { resetButton(it) }
-                selektovanoLevo = button
-                indeksSelektovanogLevog = index
-                oznaciSelektovano(button)
-            }
+            button.setOnClickListener { viewModel.selectLeft(index) }
         }
-
-        val rightButtons = listOf(binding.btnRight1, binding.btnRight2, binding.btnRight3, binding.btnRight4, binding.btnRight5)
         rightButtons.forEachIndexed { index, button ->
-            button.text = glumci[index]
-            resetButton(button)
-            button.setOnClickListener { proveriSpojnicu(index, button) }
+            button.setOnClickListener { viewModel.selectRight(index) }
         }
     }
 
-    private fun proveriSpojnicu(desniIndex: Int, desnoDugme: MaterialButton) {
-        if (selektovanoLevo == null || indeksSelektovanogLevog == null) {
-            Toast.makeText(requireContext(), "Prvo izaberite pojam levo!", Toast.LENGTH_SHORT).show()
-            return
-        }
+    override fun renderSpecificState(state: SpojniceUiState) {
+        binding.gameHeader.tvPlayer1Score.text = getString(R.string.game_player1_score, state.blueScore)
+        binding.gameHeader.tvPlayer2Score.text = getString(R.string.game_player2_score, state.redScore)
+        binding.tvRoundLabel.text = getString(R.string.game_round_label, state.round)
+        binding.tvActivePlayer.text = getString(R.string.game_active_player, playerNumber(state.activePlayer))
+        binding.tvStatusMessage.text = state.statusMessage
 
-        val resenja = if (trenutnaRunda == 1) resenjaRunda1 else resenjaRunda2
-        val jeTacno = resenja[indeksSelektovanogLevog] == desniIndex
-
-        if (jeTacno) {
-            dodajPoene()
-            oznaciStatus(selektovanoLevo!!, true)
-            oznaciStatus(desnoDugme, true)
-            spojenoLevo[indeksSelektovanogLevog!!] = true
-            ukupnoSredjeno++
-        } else {
-            oznaciStatus(selektovanoLevo!!, false)
-        }
-
-        // Beležimo pokušaje
-        if (activePlayer == leadPlayer) {
-            pokusajiVodeceg++
-        } else {
-            pokusajiPopravnog++
-        }
-
-        selektovanoLevo = null
-        indeksSelektovanogLevog = null
-
-        proveriLogikuSledecegPoteza()
-    }
-
-    private fun proveriLogikuSledecegPoteza() {
-        if (ukupnoSredjeno == 5) {
-            sledecaRunda()
-            return
-        }
-
-        if (activePlayer == leadPlayer && pokusajiVodeceg == 5) {
-            switchPlayerInRound()
-        }
-        else if (activePlayer != leadPlayer && pokusajiPopravnog >= dozvoljenoPopravki) {
-            sledecaRunda()
-        }
-    }
-
-    private fun switchPlayerInRound() {
-        activePlayer = if (leadPlayer == 1) 2 else 1
-        timer?.cancel()
-
-        dozvoljenoPopravki = 5 - ukupnoSredjeno
-        pokusajiPopravnog = 0
-
-        Toast.makeText(requireContext(), "Igrač $activePlayer popravlja!", Toast.LENGTH_LONG).show()
-
-        val leftButtons = listOf(binding.btnLeft1, binding.btnLeft2, binding.btnLeft3, binding.btnLeft4, binding.btnLeft5)
         leftButtons.forEachIndexed { index, button ->
-            if (!spojenoLevo[index]) {
-                resetButton(button)
-            }
+            button.text = state.leftItems.getOrNull(index) ?: ""
+            val connected = state.connectionsByLeft.getOrNull(index) != null
+            val failed = index in state.failedLeftIndices
+            val selected = index == state.selectedLeftIndex
+            renderConnectableButton(button, connected, failed, selected, state.isMyTurn, state.phase)
         }
-
-        zapocniTajmer()
-    }
-
-    private fun dodajPoene() {
-        if (activePlayer == 1) {
-            rezultatIgrac1 += 2
-            binding.gameHeader.tvPlayer1Score.text = "Igrač 1\n$rezultatIgrac1"
-        } else {
-            rezultatIgrac2 += 2
-            binding.gameHeader.tvPlayer2Score.text = "Igrač 2\n$rezultatIgrac2"
+        rightButtons.forEachIndexed { index, button ->
+            button.text = state.rightItems.getOrNull(index) ?: ""
+            val connected = index in state.connectedRightIndices
+            renderConnectableButton(button, connected, failed = false, selected = false, state.isMyTurn, state.phase)
         }
     }
 
-    private fun zapocniTajmer() {
-        timer?.cancel()
-        binding.gameHeader.tvGameTimer.text = "30"
-        timer = object : CountDownTimer(30000, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                binding.gameHeader.tvGameTimer.text = (millisUntilFinished / 1000).toString()
+    private fun renderConnectableButton(
+        button: MaterialButton,
+        connected: Boolean,
+        failed: Boolean,
+        selected: Boolean,
+        isMyTurn: Boolean,
+        phase: SpojniceGamePhase
+    ) {
+        when {
+            connected -> {
+                button.isEnabled = false
+                button.backgroundTintList = colorTint(android.R.color.holo_green_light)
             }
-            override fun onFinish() {
-                binding.gameHeader.tvGameTimer.text = "0"
-                if (activePlayer == leadPlayer) switchPlayerInRound() else sledecaRunda()
+            failed -> {
+                // Pogrešeno spajanje: levi pojam je crven i ne može se ponovo izabrati.
+                button.isEnabled = false
+                button.backgroundTintList = colorTint(android.R.color.holo_red_light)
             }
-        }.start()
-    }
-
-    private fun sledecaRunda() {
-        if (trenutnaRunda == 1) {
-            trenutnaRunda = 2
-            Toast.makeText(requireContext(), "Runda 2", Toast.LENGTH_LONG).show()
-            popuniRundu()
-        } else {
-            zavrsiIgru()
+            selected -> {
+                button.isEnabled = phase == SpojniceGamePhase.PLAYING && isMyTurn
+                button.backgroundTintList = colorTint(android.R.color.holo_blue_light)
+            }
+            else -> {
+                button.isEnabled = phase == SpojniceGamePhase.PLAYING && isMyTurn
+                button.backgroundTintList = defaultTint
+            }
         }
     }
 
-    private fun zavrsiIgru() {
-        timer?.cancel()
-        Toast.makeText(requireContext(), "Kraj! P1: $rezultatIgrac1 | P2: $rezultatIgrac2", Toast.LENGTH_LONG).show()
-        findNavController().popBackStack()
-    }
+    private fun playerNumber(player: Player): Int = if (player == Player.BLUE) 1 else 2
 
-    private fun resetButton(button: MaterialButton) {
-        button.isEnabled = true
-        button.backgroundTintList = defaultBackgroundTint
-        button.setTextColor(defaultTextColors)
-    }
-
-    private fun oznaciSelektovano(button: MaterialButton) {
-        val primaryColor = getThemeColor(androidx.appcompat.R.attr.colorPrimary)
-        button.backgroundTintList = ColorStateList.valueOf(primaryColor)
-        button.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOnPrimary))
-    }
-
-    private fun oznaciStatus(button: MaterialButton, isCorrect: Boolean) {
-        button.isEnabled = false
-        val colorRes = if (isCorrect) android.R.color.holo_green_light else android.R.color.holo_red_light
-        button.backgroundTintList = ContextCompat.getColorStateList(requireContext(), colorRes)
-        button.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
-    }
-
-    private fun getThemeColor(attr: Int): Int {
-        val typedValue = TypedValue()
-        requireContext().theme.resolveAttribute(attr, typedValue, true)
-        return typedValue.data
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        timer?.cancel()
-    }
+    private fun colorTint(colorRes: Int): ColorStateList =
+        ColorStateList.valueOf(ContextCompat.getColor(requireContext(), colorRes))
 }

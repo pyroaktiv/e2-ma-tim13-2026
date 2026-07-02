@@ -8,34 +8,23 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import rs.tim13.slagalica.R
-import rs.tim13.slagalica.notifications.data.MockNotificationRepository
 import rs.tim13.slagalica.notifications.model.NotificationCategory
-import rs.tim13.slagalica.notifications.model.NotificationModel
-import java.time.LocalDateTime
 
 object NotificationHelper {
 
     private var nextId = 100
 
-    fun sendNotification(
+    /**
+     * Prikazuje sistemsku notifikaciju na kanalu date kategorije (spec 11). Samo prikaz —
+     * istorija se čuva na backendu (vidi backend `createNotification`), pa je ovde ne diramo.
+     * Koristi je FCM servis kada stigne push dok app nije u prvom planu.
+     */
+    fun show(
         context: Context,
         category: NotificationCategory,
         title: String,
         body: String
     ) {
-        val notifId = nextId++
-
-        MockNotificationRepository.addNotification(
-            NotificationModel(
-                id = notifId.toLong(),
-                category = category,
-                title = title,
-                body = body,
-                timestamp = LocalDateTime.now(),
-                isRead = false
-            )
-        )
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
             != PackageManager.PERMISSION_GRANTED
@@ -50,7 +39,7 @@ object NotificationHelper {
             .build()
 
         context.getSystemService(NotificationManager::class.java)
-            ?.notify(notifId, notification)
+            ?.notify(nextId++, notification)
     }
 
     fun createChannels(context: Context) {

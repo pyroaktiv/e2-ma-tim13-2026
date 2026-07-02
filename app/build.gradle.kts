@@ -4,6 +4,12 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+// google-services plugin se primenjuje samo ako postoji app/google-services.json.
+// Tako build tima ne puca dok se Firebase ne podesi; FCM tada radi kao no-op (isto kao backend).
+if (rootProject.file("app/google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
@@ -53,9 +59,16 @@ android {
 }
 
 dependencies {
+    // Firebase Cloud Messaging (spec 11) — push notifikacije i kad app nije u prvom planu.
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
     implementation("com.squareup.okhttp3:logging-interceptor:5.4.0")
+    // QR kod: generisanje (profil) i skeniranje (dodavanje prijatelja) — spec 2.a.viii i 7.b
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    // Mapa regiona preko OpenStreetMap-a (spec 5)
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -66,6 +79,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.lottie)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

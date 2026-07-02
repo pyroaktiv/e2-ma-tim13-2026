@@ -1,20 +1,20 @@
 package rs.tim13.slagalica.asocijacije.ui
 
 import rs.tim13.slagalica.asocijacije.model.AssociationsColumn
-import rs.tim13.slagalica.core.Player
-
-enum class GamePhase { PLAYING, ROUND_OVER, GAME_OVER }
+import rs.tim13.slagalica.core.model.Player
+import rs.tim13.slagalica.core.ui.GameUiState
 
 data class AssociationsUiState(
+    override val round: Int,
+    override val activePlayer: Player,
+    override val isMyTurn: Boolean,
+    override val phase: AssociationsGamePhase,
+    override val remainingSeconds: Int,
+    override val statusMessage: String = "",
     val columns: List<AssociationsColumn>,
     val finalSolution: String,
     val isFinalSolved: Boolean,
-    val round: Int,
-    val blueScore: Int,
-    val redScore: Int,
-    val activePlayer: Player,
-    val phase: GamePhase,
-    val remainingSeconds: Int,
-    val statusMessage: String = "",
     val isNextMoveRevealing: Boolean = true,
-)
+    val blueScore: Int = 0,
+    val redScore: Int = 0
+) : GameUiState

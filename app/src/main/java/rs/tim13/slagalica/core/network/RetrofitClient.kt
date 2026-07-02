@@ -2,6 +2,8 @@ package rs.tim13.slagalica.core.network
 
 import okhttp3.OkHttp
 import android.content.Context
+import com.google.gson.FieldNamingPolicy
+import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -29,10 +31,12 @@ object RetrofitClient {
                 .addInterceptor(loggingInterceptor)
                 .build()
 
+            val gson = GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
+
             retrofit = Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .client(okHttpClient)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .build()
         }
         return retrofit!!
@@ -40,5 +44,9 @@ object RetrofitClient {
 
     fun getAuthClient(context: Context): AuthApiService {
         return getClient(context).create(AuthApiService::class.java)
+    }
+
+    fun getApiService(context: Context): ApiService {
+        return getClient(context).create(ApiService::class.java)
     }
 }

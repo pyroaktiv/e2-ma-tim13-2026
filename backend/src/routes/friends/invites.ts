@@ -3,6 +3,7 @@ import { db } from "../../db/database";
 import { requireAuth } from "../../middleware/auth";
 import { json } from "../../util/response";
 import { isOnline, pushToUser } from "../../util/websocket";
+import { startFriendlyMatch } from "../../match/manager";
 import { createNotification } from "../notifications";
 import type { GameInviteRow } from "../../model/friend";
 
@@ -223,6 +224,24 @@ export async function handleAcceptGameInvite(req: Request): Promise<Response> {
     invite_id: invite.id,
     by: { id: auth.user_id, username: auth.username },
   });
+
+  // Pokreni stvarnu (prijateljsku, nerangiranu) partiju između pozivaoca i pozvanog (spec 7.d).
+  const inviter = db
+    .query("SELECT id, username FROM users WHERE id = ?")
+    .get(invite.from_user_id) as { id: number; username: string } | null;
+
+  if (inviter) {
+    const started = startFriendlyMatch(
+      { id: inviter.id, username: inviter.username },
+      { id: auth.user_id, username: auth.username },
+    );
+    if (!started) {
+      // Neko nije online / već je u partiji — obavesti oba klijenta da poziv više ne važi.
+      pushToUser(invite.from_user_id, { type: "invite_expired", invite_id: invite.id });
+      pushToUser(auth.user_id, { type: "invite_expired", invite_id: invite.id });
+      return json({ error: "Could not start match (player offline or busy)." }, 409);
+    }
+  }
 
   return json({ message: "Game invite accepted." });
 }

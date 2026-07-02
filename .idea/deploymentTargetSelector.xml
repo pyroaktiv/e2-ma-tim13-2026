@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-05-09T06:36:30.566200Z">
+        <DropdownSelection timestamp="2026-07-01T20:03:27.039331419Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=28151FDH3004NP" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/home/zocko/.android/avd/Pixel_7a_3.avd" />
             </handle>
           </Target>
         </DropdownSelection>
