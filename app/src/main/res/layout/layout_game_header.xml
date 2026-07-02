@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="?attr/colorPrimary"
+    android:background="@color/header_bg_gray"
     android:padding="8dp">
 
     <LinearLayout
@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Tokeni: 5"
-            android:textColor="@android:color/white"
+            android:textColor="@android:color/black"
             android:textStyle="bold"/>
 
         <TextView
@@ -27,7 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Liga 1"
-            android:textColor="@android:color/white"
+            android:textColor="@android:color/black"
             android:textStyle="bold"
             android:layout_marginHorizontal="16dp"/>
 
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Zvezde: 120"
-            android:textColor="@android:color/white"
+            android:textColor="@android:color/black"
             android:textStyle="bold"
             android:gravity="end"/>
     </LinearLayout>
@@ -53,8 +53,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:padding="8dp"
             android:text="Igrač 1\n0"
-            android:textColor="@android:color/white"
+            android:textColor="@color/player_blue"
             android:gravity="center"/>
 
         <TextView
@@ -73,8 +74,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:padding="8dp"
             android:text="Igrač 2\n0"
-            android:textColor="@android:color/white"
+            android:textColor="@color/player_red"
             android:gravity="center"/>
     </LinearLayout>
 </LinearLayout>

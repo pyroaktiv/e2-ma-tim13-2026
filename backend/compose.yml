@@ -1,0 +1,25 @@
+services:
+  backend:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: "3000"
+      DB_PATH: /data/slagalica.db
+      JWT_SECRET: ${JWT_SECRET}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      BASE_URL: ${BASE_URL:-http://localhost:3000}
+      # FCM ključ je već u imidžu (Dockerfile `COPY . .`), pa samo pokaži na njega (spec 11).
+      FCM_SERVICE_ACCOUNT_PATH: /app/fcm-service-account.json
+    volumes:
+      # Named volume (Linux ext4 u Docker VM-u) — bind-mount sa Windows diska ne podržava
+      # SQLite WAL -shm (mmap), pa baca SQLITE_IOERR_SHMOPEN.
+      - ./db:/data
+    restart: unless-stopped
+
+volumes:
+  slagalica-db:

@@ -3,15 +3,30 @@ package rs.tim13.slagalica.notifications.ui
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import rs.tim13.slagalica.R
+import rs.tim13.slagalica.core.network.RetrofitClient
+import rs.tim13.slagalica.core.network.socket.SocketManager
 import rs.tim13.slagalica.core.ui.BaseFragment
 import rs.tim13.slagalica.databinding.FragmentNotificationsBinding
+import rs.tim13.slagalica.notifications.data.NotificationApiService
+import rs.tim13.slagalica.notifications.data.RemoteNotificationRepository
 
 class NotificationsFragment :
     BaseFragment<FragmentNotificationsBinding>(FragmentNotificationsBinding::inflate) {
 
-    private val viewModel: NotificationsViewModel by viewModels()
+    private val viewModel: NotificationsViewModel by viewModels {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                val api = RetrofitClient.getClient(requireContext())
+                    .create(NotificationApiService::class.java)
+                return NotificationsViewModel(RemoteNotificationRepository(api)) as T
+            }
+        }
+    }
     private lateinit var adapter: NotificationAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -19,6 +34,14 @@ class NotificationsFragment :
         setupRecyclerView()
         setupChips()
         observeViewModel()
+
+        // Uživo osvežavanje kad stigne notifikacija dok je ekran otvoren (spec 11).
+        SocketManager.notificationTick.observe(viewLifecycleOwner) { viewModel.refresh() }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.refresh()
     }
 
     private fun setupRecyclerView() {
